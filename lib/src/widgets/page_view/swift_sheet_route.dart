@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import '../../services/screen_radius_service.dart';
+import 'swift_page_transitions.dart';
 
 /// A modal page route that overlays a widget over the current route and animates
 /// it from the bottom with an iOS 13+ style page sheet appearance.
@@ -36,16 +37,30 @@ class SwiftSheetRoute<T> extends PageRoute<T>
   /// Returns the next route in the navigator stack.
   Route? get nextRoute => _nextRoute;
 
+  /// The previous route in the navigator stack.
+  Route? previousRoute;
+
   @override
   void didChangeNext(Route? nextRoute) {
     _nextRoute = nextRoute;
     super.didChangeNext(nextRoute);
+    if (nextRoute is SwiftPageRoute) {
+      nextRoute.previousRoute = this;
+    } else if (nextRoute is SwiftSheetRoute) {
+      nextRoute.previousRoute = this;
+    }
   }
 
   @override
   void didPopNext(Route nextRoute) {
     _nextRoute = null;
     super.didPopNext(nextRoute);
+  }
+
+  @override
+  void changedInternalState() {
+    super.changedInternalState();
+    previousRoute?.changedInternalState();
   }
 
   @override
@@ -119,7 +134,6 @@ class _SwiftSheetRouteTransitionState
     extends State<_SwiftSheetRouteTransition> {
   late CurvedAnimation _primaryCurve;
   late CurvedAnimation _secondaryCurve;
-  bool _wasNextRouteSheet = false;
 
   @override
   void initState() {
@@ -177,108 +191,114 @@ class _SwiftSheetRouteTransitionState
 
     final double screenHeight = MediaQuery.sizeOf(context).height;
     final double topPadding = MediaQuery.paddingOf(context).top;
-    final double topOffset = math.max(12.0, topPadding + 0.0);
+    final double topOffset = math.max(
+      12.0,
+      topPadding + SwiftPageTransitions.sheetTopOffsetPadding,
+    );
     final double sheetHeight = screenHeight - topOffset;
 
-    final bool isNextRouteSheet = route.nextRoute is SwiftSheetRoute;
-    if (isNextRouteSheet) {
-      _wasNextRouteSheet = true;
-    } else if (widget.secondaryAnimation.value == 0.0) {
-      _wasNextRouteSheet = false;
-    }
-    final bool activeNextRouteSheet =
-        isNextRouteSheet ||
-        (_wasNextRouteSheet && widget.secondaryAnimation.value > 0.0);
+    final int depth = _getRouteDepthAbove(route);
+    final bool isOffstage = depth >= 3;
 
-    return _SwiftVerticalBackGestureDetector(
-      route: route,
-      sheetHeight: sheetHeight,
-      child: AnimatedBuilder(
-        animation: Listenable.merge([
-          currentPrimary,
-          currentSecondary,
-          ScreenRadiusService.instance,
-        ]),
-        builder: (context, child) {
-          // Slide up transition: from screenHeight to topOffset
-          final double primaryOffsetY =
-              topOffset + (1.0 - currentPrimary.value) * sheetHeight;
+    return Offstage(
+      offstage: isOffstage,
+      child: _SwiftVerticalBackGestureDetector(
+        route: route,
+        sheetHeight: sheetHeight,
+        child: AnimatedBuilder(
+          animation: Listenable.merge([
+            currentPrimary,
+            currentSecondary,
+            ScreenRadiusService.instance,
+          ]),
+          builder: (context, child) {
+            // Slide up transition: from screenHeight to topOffset
+            final double primaryOffsetY =
+                topOffset + (1.0 - currentPrimary.value) * sheetHeight;
 
-          // When another sheet is pushed on top, scale down and translate up slightly
-          final double secondaryOffsetY = activeNextRouteSheet ? -currentSecondary.value * 10.0 : 0.0;
-          final double scale = activeNextRouteSheet
-              ? 1.0 - (1.0 - widget.sheetMinScale) * currentSecondary.value
-              : 1.0;
+            final double s = currentSecondary.value;
 
-          final double offsetY = primaryOffsetY + secondaryOffsetY;
+            // When another sheet is pushed on top, scale down and translate up slightly
+            final double secondaryOffsetY =
+                -s * SwiftPageTransitions.backgroundOffsetStep;
+            final double scale = 1.0 - (s * SwiftPageTransitions.scaleStep);
 
-          final double screenRadius =
-              ScreenRadiusService.instance.radius.topLeft.x;
-          final double resolvedRadius = screenRadius > 0.0
-              ? screenRadius
-              : widget.sheetRadius;
+            final double offsetY = primaryOffsetY + secondaryOffsetY;
 
-          final borderRadius = BorderRadius.vertical(
-            top: Radius.circular(resolvedRadius),
-          );
+            final double screenRadius =
+                ScreenRadiusService.instance.radius.topLeft.x;
+            final double resolvedRadius = screenRadius > 0.0
+                ? screenRadius
+                : widget.sheetRadius;
 
-          Widget sheetWidget = Container(
-            decoration: BoxDecoration(
-              borderRadius: borderRadius,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withAlpha(20),
-                  blurRadius: 10,
-                  spreadRadius: 1,
-                  offset: const Offset(0, -2),
-                ),
-              ],
-            ),
-            child: ClipRRect(
-              borderRadius: borderRadius,
-              clipBehavior: Clip.antiAlias,
-              child: Container(
-                color: Theme.of(context).scaffoldBackgroundColor,
-                child: widget.child,
+            final borderRadius = BorderRadius.vertical(
+              top: Radius.circular(resolvedRadius),
+            );
+
+            Widget sheetWidget = Container(
+              decoration: BoxDecoration(
+                borderRadius: borderRadius,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withAlpha(20),
+                    blurRadius: 10,
+                    spreadRadius: 1,
+                    offset: const Offset(0, -2),
+                  ),
+                ],
               ),
-            ),
-          );
+              child: ClipRRect(
+                borderRadius: borderRadius,
+                clipBehavior: Clip.antiAlias,
+                child: Container(
+                  color: Theme.of(context).scaffoldBackgroundColor,
+                  child: widget.child,
+                ),
+              ),
+            );
 
-          // If another sheet is stacked on top, apply dimming overlay
-          if (currentSecondary.value > 0) {
-            sheetWidget = Stack(
-              children: [
-                sheetWidget,
-                Positioned.fill(
-                  child: IgnorePointer(
-                    child: Container(
-                      decoration: BoxDecoration(
-                        borderRadius: borderRadius,
-                        color: Colors.black.withAlpha(
-                          (currentSecondary.value * 0.15 * 255).round(),
+            // If another sheet is stacked on top, apply dimming overlay
+            if (currentSecondary.value > 0) {
+              sheetWidget = Stack(
+                children: [
+                  sheetWidget,
+                  Positioned.fill(
+                    child: IgnorePointer(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          borderRadius: borderRadius,
+                          color: Colors.black.withAlpha(
+                            (currentSecondary.value * 0.15 * 255).round(),
+                          ),
                         ),
                       ),
                     ),
                   ),
+                ],
+              );
+            }
+
+            // If scaled down, wrap with a black background container to prevent see-through gaps
+            if (currentSecondary.value > 0) {
+              sheetWidget = Container(
+                decoration: BoxDecoration(
+                  color: Colors.black,
+                  borderRadius: borderRadius,
                 ),
-              ],
+                child: sheetWidget,
+              );
+            }
+
+            return Transform.translate(
+              offset: Offset(0.0, offsetY),
+              child: Transform.scale(
+                scale: scale,
+                alignment: Alignment.topCenter,
+                child: sheetWidget,
+              ),
             );
-          }
-
-          // If scaled down, wrap with a black background container to prevent see-through gaps
-          if (currentSecondary.value > 0) {
-            sheetWidget = Container(color: Colors.black, child: sheetWidget);
-          }
-
-          return Transform.translate(
-            offset: Offset(0.0, offsetY),
-            child: Transform.scale(
-              scale: scale,
-              alignment: Alignment.topCenter,
-              child: sheetWidget,
-            ),
-          );
-        },
+          },
+        ),
       ),
     );
   }
@@ -533,4 +553,21 @@ class _SwiftVerticalBackGestureController {
   }
 
   void dispose() {}
+}
+
+int _getRouteDepthAbove(Route? route) {
+  int depth = 0;
+  Route? current = route;
+  while (current != null) {
+    Route? next;
+    if (current is SwiftPageRoute) {
+      next = current.nextRoute;
+    } else if (current is SwiftSheetRoute) {
+      next = current.nextRoute;
+    }
+    if (next == null) break;
+    depth++;
+    current = next;
+  }
+  return depth;
 }

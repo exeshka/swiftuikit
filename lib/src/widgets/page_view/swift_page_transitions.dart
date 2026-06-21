@@ -8,6 +8,18 @@ import 'swift_sheet_route.dart';
 class SwiftPageTransitions {
   const SwiftPageTransitions._();
 
+  /// Gap from top of the screen (below status bar) for the active sheet.
+  /// Standard iOS sheets have a 10.0 pixel margin.
+  static double sheetTopOffsetPadding = 10.0;
+
+  /// Vertical offset step (in pixels) per stacked level in the background.
+  /// Higher values push background cards lower.
+  static double backgroundOffsetStep = 20.0;
+
+  /// Scale step per stacked level in the background.
+  /// e.g. 0.08 means level 0 = 1.0, level 1 = 0.92, level 2 = 0.84.
+  static double scaleStep = 0.08;
+
   /// Default transitions builder that can be used directly with auto_route or standard routing.
   static Widget builder(
     BuildContext context,
@@ -89,16 +101,30 @@ class SwiftPageRoute<T> extends PageRoute<T>
   /// Returns the next route in the navigator stack.
   Route? get nextRoute => _nextRoute;
 
+  /// The previous route in the navigator stack.
+  Route? previousRoute;
+
   @override
   void didChangeNext(Route? nextRoute) {
     _nextRoute = nextRoute;
     super.didChangeNext(nextRoute);
+    if (nextRoute is SwiftPageRoute) {
+      nextRoute.previousRoute = this;
+    } else if (nextRoute is SwiftSheetRoute) {
+      nextRoute.previousRoute = this;
+    }
   }
 
   @override
   void didPopNext(Route nextRoute) {
     _nextRoute = null;
     super.didPopNext(nextRoute);
+  }
+
+  @override
+  void changedInternalState() {
+    super.changedInternalState();
+    previousRoute?.changedInternalState();
   }
 
   @override
@@ -232,14 +258,8 @@ class _SwiftPageRouteTransitionState extends State<_SwiftPageRouteTransition> {
       nextRoute = route.nextRoute;
     }
 
-    Route? nextNextRoute;
-    if (nextRoute is SwiftPageRoute) {
-      nextNextRoute = nextRoute.nextRoute;
-    } else if (nextRoute is SwiftSheetRoute) {
-      nextNextRoute = nextRoute.nextRoute;
-    }
-
-    final bool isOffstage = nextNextRoute != null;
+    final int depth = _getRouteDepthAbove(route);
+    final bool isOffstage = depth >= 3;
 
     final bool isNextRouteSheet = nextRoute is SwiftSheetRoute;
     if (isNextRouteSheet) {
@@ -262,12 +282,17 @@ class _SwiftPageRouteTransitionState extends State<_SwiftPageRouteTransition> {
         builder: (context, child) {
           if (activeNextRouteSheet) {
             final double topPadding = MediaQuery.paddingOf(context).top;
-            final double topOffset = math.max(12.0, topPadding + 10.0);
+            final double topOffset = math.max(
+              12.0,
+              topPadding + SwiftPageTransitions.sheetTopOffsetPadding,
+            );
+
+            final double s = currentSecondary.value;
 
             final double translationX = (1.0 - currentPrimary.value) * width;
             final double translationY =
-                currentSecondary.value * math.max(0.0, topOffset - 40.0);
-            final double scale = 1.0 - (1.0 - 0.92) * currentSecondary.value;
+                s * (topOffset - SwiftPageTransitions.backgroundOffsetStep);
+            final double scale = 1.0 - (s * SwiftPageTransitions.scaleStep);
 
             final BorderRadius screenBorderRadius = widget.clipWithScreenRadius
                 ? ScreenRadiusService.instance.radius
@@ -318,7 +343,10 @@ class _SwiftPageRouteTransitionState extends State<_SwiftPageRouteTransition> {
 
             if (currentSecondary.value > 0) {
               transitionChild = Container(
-                color: CupertinoColors.black,
+                decoration: BoxDecoration(
+                  color: CupertinoColors.black,
+                  borderRadius: borderRadius,
+                ),
                 child: transitionChild,
               );
             }
@@ -558,4 +586,21 @@ class _SwiftBackGestureController<T> {
       navigator.didStopUserGesture();
     }
   }
+}
+
+int _getRouteDepthAbove(Route? route) {
+  int depth = 0;
+  Route? current = route;
+  while (current != null) {
+    Route? next;
+    if (current is SwiftPageRoute) {
+      next = current.nextRoute;
+    } else if (current is SwiftSheetRoute) {
+      next = current.nextRoute;
+    }
+    if (next == null) break;
+    depth++;
+    current = next;
+  }
+  return depth;
 }
