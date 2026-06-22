@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
-import 'package:swiftuikit/src/core/widgets/morph_id.dart';
 import 'swift_header_chrome.dart';
-import 'swift_header.dart';
 
 class SwiftSliverHeader extends StatefulWidget {
   const SwiftSliverHeader({
@@ -15,8 +12,7 @@ class SwiftSliverHeader extends StatefulWidget {
     this.pinned = true,
     this.floating = false,
     this.trackAtRest = true,
-    this.heroEnabled = false,
-    this.heroId = const MorphId('swift_header'),
+    this.heroTag = 'swift_header',
   });
 
   final Widget child;
@@ -27,8 +23,7 @@ class SwiftSliverHeader extends StatefulWidget {
   final bool pinned;
   final bool floating;
   final bool trackAtRest;
-  final bool heroEnabled;
-  final MorphId heroId;
+  final Object? heroTag;
 
   @override
   State<SwiftSliverHeader> createState() => _SwiftSliverHeaderState();
@@ -39,8 +34,6 @@ class _SwiftSliverHeaderState extends State<SwiftSliverHeader> {
   final LayerLink _link = LayerLink();
 
   SwiftPinnedHeaderChromeController? _chromeController;
-  Size _size = Size.zero;
-  bool _disposed = false;
 
   @override
   void didChangeDependencies() {
@@ -54,7 +47,6 @@ class _SwiftSliverHeaderState extends State<SwiftSliverHeader> {
 
   @override
   void dispose() {
-    _disposed = true;
     _chromeController?.remove(_chromeId);
     super.dispose();
   }
@@ -98,10 +90,71 @@ class _SwiftSliverHeaderState extends State<SwiftSliverHeader> {
 
         // The plain content — used for the overlay child (visible above blur).
         final plainChild = SizedBox(
-          width: _size.width > 0 ? _size.width : MediaQuery.sizeOf(context).width,
+          width: MediaQuery.sizeOf(context).width,
           height: extent,
           child: headerChild,
         );
+
+        final Widget inlineHeroChild = widget.heroTag != null
+            ? Hero(
+                tag: widget.heroTag!,
+                transitionOnUserGestures: true,
+                flightShuttleBuilder: (
+                  BuildContext flightContext,
+                  Animation<double> animation,
+                  HeroFlightDirection flightDirection,
+                  BuildContext fromHeroContext,
+                  BuildContext toHeroContext,
+                ) {
+                  final Hero fromHero = fromHeroContext.widget as Hero;
+                  final Hero toHero = toHeroContext.widget as Hero;
+
+                  return AnimatedBuilder(
+                    animation: animation,
+                    builder: (context, _) {
+                      final double t = animation.value;
+                      final bool isPush =
+                          flightDirection == HeroFlightDirection.push;
+
+                      final double topOpacity = t.clamp(0.0, 1.0);
+                      final double bottomOpacity = (1.0 - t).clamp(0.0, 1.0);
+
+                      final double topTranslation = 30.0 * (1.0 - t);
+                      final double bottomTranslation = -30.0 * t;
+
+                      final Widget bottomWidget =
+                          isPush ? fromHero.child : toHero.child;
+                      final Widget topWidget =
+                          isPush ? toHero.child : fromHero.child;
+
+                      return SizedBox(
+                        width: MediaQuery.sizeOf(context).width,
+                        height: extent,
+                        child: Stack(
+                          children: [
+                            Transform.translate(
+                              offset: Offset(bottomTranslation, 0.0),
+                              child: Opacity(
+                                opacity: bottomOpacity,
+                                child: bottomWidget,
+                              ),
+                            ),
+                            Transform.translate(
+                              offset: Offset(topTranslation, 0.0),
+                              child: Opacity(
+                                opacity: topOpacity,
+                                child: topWidget,
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  );
+                },
+                child: plainChild,
+              )
+            : plainChild;
 
         // Update the controller for height measurement of the blur/gradient overlay.
         if (_chromeController != null) {
@@ -110,24 +163,11 @@ class _SwiftSliverHeaderState extends State<SwiftSliverHeader> {
             height: extent,
             child: plainChild,
             link: _link,
-            signature: '${_size.width}',
+            signature: '${MediaQuery.sizeOf(context).width}',
             pinned: trackedByChrome,
           );
         }
 
-        // Content wrapped with Hero — placed in the inline position so that
-        // localToGlobal returns the correct render tree position for Hero
-        // flight calculations.
-        final Widget heroChild = widget.heroEnabled
-            ? Hero(
-                tag: widget.heroId,
-                transitionOnUserGestures: true,
-                flightShuttleBuilder: defaultHeaderFlightShuttleBuilder,
-                child: plainChild,
-              )
-            : plainChild;
-
-        // Build with route transition listening.
         final route = ModalRoute.of(context);
         final animation = route?.animation;
         final secondaryAnimation = route?.secondaryAnimation;
@@ -138,41 +178,31 @@ class _SwiftSliverHeaderState extends State<SwiftSliverHeader> {
 
         Widget result;
         if (_chromeController == null) {
-          result = heroChild;
+          result = inlineHeroChild;
         } else {
           result = CompositedTransformTarget(
             link: _link,
-            child: _SwiftMeasureSize(
-              onChange: (newSize) {
-                if (!_disposed && mounted && _size != newSize) {
-                  setState(() => _size = newSize);
-                }
+            child: AnimatedBuilder(
+              animation: transitionListenable,
+              builder: (context, _) {
+                final isTransitioning =
+                    (animation != null &&
+                        !animation.isCompleted &&
+                        !animation.isDismissed) ||
+                    (secondaryAnimation != null &&
+                        !secondaryAnimation.isCompleted &&
+                        !secondaryAnimation.isDismissed);
+
+                final showInline = isTransitioning || !trackedByChrome;
+
+                return IgnorePointer(
+                  ignoring: !showInline,
+                  child: Opacity(
+                    opacity: showInline ? 1.0 : 0.0,
+                    child: inlineHeroChild,
+                  ),
+                );
               },
-              child: AnimatedBuilder(
-                animation: transitionListenable,
-                builder: (context, _) {
-                  final isTransitioning =
-                      (animation != null &&
-                          !animation.isCompleted &&
-                          !animation.isDismissed) ||
-                      (secondaryAnimation != null &&
-                          !secondaryAnimation.isCompleted &&
-                          !secondaryAnimation.isDismissed);
-
-                  // When transitioning, render inline child at Opacity(1.0).
-                  // Otherwise, when pinned, render inline child at Opacity(0.0)
-                  // because the overlay copy is visible.
-                  final showInline = isTransitioning || !trackedByChrome;
-
-                  return IgnorePointer(
-                    ignoring: !showInline,
-                    child: Opacity(
-                      opacity: showInline ? 1.0 : 0.0,
-                      child: heroChild,
-                    ),
-                  );
-                },
-              ),
             ),
           );
         }
@@ -211,42 +241,5 @@ class SwiftSliverHeaderDelegate extends SliverPersistentHeaderDelegate {
   @override
   bool shouldRebuild(covariant SwiftSliverHeaderDelegate oldDelegate) {
     return oldDelegate.child != child || oldDelegate.height != height;
-  }
-}
-
-class _SwiftMeasureSize extends SingleChildRenderObjectWidget {
-  const _SwiftMeasureSize({required this.onChange, required super.child});
-
-  final ValueChanged<Size> onChange;
-
-  @override
-  RenderObject createRenderObject(BuildContext context) =>
-      _SwiftMeasureSizeRenderObject(onChange);
-
-  @override
-  void updateRenderObject(
-    BuildContext context,
-    covariant _SwiftMeasureSizeRenderObject renderObject,
-  ) {
-    renderObject.onChange = onChange;
-  }
-}
-
-class _SwiftMeasureSizeRenderObject extends RenderProxyBox {
-  _SwiftMeasureSizeRenderObject(this.onChange);
-
-  ValueChanged<Size> onChange;
-  Size? _oldSize;
-
-  @override
-  void performLayout() {
-    super.performLayout();
-    final newSize = child?.size ?? Size.zero;
-    if (_oldSize == newSize) return;
-
-    _oldSize = newSize;
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      onChange(newSize);
-    });
   }
 }

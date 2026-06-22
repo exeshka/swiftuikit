@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/physics.dart';
-import 'package:swiftuikit/src/core/widgets/morph_id.dart';
 import 'package:swiftuikit/src/core/widgets/morph_transition_slots.dart';
 import 'package:swiftuikit/src/core/widgets/motion_blur_row.dart';
 import 'package:swiftuikit/src/core/widgets/swift_material.dart';
@@ -20,8 +19,7 @@ class SwiftHeader extends StatelessWidget {
     this.trackAtRest = true,
     this.automaticallyImplyLeading = true,
     this.automaticallyImpliedLeadingStyle,
-    this.heroEnabled = true,
-    this.heroId = const MorphId('swift_header'),
+    this.heroTag = 'swift_header',
   });
 
   final Widget? left;
@@ -32,8 +30,7 @@ class SwiftHeader extends StatelessWidget {
   final bool trackAtRest;
   final bool automaticallyImplyLeading;
   final MorphSurfaceStyle? automaticallyImpliedLeadingStyle;
-  final bool heroEnabled;
-  final MorphId heroId;
+  final Object? heroTag;
 
   @override
   Widget build(BuildContext context) {
@@ -42,8 +39,6 @@ class SwiftHeader extends StatelessWidget {
       left: effectiveLeft,
       right: right,
       middle: middle,
-      heroEnabled: heroEnabled,
-      heroId: heroId,
     );
 
     return SwiftSliverHeader(
@@ -51,8 +46,7 @@ class SwiftHeader extends StatelessWidget {
       floating: floating,
       trackAtRest: trackAtRest,
       foregroundInChrome: false,
-      heroEnabled: heroEnabled,
-      heroId: heroId,
+      heroTag: heroTag,
       child: content,
     );
   }
@@ -90,159 +84,18 @@ class SwiftHeader extends StatelessWidget {
   }
 }
 
-SwiftHeaderContent? _findHeaderContent(Widget widget) {
-  if (widget is SwiftHeaderContent) {
-    return widget;
-  }
-  try {
-    final dynamic dynamicWidget = widget;
-    final child = dynamicWidget.child;
-    if (child is Widget) {
-      return _findHeaderContent(child);
-    }
-  } catch (_) {}
-  return null;
-}
-
-Widget defaultHeaderFlightShuttleBuilder(
-  BuildContext flightContext,
-  Animation<double> animation,
-  HeroFlightDirection flightDirection,
-  BuildContext fromHeroContext,
-  BuildContext toHeroContext,
-) {
-  final fromHero = fromHeroContext.widget as Hero;
-  final toHero = toHeroContext.widget as Hero;
-
-  final fromHeader = _findHeaderContent(fromHero.child);
-  final toHeader = _findHeaderContent(toHero.child);
-
-  if (fromHeader == null || toHeader == null) {
-    return toHero.child;
-  }
-
-  final spring = SpringDescription(mass: 1.0, stiffness: 150.0, damping: 14.0);
-  final sim = SpringSimulation(spring, 0.0, 1.0, 0.0);
-
-  return AnimatedBuilder(
-    animation: animation,
-    builder: (context, child) {
-      final t = animation.value;
-      final springProgress = sim.x(t * 0.6);
-
-      // Use spring for the overall header flight timing, but use a separate
-      // eased progress for the middle slot to avoid springy motion there.
-      final midProgress = Curves.easeOut.transform(t);
-
-      final incomingScale = 0.8 + 0.2 * springProgress;
-      final outgoingScale = 0.8 + 0.2 * (1.0 - springProgress);
-      final midIncomingScale = 0.8 + 0.2 * midProgress;
-      final midOutgoingScale = 0.8 + 0.2 * (1.0 - midProgress);
-
-      final fromTopPadding = MediaQuery.paddingOf(fromHeroContext).top;
-      final toTopPadding = MediaQuery.paddingOf(toHeroContext).top;
-      final topPadding = fromTopPadding + (toTopPadding - fromTopPadding) * t;
-
-      final content = SwiftHeaderContent(
-        heroEnabled: false,
-        isFlight: true,
-        left: Stack(
-          alignment: .centerLeft,
-          children: [
-            if (fromHeader.left != null)
-              Transform.scale(
-                scale: outgoingScale,
-                child: Opacity(
-                  opacity: (springProgress).clamp(0.0, 1.0),
-                  child: fromHeader.left,
-                ),
-              ),
-            if (toHeader.left != null)
-              Transform.scale(
-                scale: incomingScale,
-                child: Opacity(
-                  opacity: incomingScale.clamp(0, 1),
-                  child: toHeader.left,
-                ),
-              ),
-          ],
-        ),
-        middle: Stack(
-          alignment: Alignment.center,
-          children: [
-            // Outgoing (from) header: slides left while fading/scaling out
-            Transform.translate(
-              offset: Offset(-40.0 * midProgress, 0.0),
-              child: Transform.scale(
-                scale: midOutgoingScale,
-                child: Opacity(
-                  opacity: (1.0 - midProgress).clamp(0.0, 1.0),
-                  child: fromHeader.middle,
-                ),
-              ),
-            ),
-            // Incoming (to) header: slides from right while fading/scaling in
-            Transform.translate(
-              offset: Offset(40.0 * (1.0 - midProgress), 0.0),
-              child: Transform.scale(
-                scale: midIncomingScale,
-                child: Opacity(
-                  opacity: (1.0 - midProgress).clamp(0.0, 1.0),
-                  child: toHeader.middle,
-                ),
-              ),
-            ),
-          ],
-        ),
-        right: Stack(
-          alignment: Alignment.centerRight,
-          fit: StackFit.loose,
-          children: [
-            Transform.scale(
-              scale: outgoingScale,
-              child: Opacity(
-                opacity: (springProgress).clamp(0.0, 1.0),
-                child: fromHeader.right,
-              ),
-            ),
-            Transform.scale(
-              scale: incomingScale,
-              child: Opacity(
-                opacity: (1 - springProgress).clamp(0.0, 1.0),
-                child: toHeader.right,
-              ),
-            ),
-          ],
-        ),
-      );
-
-      // Match the paddedHeader layout: safe area spacer on top, then content.
-      return Padding(
-        padding: EdgeInsets.only(top: topPadding),
-        child: content,
-      );
-    },
-  );
-}
-
 class SwiftHeaderContent extends StatelessWidget {
   static const _slotSwitchDuration = Duration(milliseconds: 260);
 
   final Widget? left;
   final Widget right;
   final Widget middle;
-  final bool heroEnabled;
-  final MorphId heroId;
-  final bool isFlight;
 
   const SwiftHeaderContent({
     super.key,
     this.left,
     required this.right,
     required this.middle,
-    this.heroEnabled = false,
-    this.heroId = const MorphId('swift_header'),
-    this.isFlight = false,
   });
 
   @override
@@ -251,7 +104,6 @@ class SwiftHeaderContent extends StatelessWidget {
       left: left,
       middle: middle,
       right: right,
-      isFlight: isFlight,
     );
 
     return SizedBox(
@@ -272,15 +124,12 @@ class _SwiftHeaderTransitionSlots extends MorphTransitionSlots {
     required Widget? left,
     required Widget middle,
     required Widget right,
-    this.isFlight = false,
   }) : super.sections(
          left: _sectionFromWidget('left', left),
          middle: _sectionFromWidget('middle', middle),
          right: _sectionFromWidget('right', right),
          itemSpacing: _itemSpacingFrom(right),
        );
-
-  final bool isFlight;
 
   static double _itemSpacingFrom(Widget child) {
     if (child is Row) {
@@ -329,7 +178,6 @@ class _SwiftHeaderTransitionSlots extends MorphTransitionSlots {
             duration: SwiftHeaderContent._slotSwitchDuration,
             smearOffset: const Offset(10, 0),
             sizeAlignment: Alignment.centerRight,
-            isFlight: isFlight,
             child: _SwiftHeaderSectionRow(section: right, spacing: itemSpacing),
           ),
         ),
@@ -340,7 +188,6 @@ class _SwiftHeaderTransitionSlots extends MorphTransitionSlots {
             duration: SwiftHeaderContent._slotSwitchDuration,
             smearOffset: const Offset(-10, 0),
             sizeAlignment: Alignment.centerLeft,
-            isFlight: isFlight,
             child: _SwiftHeaderSectionRow(section: left, spacing: itemSpacing),
           ),
         ),
@@ -349,7 +196,6 @@ class _SwiftHeaderTransitionSlots extends MorphTransitionSlots {
             duration: SwiftHeaderContent._slotSwitchDuration,
             smearOffset: const Offset(0, -6),
             sizeAlignment: Alignment.center,
-            isFlight: isFlight,
             child: _SwiftHeaderSectionRow(
               section: middle,
               spacing: itemSpacing,
@@ -392,7 +238,6 @@ class _HeaderMotionBlurSwitcher extends StatefulWidget {
     required this.smearOffset,
     required this.duration,
     required this.sizeAlignment,
-    this.isFlight = false,
   });
 
   static const double _maxBlurSigma = 8;
@@ -401,7 +246,6 @@ class _HeaderMotionBlurSwitcher extends StatefulWidget {
   final Offset smearOffset;
   final Duration duration;
   final AlignmentGeometry sizeAlignment;
-  final bool isFlight;
 
   @override
   State<_HeaderMotionBlurSwitcher> createState() =>
@@ -475,10 +319,6 @@ class _HeaderMotionBlurSwitcherState extends State<_HeaderMotionBlurSwitcher>
   @override
   Widget build(BuildContext context) {
     final animatedChild = motionChild(widget.child);
-
-    if (widget.isFlight) {
-      return animatedChild;
-    }
 
     return ScaleTransition(
       scale: _scaleController,

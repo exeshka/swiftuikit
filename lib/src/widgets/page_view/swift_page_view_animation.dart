@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../../services/screen_radius_service.dart';
 
+const double _pagePositionTolerance = 0.0001;
+
 class SwiftPageViewAnimation extends StatefulWidget {
   const SwiftPageViewAnimation({
     super.key,
@@ -14,12 +16,14 @@ class SwiftPageViewAnimation extends StatefulWidget {
     this.pageSnapping = true,
     this.allowImplicitScrolling = false,
     this.borderRadius,
+    this.radius,
     this.clipBehavior = Clip.antiAlias,
     this.minScale = 0.95,
     this.coverPreviousPage = true,
     this.pageOverlapFraction = 0.20,
     this.alignment = Alignment.center,
     this.parallaxIndexes,
+    this.initialPage = 0,
   }) : assert(
          itemBuilder == null && itemCount == null,
          'Use SwiftPageViewAnimation.pageView to build pages.',
@@ -35,12 +39,15 @@ class SwiftPageViewAnimation extends StatefulWidget {
     this.pageSnapping = true,
     this.allowImplicitScrolling = false,
     this.borderRadius,
+    this.radius,
     this.clipBehavior = Clip.antiAlias,
     this.minScale = 0.95,
     this.coverPreviousPage = true,
     this.pageOverlapFraction = 0.20,
     this.alignment = Alignment.center,
     this.parallaxIndexes,
+
+    this.initialPage = 0,
   }) : child = null;
 
   final Widget? child;
@@ -52,19 +59,51 @@ class SwiftPageViewAnimation extends StatefulWidget {
   final bool pageSnapping;
   final bool allowImplicitScrolling;
   final BorderRadius? borderRadius;
+  final double? radius;
   final Clip clipBehavior;
   final double minScale;
   final bool coverPreviousPage;
   final double pageOverlapFraction;
   final Alignment alignment;
   final List<int>? parallaxIndexes;
+  final int initialPage;
 
-  static Widget autoTabsBuilder(
-    BuildContext context,
-    Widget child,
-    PageController pageController,
-  ) {
-    return SwiftPageViewAnimation(controller: pageController, child: child);
+  // Добавь после autoTabsBuilder
+  static Widget autoTabsPageView({
+    Key? key,
+    required List<Widget> children,
+    required PageController controller,
+    ValueChanged<int>? onPageChanged,
+    ScrollPhysics? physics,
+    bool pageSnapping = true,
+    bool allowImplicitScrolling = false,
+    BorderRadius? borderRadius,
+    double? radius,
+    Clip clipBehavior = Clip.antiAlias,
+    double minScale = 0.95,
+    bool coverPreviousPage = true,
+    double pageOverlapFraction = 0.20,
+    Alignment alignment = Alignment.center,
+    List<int>? parallaxIndexes,
+  }) {
+    return SwiftPageViewAnimation.pageView(
+      key: key,
+      controller: controller,
+      itemCount: children.length,
+      itemBuilder: (context, index) => children[index],
+      onPageChanged: onPageChanged,
+      physics: physics,
+      pageSnapping: pageSnapping,
+      allowImplicitScrolling: allowImplicitScrolling,
+      borderRadius: borderRadius,
+      radius: radius,
+      clipBehavior: clipBehavior,
+      minScale: minScale,
+      coverPreviousPage: coverPreviousPage,
+      pageOverlapFraction: pageOverlapFraction,
+      alignment: alignment,
+      parallaxIndexes: parallaxIndexes,
+    );
   }
 
   @override
@@ -75,8 +114,8 @@ class _SwiftPageViewAnimationState extends State<SwiftPageViewAnimation> {
   PageController? _controller;
 
   PageController get _effectiveController =>
-      widget.controller ?? (_controller ??= PageController());
-
+      widget.controller ??
+      (_controller ??= PageController(initialPage: widget.initialPage));
   @override
   void didUpdateWidget(covariant SwiftPageViewAnimation oldWidget) {
     super.didUpdateWidget(oldWidget);
@@ -92,22 +131,31 @@ class _SwiftPageViewAnimationState extends State<SwiftPageViewAnimation> {
     super.dispose();
   }
 
+  BorderRadius _targetBorderRadius() {
+    return widget.borderRadius ??
+        (widget.radius != null
+            ? BorderRadius.circular(widget.radius!)
+            : ScreenRadiusService.instance.radius);
+  }
+
+  BorderRadius _borderRadiusForPage(int index) {
+    final page = _currentPage;
+    final diff = (page - index).abs();
+    return diff > _pagePositionTolerance
+        ? _targetBorderRadius()
+        : BorderRadius.zero;
+  }
+
+  double get _currentPage {
+    return _effectiveController.hasClients
+        ? _effectiveController.page ??
+              _effectiveController.initialPage.toDouble()
+        : _effectiveController.initialPage.toDouble();
+  }
+
   @override
   Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: ScreenRadiusService.instance,
-      builder: (context, child) {
-        final radius =
-            widget.borderRadius ?? ScreenRadiusService.instance.radius;
-
-        return ClipRRect(
-          borderRadius: radius,
-          clipBehavior: widget.clipBehavior,
-          child: child,
-        );
-      },
-      child: _buildChild(),
-    );
+    return _buildChild();
   }
 
   Widget _buildChild() {
@@ -135,22 +183,22 @@ class _SwiftPageViewAnimationState extends State<SwiftPageViewAnimation> {
                   width: constraints.maxWidth,
                 );
                 final scale = _pageScale(index: index);
+                final borderRadius = _borderRadiusForPage(index);
 
                 return Transform.translate(
                   offset: Offset(overlapOffset, 0),
                   child: Transform.scale(
                     scale: scale,
                     alignment: widget.alignment,
-                    child: child,
+                    child: ClipRRect(
+                      borderRadius: borderRadius,
+                      clipBehavior: widget.clipBehavior,
+                      child: child,
+                    ),
                   ),
                 );
               },
-              child: ClipRRect(
-                borderRadius:
-                    widget.borderRadius ?? ScreenRadiusService.instance.radius,
-                clipBehavior: widget.clipBehavior,
-                child: widget.itemBuilder!(context, index),
-              ),
+              child: widget.itemBuilder!(context, index),
             );
           },
         );
@@ -171,10 +219,7 @@ class _SwiftPageViewAnimationState extends State<SwiftPageViewAnimation> {
       return 0;
     }
 
-    final page = _effectiveController.hasClients
-        ? _effectiveController.page ??
-              _effectiveController.initialPage.toDouble()
-        : _effectiveController.initialPage.toDouble();
+    final page = _currentPage;
     final diff = page - index;
     if (diff >= 0) {
       final clampedDiff = diff.clamp(0.0, 1.0);
@@ -189,10 +234,7 @@ class _SwiftPageViewAnimationState extends State<SwiftPageViewAnimation> {
       return 1.0;
     }
 
-    final page = _effectiveController.hasClients
-        ? _effectiveController.page ??
-              _effectiveController.initialPage.toDouble()
-        : _effectiveController.initialPage.toDouble();
+    final page = _currentPage;
     final diff = page - index;
     if (diff >= 0) {
       final clampedDiff = diff.clamp(0.0, 1.0);

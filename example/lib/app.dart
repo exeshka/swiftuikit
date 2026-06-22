@@ -9,7 +9,16 @@ class App extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp.router(
-      theme: .dark(),
+      theme: ThemeData(
+        brightness: .dark,
+
+        applyElevationOverlayColor: false,
+        appBarTheme: AppBarTheme(surfaceTintColor: Colors.transparent),
+        colorScheme: ColorScheme.dark(
+          surface: Colors.black,
+          onSurface: Colors.white,
+        ),
+      ),
 
       routerConfig: _appRouter.config(),
     );

@@ -1,9 +1,18 @@
 import 'dart:math' as math;
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 
 import '../../services/screen_radius_service.dart';
 import 'swift_sheet_route.dart';
+
+abstract interface class SwiftSheetStackRoute {
+  Route? get nextRoute;
+  Route? get previousRoute;
+  set previousRoute(Route? route);
+  ValueListenable<double> get sheetExtentListenable;
+  double get sheetExtent;
+}
 
 class SwiftPageTransitions {
   const SwiftPageTransitions._();
@@ -20,13 +29,58 @@ class SwiftPageTransitions {
   /// e.g. 0.08 means level 0 = 1.0, level 1 = 0.92, level 2 = 0.84.
   static double scaleStep = 0.08;
 
-  /// Top radius applied to routes when they move into the sheet background.
-  /// The original Cupertino sheet package uses 32.0.
-  static double sheetBackgroundRadius = 32.0;
+  /// Optional top radius applied to routes when they move into the sheet background.
+  /// If null, the device screen radius from [ScreenRadiusService] is used.
+  static double? sheetBackgroundRadius;
+
+  /// Optional border radius applied to routes when they move into the sheet background.
+  /// If null, [sheetBackgroundRadius] is used, then the device screen radius.
+  static BorderRadius? sheetBackgroundBorderRadius;
 
   /// Dimming opacity applied to background routes while a sheet is above them.
   /// The original Cupertino sheet package uses 0.10.
   static double sheetBackgroundDimmingOpacity = 0.10;
+
+  /// Sheet extent where background route lift/scale starts.
+  /// 0.5 means the previous page stays still until the sheet is half-open.
+  static double sheetBackgroundAnimationStart = 0.5;
+
+  static double sheetBackgroundProgressFor(double sheetExtent) {
+    final start = sheetBackgroundAnimationStart.clamp(0.0, 0.99).toDouble();
+    return ((sheetExtent - start) / (1.0 - start)).clamp(0.0, 1.0).toDouble();
+  }
+
+  static BorderRadius resolveBorderRadius(
+    BuildContext context, {
+    BorderRadius? borderRadius,
+    double? radius,
+    bool useScreenRadius = true,
+  }) {
+    if (borderRadius != null) return borderRadius;
+    if (radius != null) return BorderRadius.circular(radius);
+    return useScreenRadius
+        ? ScreenRadiusService.instance.radius
+        : BorderRadius.zero;
+  }
+
+  static BorderRadius resolveSheetBorderRadius(
+    BuildContext context, {
+    BorderRadius? borderRadius,
+    double? radius,
+    bool useScreenRadius = true,
+  }) {
+    if (borderRadius != null) return borderRadius;
+    if (radius != null) {
+      return BorderRadius.vertical(top: Radius.circular(radius));
+    }
+    if (!useScreenRadius) return BorderRadius.zero;
+
+    final screenRadius = ScreenRadiusService.instance.radius;
+    return BorderRadius.only(
+      topLeft: screenRadius.topLeft,
+      topRight: screenRadius.topRight,
+    );
+  }
 
   /// Default transitions builder that can be used directly with auto_route or standard routing.
   static Widget builder(
@@ -43,6 +97,8 @@ class SwiftPageTransitions {
     double minScale = 0.95,
     double pageOverlapFraction = 0.20,
     bool clipWithScreenRadius = true,
+    double? radius,
+    BorderRadius? borderRadius,
   }) {
     return (
       BuildContext context,
@@ -56,6 +112,8 @@ class SwiftPageTransitions {
         minScale: minScale,
         pageOverlapFraction: pageOverlapFraction,
         clipWithScreenRadius: clipWithScreenRadius,
+        radius: radius,
+        borderRadius: borderRadius,
         child: child,
       );
     };
@@ -70,6 +128,8 @@ class SwiftPageTransitions {
     double minScale = 0.95,
     double pageOverlapFraction = 0.20,
     bool clipWithScreenRadius = true,
+    double? radius,
+    BorderRadius? borderRadius,
     double? backGestureWidth,
     Duration transitionDuration = const Duration(milliseconds: 400),
   }) {
@@ -79,6 +139,8 @@ class SwiftPageTransitions {
       minScale: minScale,
       pageOverlapFraction: pageOverlapFraction,
       clipWithScreenRadius: clipWithScreenRadius,
+      radius: radius,
+      borderRadius: borderRadius,
       backGestureWidth: backGestureWidth,
       customTransitionDuration: transitionDuration,
     );
@@ -93,6 +155,8 @@ class SwiftPageRoute<T> extends PageRoute<T>
     this.minScale = 0.95,
     this.pageOverlapFraction = 0.20,
     this.clipWithScreenRadius = true,
+    this.radius,
+    this.borderRadius,
     this.backGestureWidth,
     this.customTransitionDuration,
   }) : super(settings: settings);
@@ -101,6 +165,8 @@ class SwiftPageRoute<T> extends PageRoute<T>
   final double minScale;
   final double pageOverlapFraction;
   final bool clipWithScreenRadius;
+  final double? radius;
+  final BorderRadius? borderRadius;
   final double? backGestureWidth;
   final Duration? customTransitionDuration;
 
@@ -120,6 +186,8 @@ class SwiftPageRoute<T> extends PageRoute<T>
       nextRoute.previousRoute = this;
     } else if (nextRoute is SwiftSheetRoute) {
       nextRoute.previousRoute = this;
+    } else if (nextRoute is SwiftSheetStackRoute) {
+      (nextRoute as SwiftSheetStackRoute).previousRoute = this;
     }
   }
 
@@ -163,6 +231,8 @@ class SwiftPageRoute<T> extends PageRoute<T>
       minScale: minScale,
       pageOverlapFraction: pageOverlapFraction,
       clipWithScreenRadius: clipWithScreenRadius,
+      radius: radius,
+      borderRadius: borderRadius,
     )(context, animation, secondaryAnimation, child);
 
     // We MUST always return _SwiftBackGestureDetector in the tree, otherwise it will
@@ -182,6 +252,8 @@ class _SwiftPageRouteTransition extends StatefulWidget {
     required this.minScale,
     required this.pageOverlapFraction,
     required this.clipWithScreenRadius,
+    required this.radius,
+    required this.borderRadius,
     required this.child,
   });
 
@@ -190,6 +262,8 @@ class _SwiftPageRouteTransition extends StatefulWidget {
   final double minScale;
   final double pageOverlapFraction;
   final bool clipWithScreenRadius;
+  final double? radius;
+  final BorderRadius? borderRadius;
   final Widget child;
 
   @override
@@ -201,6 +275,7 @@ class _SwiftPageRouteTransitionState extends State<_SwiftPageRouteTransition> {
   late CurvedAnimation _primaryCurve;
   late CurvedAnimation _secondaryCurve;
   bool _wasNextRouteSheet = false;
+  double _lastSheetBackgroundProgress = 1.0;
 
   @override
   void initState() {
@@ -244,6 +319,13 @@ class _SwiftPageRouteTransitionState extends State<_SwiftPageRouteTransition> {
     super.dispose();
   }
 
+  BorderRadius _borderRadiusForMovement({
+    required double progress,
+    required BorderRadius target,
+  }) {
+    return progress > precisionErrorTolerance ? target : BorderRadius.zero;
+  }
+
   @override
   Widget build(BuildContext context) {
     final route = ModalRoute.of(context);
@@ -269,11 +351,17 @@ class _SwiftPageRouteTransitionState extends State<_SwiftPageRouteTransition> {
     final int depth = _getRouteDepthAbove(route);
     final bool isOffstage = depth >= 3;
 
-    final bool isNextRouteSheet = nextRoute is SwiftSheetRoute;
+    final SwiftSheetStackRoute? nextStackRoute =
+        nextRoute is SwiftSheetStackRoute
+        ? nextRoute as SwiftSheetStackRoute
+        : null;
+    final bool isNextRouteSheet =
+        nextRoute is SwiftSheetRoute || nextStackRoute != null;
     if (isNextRouteSheet) {
       _wasNextRouteSheet = true;
     } else if (widget.secondaryAnimation.value == 0.0) {
       _wasNextRouteSheet = false;
+      _lastSheetBackgroundProgress = 1.0;
     }
     final bool activeNextRouteSheet =
         isNextRouteSheet ||
@@ -285,6 +373,7 @@ class _SwiftPageRouteTransitionState extends State<_SwiftPageRouteTransition> {
         animation: Listenable.merge([
           currentPrimary,
           currentSecondary,
+          if (nextStackRoute != null) nextStackRoute.sheetExtentListenable,
           if (widget.clipWithScreenRadius) ScreenRadiusService.instance,
         ]),
         builder: (context, child) {
@@ -295,26 +384,38 @@ class _SwiftPageRouteTransitionState extends State<_SwiftPageRouteTransition> {
               topPadding + SwiftPageTransitions.sheetTopOffsetPadding,
             );
 
-            final double s = currentSecondary.value;
+            final double sheetProgress;
+            if (nextStackRoute != null) {
+              sheetProgress = SwiftPageTransitions.sheetBackgroundProgressFor(
+                nextStackRoute.sheetExtent,
+              );
+              _lastSheetBackgroundProgress = sheetProgress;
+            } else if (isNextRouteSheet) {
+              sheetProgress = 1.0;
+              _lastSheetBackgroundProgress = sheetProgress;
+            } else {
+              sheetProgress = _lastSheetBackgroundProgress;
+            }
+            final double s = currentSecondary.value * sheetProgress;
 
             final double translationX = (1.0 - currentPrimary.value) * width;
             final double translationY =
                 s * (topOffset - SwiftPageTransitions.backgroundOffsetStep);
             final double scale = 1.0 - (s * SwiftPageTransitions.scaleStep);
 
-            final BorderRadius screenBorderRadius = widget.clipWithScreenRadius
-                ? ScreenRadiusService.instance.radius
-                : BorderRadius.zero;
+            final BorderRadius targetBorderRadius =
+                SwiftPageTransitions.resolveSheetBorderRadius(
+                  context,
+                  radius: SwiftPageTransitions.sheetBackgroundRadius,
+                  borderRadius:
+                      SwiftPageTransitions.sheetBackgroundBorderRadius,
+                  useScreenRadius: true,
+                );
 
-            final BorderRadius targetBorderRadius = BorderRadius.vertical(
-              top: Radius.circular(SwiftPageTransitions.sheetBackgroundRadius),
+            final BorderRadius borderRadius = _borderRadiusForMovement(
+              progress: s,
+              target: targetBorderRadius,
             );
-
-            final BorderRadius borderRadius = BorderRadius.lerp(
-              screenBorderRadius,
-              targetBorderRadius,
-              currentSecondary.value,
-            )!;
 
             Widget transitionChild = Transform.translate(
               offset: Offset(translationX, translationY),
@@ -329,7 +430,7 @@ class _SwiftPageRouteTransitionState extends State<_SwiftPageRouteTransition> {
               ),
             );
 
-            if (currentSecondary.value > 0) {
+            if (s > precisionErrorTolerance) {
               transitionChild = Stack(
                 children: [
                   transitionChild,
@@ -339,7 +440,7 @@ class _SwiftPageRouteTransitionState extends State<_SwiftPageRouteTransition> {
                         decoration: BoxDecoration(
                           borderRadius: borderRadius,
                           color: CupertinoColors.black.withAlpha(
-                            (currentSecondary.value *
+                            (s *
                                     SwiftPageTransitions
                                         .sheetBackgroundDimmingOpacity *
                                     255)
@@ -353,7 +454,7 @@ class _SwiftPageRouteTransitionState extends State<_SwiftPageRouteTransition> {
               );
             }
 
-            if (currentSecondary.value > 0) {
+            if (s > precisionErrorTolerance) {
               transitionChild = Container(
                 decoration: BoxDecoration(
                   color: CupertinoColors.black,
@@ -370,19 +471,40 @@ class _SwiftPageRouteTransitionState extends State<_SwiftPageRouteTransition> {
                 currentSecondary.value * width * widget.pageOverlapFraction;
             final double scale =
                 1.0 - (1.0 - widget.minScale) * currentSecondary.value;
-
-            Widget transitionChild = Transform.translate(
-              offset: Offset(translationX, 0.0),
-              child: Transform.scale(scale: scale, child: child),
+            final double radiusProgress = math.max(
+              (1.0 - currentPrimary.value).abs(),
+              currentSecondary.value,
             );
 
-            if (widget.clipWithScreenRadius) {
-              transitionChild = ClipRRect(
-                borderRadius: ScreenRadiusService.instance.radius,
-                clipBehavior: Clip.antiAlias,
-                child: transitionChild,
-              );
-            }
+            final shouldClip =
+                widget.clipWithScreenRadius ||
+                widget.radius != null ||
+                widget.borderRadius != null;
+            final targetBorderRadius = shouldClip
+                ? SwiftPageTransitions.resolveBorderRadius(
+                    context,
+                    radius: widget.radius,
+                    borderRadius: widget.borderRadius,
+                    useScreenRadius: widget.clipWithScreenRadius,
+                  )
+                : BorderRadius.zero;
+            final borderRadius = _borderRadiusForMovement(
+              progress: radiusProgress,
+              target: targetBorderRadius,
+            );
+
+            final clippedChild = shouldClip
+                ? ClipRRect(
+                    borderRadius: borderRadius,
+                    clipBehavior: Clip.antiAlias,
+                    child: child,
+                  )
+                : child;
+
+            final transitionChild = Transform.translate(
+              offset: Offset(translationX, 0.0),
+              child: Transform.scale(scale: scale, child: clippedChild),
+            );
 
             return transitionChild;
           }

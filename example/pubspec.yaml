@@ -40,6 +40,7 @@ dependencies:
   swiftuikit:
     path: ../
   go_router_animated_branch: ^0.1.2
+  sliver_tools: ^0.2.12
 
 dev_dependencies:
   flutter_test:

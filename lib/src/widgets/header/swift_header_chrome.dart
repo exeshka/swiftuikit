@@ -49,10 +49,10 @@ class SwiftPinnedHeaderChrome extends StatefulWidget {
   ) {
     if (state.totalHeight == 0) return null;
 
-    return const LinearGradient(
+    return LinearGradient(
       begin: Alignment.topCenter,
       end: Alignment.bottomCenter,
-      colors: [Colors.white, Colors.transparent],
+      colors: [Theme.of(context).colorScheme.surface, Colors.transparent],
       stops: [0, 1],
     );
   }

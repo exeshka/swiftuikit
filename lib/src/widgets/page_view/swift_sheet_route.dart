@@ -22,7 +22,8 @@ class SwiftSheetRoute<T> extends PageRoute<T>
   SwiftSheetRoute({
     required this.child,
     required RouteSettings settings,
-    this.sheetRadius = 16.0,
+    this.sheetRadius,
+    this.sheetBorderRadius,
     this.sheetMinScale = 0.92,
     this.transitionDurationOverride = const Duration(milliseconds: 400),
   }) : super(settings: settings);
@@ -31,7 +32,11 @@ class SwiftSheetRoute<T> extends PageRoute<T>
   final Widget child;
 
   /// Top corners radius of the sheet container.
-  final double sheetRadius;
+  final double? sheetRadius;
+
+  /// Full border radius of the sheet container.
+  /// If null, [sheetRadius] is used, then the device screen radius.
+  final BorderRadius? sheetBorderRadius;
 
   /// Min scale of this sheet when another sheet is pushed on top.
   final double sheetMinScale;
@@ -55,6 +60,8 @@ class SwiftSheetRoute<T> extends PageRoute<T>
       nextRoute.previousRoute = this;
     } else if (nextRoute is SwiftSheetRoute) {
       nextRoute.previousRoute = this;
+    } else if (nextRoute is SwiftSheetStackRoute) {
+      (nextRoute as SwiftSheetStackRoute).previousRoute = this;
     }
   }
 
@@ -109,6 +116,7 @@ class SwiftSheetRoute<T> extends PageRoute<T>
       animation: animation,
       secondaryAnimation: secondaryAnimation,
       sheetRadius: sheetRadius,
+      sheetBorderRadius: sheetBorderRadius,
       sheetMinScale: sheetMinScale,
       child: child,
     );
@@ -121,6 +129,7 @@ class _SwiftSheetRouteTransition extends StatefulWidget {
     required this.animation,
     required this.secondaryAnimation,
     required this.sheetRadius,
+    required this.sheetBorderRadius,
     required this.sheetMinScale,
     required this.child,
   });
@@ -128,7 +137,8 @@ class _SwiftSheetRouteTransition extends StatefulWidget {
   final SwiftSheetRoute route;
   final Animation<double> animation;
   final Animation<double> secondaryAnimation;
-  final double sheetRadius;
+  final double? sheetRadius;
+  final BorderRadius? sheetBorderRadius;
   final double sheetMinScale;
   final Widget child;
 
@@ -184,6 +194,15 @@ class _SwiftSheetRouteTransitionState
     super.dispose();
   }
 
+  BorderRadius _sheetBorderRadius(BuildContext context) {
+    return BorderRadius.vertical(top: Radius.circular(32));
+    return SwiftPageTransitions.resolveSheetBorderRadius(
+      context,
+      radius: widget.sheetRadius,
+      borderRadius: widget.sheetBorderRadius,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final route = widget.route;
@@ -235,15 +254,7 @@ class _SwiftSheetRouteTransitionState
 
             final double offsetY = primaryOffsetY + secondaryOffsetY;
 
-            final double screenRadius =
-                ScreenRadiusService.instance.radius.topLeft.x;
-            final double resolvedRadius = screenRadius > 0.0
-                ? screenRadius
-                : widget.sheetRadius;
-
-            final borderRadius = BorderRadius.vertical(
-              top: Radius.circular(resolvedRadius),
-            );
+            final borderRadius = _sheetBorderRadius(context);
 
             Widget sheetWidget = Container(
               decoration: BoxDecoration(
@@ -259,7 +270,7 @@ class _SwiftSheetRouteTransitionState
               ),
               child: ClipRRect(
                 borderRadius: borderRadius,
-                clipBehavior: Clip.antiAlias,
+                clipBehavior: Clip.hardEdge,
                 child: Container(
                   color: Theme.of(context).scaffoldBackgroundColor,
                   child: widget.child,
@@ -267,41 +278,41 @@ class _SwiftSheetRouteTransitionState
               ),
             );
 
-            // If another sheet is stacked on top, apply dimming overlay
-            if (currentSecondary.value > 0) {
-              sheetWidget = Stack(
-                children: [
-                  sheetWidget,
-                  Positioned.fill(
-                    child: IgnorePointer(
-                      child: Container(
-                        decoration: BoxDecoration(
-                          borderRadius: borderRadius,
-                          color: Colors.black.withAlpha(
-                            (currentSecondary.value *
-                                    SwiftPageTransitions
-                                        .sheetBackgroundDimmingOpacity *
-                                    255)
-                                .round(),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              );
-            }
+            // // If another sheet is stacked on top, apply dimming overlay
+            // if (currentSecondary.value > 0) {
+            //   sheetWidget = Stack(
+            //     children: [
+            //       sheetWidget,
+            //       Positioned.fill(
+            //         child: IgnorePointer(
+            //           child: Container(
+            //             decoration: BoxDecoration(
+            //               borderRadius: borderRadius,
+            //               color: Colors.black.withAlpha(
+            //                 (currentSecondary.value *
+            //                         SwiftPageTransitions
+            //                             .sheetBackgroundDimmingOpacity *
+            //                         255)
+            //                     .round(),
+            //               ),
+            //             ),
+            //           ),
+            //         ),
+            //       ),
+            //     ],
+            //   );
+            // }
 
-            // If scaled down, wrap with a black background container to prevent see-through gaps
-            if (currentSecondary.value > 0) {
-              sheetWidget = Container(
-                decoration: BoxDecoration(
-                  color: Colors.black,
-                  borderRadius: borderRadius,
-                ),
-                child: sheetWidget,
-              );
-            }
+            // // If scaled down, wrap with a black background container to prevent see-through gaps
+            // if (currentSecondary.value > 0) {
+            //   sheetWidget = Container(
+            //     decoration: BoxDecoration(
+            //       color: Colors.black,
+            //       borderRadius: borderRadius,
+            //     ),
+            //     child: sheetWidget,
+            //   );
+            // }
 
             return Transform.translate(
               offset: Offset(0.0, offsetY),
@@ -753,6 +764,8 @@ int _getRouteDepthAbove(Route? route) {
       next = current.nextRoute;
     } else if (current is SwiftSheetRoute) {
       next = current.nextRoute;
+    } else if (current is SwiftSheetStackRoute) {
+      next = (current as SwiftSheetStackRoute).nextRoute;
     }
     if (next == null) break;
     depth++;

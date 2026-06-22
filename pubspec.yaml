@@ -10,6 +10,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  auto_route:
   inspire_blur: ^0.1.0
   screen_corner_radius: ^3.0.0
 
