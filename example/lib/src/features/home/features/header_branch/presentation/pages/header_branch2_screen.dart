@@ -1,7 +1,6 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:example/src/core/router/router.gr.dart';
 import 'package:flutter/material.dart';
-import 'package:swiftuikit/swiftuikit.dart';
 
 @RoutePage()
 class HeaderBranch2Screen extends StatelessWidget {

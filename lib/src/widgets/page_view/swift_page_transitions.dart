@@ -20,6 +20,14 @@ class SwiftPageTransitions {
   /// e.g. 0.08 means level 0 = 1.0, level 1 = 0.92, level 2 = 0.84.
   static double scaleStep = 0.08;
 
+  /// Top radius applied to routes when they move into the sheet background.
+  /// The original Cupertino sheet package uses 32.0.
+  static double sheetBackgroundRadius = 32.0;
+
+  /// Dimming opacity applied to background routes while a sheet is above them.
+  /// The original Cupertino sheet package uses 0.10.
+  static double sheetBackgroundDimmingOpacity = 0.10;
+
   /// Default transitions builder that can be used directly with auto_route or standard routing.
   static Widget builder(
     BuildContext context,
@@ -298,8 +306,8 @@ class _SwiftPageRouteTransitionState extends State<_SwiftPageRouteTransition> {
                 ? ScreenRadiusService.instance.radius
                 : BorderRadius.zero;
 
-            final BorderRadius targetBorderRadius = const BorderRadius.vertical(
-              top: Radius.circular(16.0),
+            final BorderRadius targetBorderRadius = BorderRadius.vertical(
+              top: Radius.circular(SwiftPageTransitions.sheetBackgroundRadius),
             );
 
             final BorderRadius borderRadius = BorderRadius.lerp(
@@ -331,7 +339,11 @@ class _SwiftPageRouteTransitionState extends State<_SwiftPageRouteTransition> {
                         decoration: BoxDecoration(
                           borderRadius: borderRadius,
                           color: CupertinoColors.black.withAlpha(
-                            (currentSecondary.value * 0.15 * 255).round(),
+                            (currentSecondary.value *
+                                    SwiftPageTransitions
+                                        .sheetBackgroundDimmingOpacity *
+                                    255)
+                                .round(),
                           ),
                         ),
                       ),

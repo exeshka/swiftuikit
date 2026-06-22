@@ -1,7 +1,6 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:example/src/core/router/router.gr.dart';
 import 'package:flutter/material.dart';
-import 'package:swiftuikit/swiftuikit.dart';
 
 @RoutePage()
 class HeaderBranchScreen extends StatelessWidget {
@@ -10,6 +9,7 @@ class HeaderBranchScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.yellow,
       body: CustomScrollView(
         slivers: [
           SliverToBoxAdapter(

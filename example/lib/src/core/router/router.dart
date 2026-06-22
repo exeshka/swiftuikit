@@ -20,7 +20,12 @@ Route<T> swiftSheetRouteBuilder<T>(
   Widget child,
   AutoRoutePage<T> page,
 ) {
-  return SwiftSheetRoute<T>(child: child, settings: page);
+  return SwiftSheetRoute<T>(
+    child: child,
+    settings: page,
+    // sheetRadius: 32,
+    // sheetMinScale: 0.9,
+  );
 }
 
 @AutoRouterConfig(replaceInRouteName: 'Screen|Page,Route')
