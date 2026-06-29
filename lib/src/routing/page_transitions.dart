@@ -3,13 +3,16 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 
-import '../../services/screen_radius_service.dart';
-import 'swift_sheet_route.dart';
+import 'package:swiftuikit/src/services/screen_radius_service.dart';
+import 'package:swiftuikit/src/routing/sheet_route.dart';
+import 'package:swiftuikit/src/routing/modal_route.dart';
 
 abstract interface class SwiftSheetStackRoute {
   Route? get nextRoute;
   Route? get previousRoute;
   set previousRoute(Route? route);
+  double? get sheetRadius;
+  BorderRadius? get sheetBorderRadius;
   ValueListenable<double> get sheetExtentListenable;
   double get sheetExtent;
 }
@@ -131,6 +134,7 @@ class SwiftPageTransitions {
     double? radius,
     BorderRadius? borderRadius,
     double? backGestureWidth,
+    bool routeCanPop = true,
     Duration transitionDuration = const Duration(milliseconds: 400),
   }) {
     return SwiftPageRoute<T>(
@@ -142,6 +146,7 @@ class SwiftPageTransitions {
       radius: radius,
       borderRadius: borderRadius,
       backGestureWidth: backGestureWidth,
+      routeCanPop: routeCanPop,
       customTransitionDuration: transitionDuration,
     );
   }
@@ -158,6 +163,7 @@ class SwiftPageRoute<T> extends PageRoute<T>
     this.radius,
     this.borderRadius,
     this.backGestureWidth,
+    this.routeCanPop = true,
     this.customTransitionDuration,
   }) : super(settings: settings);
 
@@ -168,6 +174,7 @@ class SwiftPageRoute<T> extends PageRoute<T>
   final double? radius;
   final BorderRadius? borderRadius;
   final double? backGestureWidth;
+  final bool routeCanPop;
   final Duration? customTransitionDuration;
 
   Route? _nextRoute;
@@ -211,6 +218,12 @@ class SwiftPageRoute<T> extends PageRoute<T>
 
   @override
   bool get maintainState => true;
+
+  @override
+  RoutePopDisposition get popDisposition {
+    if (!routeCanPop) return RoutePopDisposition.doNotPop;
+    return super.popDisposition;
+  }
 
   @override
   Duration get transitionDuration =>
@@ -275,7 +288,9 @@ class _SwiftPageRouteTransitionState extends State<_SwiftPageRouteTransition> {
   late CurvedAnimation _primaryCurve;
   late CurvedAnimation _secondaryCurve;
   bool _wasNextRouteSheet = false;
+  bool _wasNextRouteModal = false;
   double _lastSheetBackgroundProgress = 1.0;
+  BorderRadius? _lastSheetBackgroundBorderRadius;
 
   @override
   void initState() {
@@ -326,6 +341,31 @@ class _SwiftPageRouteTransitionState extends State<_SwiftPageRouteTransition> {
     return progress > precisionErrorTolerance ? target : BorderRadius.zero;
   }
 
+  BorderRadius _resolveSheetBackgroundBorderRadius(
+    BuildContext context,
+    Route? nextRoute,
+  ) {
+    BorderRadius? borderRadius;
+    double? radius;
+
+    if (nextRoute is SwiftSheetRoute) {
+      borderRadius = nextRoute.sheetBorderRadius;
+      radius = nextRoute.sheetRadius;
+    } else if (nextRoute is SwiftSheetStackRoute) {
+      final stackRoute = nextRoute as SwiftSheetStackRoute;
+      borderRadius = stackRoute.sheetBorderRadius;
+      radius = stackRoute.sheetRadius;
+    }
+
+    return SwiftPageTransitions.resolveSheetBorderRadius(
+      context,
+      radius: radius ?? SwiftPageTransitions.sheetBackgroundRadius,
+      borderRadius:
+          borderRadius ?? SwiftPageTransitions.sheetBackgroundBorderRadius,
+      useScreenRadius: true,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final route = ModalRoute.of(context);
@@ -359,13 +399,20 @@ class _SwiftPageRouteTransitionState extends State<_SwiftPageRouteTransition> {
         nextRoute is SwiftSheetRoute || nextStackRoute != null;
     if (isNextRouteSheet) {
       _wasNextRouteSheet = true;
-    } else if (widget.secondaryAnimation.value == 0.0) {
+    } else {
       _wasNextRouteSheet = false;
       _lastSheetBackgroundProgress = 1.0;
     }
     final bool activeNextRouteSheet =
         isNextRouteSheet ||
         (_wasNextRouteSheet && widget.secondaryAnimation.value > 0.0);
+
+    final bool isNextRouteModal = nextRoute is SwiftModalRoute;
+    if (isNextRouteModal) {
+      _wasNextRouteModal = true;
+    } else if (widget.secondaryAnimation.value == 0.0) {
+      _wasNextRouteModal = false;
+    }
 
     return Offstage(
       offstage: isOffstage,
@@ -403,14 +450,14 @@ class _SwiftPageRouteTransitionState extends State<_SwiftPageRouteTransition> {
                 s * (topOffset - SwiftPageTransitions.backgroundOffsetStep);
             final double scale = 1.0 - (s * SwiftPageTransitions.scaleStep);
 
+            if (isNextRouteSheet) {
+              _lastSheetBackgroundBorderRadius =
+                  _resolveSheetBackgroundBorderRadius(context, nextRoute);
+            }
+
             final BorderRadius targetBorderRadius =
-                SwiftPageTransitions.resolveSheetBorderRadius(
-                  context,
-                  radius: SwiftPageTransitions.sheetBackgroundRadius,
-                  borderRadius:
-                      SwiftPageTransitions.sheetBackgroundBorderRadius,
-                  useScreenRadius: true,
-                );
+                _lastSheetBackgroundBorderRadius ??
+                _resolveSheetBackgroundBorderRadius(context, nextRoute);
 
             final BorderRadius borderRadius = _borderRadiusForMovement(
               progress: s,
@@ -466,14 +513,21 @@ class _SwiftPageRouteTransitionState extends State<_SwiftPageRouteTransition> {
 
             return transitionChild;
           } else {
+            // When a modal route is pushed on top, don't animate this page.
+            final bool skipSecondary =
+                isNextRouteModal ||
+                (_wasNextRouteModal && currentSecondary.value > 0.0);
+            final double secondaryValue =
+                skipSecondary ? 0.0 : currentSecondary.value;
+
             final double translationX =
                 (1.0 - currentPrimary.value) * width -
-                currentSecondary.value * width * widget.pageOverlapFraction;
+                secondaryValue * width * widget.pageOverlapFraction;
             final double scale =
-                1.0 - (1.0 - widget.minScale) * currentSecondary.value;
+                1.0 - (1.0 - widget.minScale) * secondaryValue;
             final double radiusProgress = math.max(
               (1.0 - currentPrimary.value).abs(),
-              currentSecondary.value,
+              secondaryValue,
             );
 
             final shouldClip =
@@ -731,6 +785,8 @@ int _getRouteDepthAbove(Route? route) {
       next = current.nextRoute;
     } else if (current is SwiftSheetRoute) {
       next = current.nextRoute;
+    } else if (current is SwiftSheetStackRoute) {
+      next = (current as SwiftSheetStackRoute).nextRoute;
     }
     if (next == null) break;
     depth++;

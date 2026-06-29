@@ -1,28 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/physics.dart';
-import 'package:swiftuikit/src/core/widgets/motion_blur.dart';
-import 'package:swiftuikit/src/widgets/toolbar/toolbar_button.dart';
-import 'package:swiftuikit/src/widgets/toolbar/toolbar_item_group.dart';
+import 'package:swiftuikit/src/primitives/motion_blur.dart';
 
-Widget motionChild(Widget child) {
-  if (child is Row) {
-    return MotionBlurRow(
-      mainAxisAlignment: child.mainAxisAlignment,
-      mainAxisSize: child.mainAxisSize,
-      crossAxisAlignment: child.crossAxisAlignment,
-      textDirection: child.textDirection,
-      verticalDirection: child.verticalDirection,
-      textBaseline: child.textBaseline,
-      spacing: child.spacing,
-      clipMotion: false,
-      children: child.children,
-    );
-  }
-
-  return child;
-}
-
-String motionSignature(Widget widget) {
+String defaultMotionSignature(Widget widget) {
   final key = widget.key;
   final keyPart = key == null ? '' : '#$key';
 
@@ -30,34 +10,22 @@ String motionSignature(Widget widget) {
     return widget.signature;
   }
 
-  if (widget is ToolbarItemGroup) {
-    return '${widget.runtimeType}$keyPart';
-  }
-
-  if (widget is MotionBlurRow) {
-    return '${widget.runtimeType}$keyPart';
-  }
-
-  if (widget is ToolbarButton) {
-    return '${widget.runtimeType}$keyPart(${motionSignature(widget.child)})';
-  }
-
   if (widget is Flex) {
-    return '${widget.runtimeType}$keyPart(${widget.children.map(motionSignature).join(',')})';
+    return '${widget.runtimeType}$keyPart(${widget.children.map(defaultMotionSignature).join(',')})';
   }
 
   if (widget is Center) {
     final child = widget.child;
-    return '${widget.runtimeType}$keyPart(${child == null ? '' : motionSignature(child)})';
+    return '${widget.runtimeType}$keyPart(${child == null ? '' : defaultMotionSignature(child)})';
   }
 
   if (widget is Padding) {
     final child = widget.child;
-    return '${widget.runtimeType}$keyPart(${child == null ? '' : motionSignature(child)})';
+    return '${widget.runtimeType}$keyPart(${child == null ? '' : defaultMotionSignature(child)})';
   }
 
   if (widget is DefaultTextStyle) {
-    return '${widget.runtimeType}$keyPart(${motionSignature(widget.child)})';
+    return '${widget.runtimeType}$keyPart(${defaultMotionSignature(widget.child)})';
   }
 
   if (widget is Text) {
@@ -68,8 +36,29 @@ String motionSignature(Widget widget) {
     return '${widget.runtimeType}$keyPart(${widget.icon?.codePoint})';
   }
 
+  if (widget is SizedBox) {
+    final child = widget.child;
+    return '${widget.runtimeType}$keyPart(${child == null ? '' : defaultMotionSignature(child)})';
+  }
+
+  if (widget is IgnorePointer) {
+    final child = widget.child;
+    return '${widget.runtimeType}$keyPart(${child == null ? '' : defaultMotionSignature(child)})';
+  }
+
+  if (widget is Opacity) {
+    final child = widget.child;
+    return '${widget.runtimeType}$keyPart(${child == null ? '' : defaultMotionSignature(child)})';
+  }
+
+  if (widget is Hero) {
+    return '${widget.runtimeType}$keyPart(${defaultMotionSignature(widget.child)})';
+  }
+
   return '${widget.runtimeType}$keyPart';
 }
+
+Widget defaultMotionChild(Widget child) => child;
 
 class MotionBlurRow extends StatefulWidget {
   const MotionBlurRow({
@@ -83,6 +72,7 @@ class MotionBlurRow extends StatefulWidget {
     required this.clipMotion,
     this.textDirection,
     this.textBaseline,
+    this.signatureFn = defaultMotionSignature,
   });
 
   final List<Widget> children;
@@ -94,6 +84,7 @@ class MotionBlurRow extends StatefulWidget {
   final TextBaseline? textBaseline;
   final double spacing;
   final bool clipMotion;
+  final String Function(Widget) signatureFn;
 
   @override
   State<MotionBlurRow> createState() => _MotionBlurRowState();
@@ -104,14 +95,16 @@ class _MotionBlurRowState extends State<MotionBlurRow> {
   final List<_MotionBlurRowSlot> _slots = [];
   var _nextSlotId = 0;
 
+  String _signature(Widget child) => widget.signatureFn(child);
+
   List<Widget> _buildLogicalChildren(List<Widget> children, double spacing) {
     if (children.isEmpty) return const [];
     final List<Widget> result = [];
     for (var i = 0; i < children.length; i++) {
       result.add(children[i]);
       if (i < children.length - 1) {
-        final leftSig = motionSignature(children[i]);
-        final rightSig = motionSignature(children[i + 1]);
+        final leftSig = _signature(children[i]);
+        final rightSig = _signature(children[i + 1]);
         result.add(
           _MotionBlurSpacer(
             width: spacing,
@@ -134,7 +127,7 @@ class _MotionBlurRowState extends State<MotionBlurRow> {
       _slots.add(
         _MotionBlurRowSlot(
           id: _nextSlotId++,
-          signature: motionSignature(child),
+          signature: _signature(child),
           child: child,
           visible: true,
         ),
@@ -157,7 +150,7 @@ class _MotionBlurRowState extends State<MotionBlurRow> {
         .map(
           (child) => _MotionBlurRowSlot(
             id: -1,
-            signature: motionSignature(child),
+            signature: _signature(child),
             child: child,
             visible: true,
           ),

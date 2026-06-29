@@ -19,15 +19,11 @@ class SwiftPinnedHeaderChrome extends StatefulWidget {
     required this.child,
     this.chromeBuilder = _defaultChromeBuilder,
     this.contentOpacityGradientBuilder = _defaultContentOpacityGradientBuilder,
-    this.chromeAnimationDuration = const Duration(milliseconds: 260),
-    this.chromeAnimationCurve = Curves.easeOutCubic,
   });
 
   final Widget child;
   final SwiftPinnedHeaderChromeBuilder chromeBuilder;
   final SwiftPinnedHeaderOpacityGradientBuilder contentOpacityGradientBuilder;
-  final Duration chromeAnimationDuration;
-  final Curve chromeAnimationCurve;
 
   @override
   State<SwiftPinnedHeaderChrome> createState() =>
@@ -37,24 +33,15 @@ class SwiftPinnedHeaderChrome extends StatefulWidget {
     BuildContext context,
     SwiftPinnedHeaderChromeSnapshot state,
   ) {
-    return SwiftProgressiveBlurChrome(
-      height: state.totalHeight,
-      maxBlurSigma: 20,
-    );
+    if (state.animatedHeight <= 0) return const SizedBox.shrink();
+    return ColoredBox(color: Colors.red.withAlpha(120));
   }
 
   static LinearGradient? _defaultContentOpacityGradientBuilder(
     BuildContext context,
     SwiftPinnedHeaderChromeSnapshot state,
   ) {
-    if (state.totalHeight == 0) return null;
-
-    return LinearGradient(
-      begin: Alignment.topCenter,
-      end: Alignment.bottomCenter,
-      colors: [Theme.of(context).colorScheme.surface, Colors.transparent],
-      stops: [0, 1],
-    );
+    return null;
   }
 }
 
@@ -125,14 +112,6 @@ class _SwiftPinnedHeaderChromeState extends State<SwiftPinnedHeaderChrome> {
 
   @override
   Widget build(BuildContext context) {
-    final route = ModalRoute.of(context);
-    final animation = route?.animation;
-    final secondaryAnimation = route?.secondaryAnimation;
-    final transitionListenable = Listenable.merge([
-      ?animation,
-      ?secondaryAnimation,
-    ]);
-
     return SwiftPinnedHeaderChromeScope(
       controller: _controller,
       child: Stack(
@@ -141,93 +120,21 @@ class _SwiftPinnedHeaderChromeState extends State<SwiftPinnedHeaderChrome> {
           AnimatedBuilder(
             animation: _controller,
             builder: (context, _) {
-              final snapshot = _controller.snapshot;
-              return _AnimatedChromeLayer(
-                snapshot: snapshot,
-                duration: widget.chromeAnimationDuration,
-                curve: widget.chromeAnimationCurve,
-                builder: (context, animatedSnapshot) {
-                  final opacityGradient = widget.contentOpacityGradientBuilder(
-                    context,
-                    animatedSnapshot,
-                  );
-                  if (animatedSnapshot.totalHeight == 0 ||
-                      opacityGradient == null) {
-                    return const SizedBox.shrink();
-                  }
+              final ah = _controller.snapshot.totalHeight;
+              _controller.animatedHeight = ah;
 
-                  return Positioned(
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    height: animatedSnapshot.totalHeight,
-                    child: IgnorePointer(
-                      child: RepaintBoundary(
-                        child: DecoratedBox(
-                          decoration: BoxDecoration(gradient: opacityGradient),
-                        ),
-                      ),
-                    ),
-                  );
-                },
-              );
-            },
-          ),
-          AnimatedBuilder(
-            animation: _controller,
-            builder: (context, _) {
-              final snapshot = _controller.snapshot;
-              return _AnimatedChromeLayer(
-                snapshot: snapshot,
-                duration: widget.chromeAnimationDuration,
-                curve: widget.chromeAnimationCurve,
-                builder: (context, animatedSnapshot) {
-                  return Positioned(
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    height: animatedSnapshot.totalHeight,
-                    child: IgnorePointer(
-                      child: RepaintBoundary(
-                        child: widget.chromeBuilder(context, animatedSnapshot),
-                      ),
-                    ),
-                  );
-                },
-              );
-            },
-          ),
-          AnimatedBuilder(
-            animation: Listenable.merge([_controller, transitionListenable]),
-            builder: (context, _) {
-              final snapshot = _controller.snapshot;
-              final isTransitioning =
-                  (animation != null &&
-                      !animation.isCompleted &&
-                      !animation.isDismissed) ||
-                  (secondaryAnimation != null &&
-                      !secondaryAnimation.isCompleted &&
-                      !secondaryAnimation.isDismissed);
+              if (ah <= 0) return const SizedBox.shrink();
 
-              return Stack(
-                children: [
-                  for (final entry in snapshot.entries)
-                    Positioned(
-                      top: 0,
-                      left: 0,
-                      child: CompositedTransformFollower(
-                        link: entry.link,
-                        showWhenUnlinked: false,
-                        child: Opacity(
-                          opacity: isTransitioning ? 0.0 : 1.0,
-                          child: IgnorePointer(
-                            ignoring: isTransitioning,
-                            child: entry.child,
-                          ),
-                        ),
-                      ),
-                    ),
-                ],
+              return Positioned(
+                top: 0,
+                left: 0,
+                right: 0,
+                height: ah,
+                child: IgnorePointer(
+                  child: RepaintBoundary(
+                    child: ColoredBox(color: Colors.red.withAlpha(120)),
+                  ),
+                ),
               );
             },
           ),
@@ -241,60 +148,26 @@ class SwiftPinnedHeaderChromeSnapshot {
   const SwiftPinnedHeaderChromeSnapshot({
     required this.entries,
     required this.totalHeight,
+    this.animatedHeight = 0,
   });
 
   final List<SwiftPinnedHeaderChromeEntry> entries;
   final double totalHeight;
-}
-
-typedef _AnimatedChromeLayerBuilder =
-    Widget Function(
-      BuildContext context,
-      SwiftPinnedHeaderChromeSnapshot state,
-    );
-
-class _AnimatedChromeLayer extends StatelessWidget {
-  const _AnimatedChromeLayer({
-    required this.snapshot,
-    required this.duration,
-    required this.curve,
-    required this.builder,
-  });
-
-  final SwiftPinnedHeaderChromeSnapshot snapshot;
-  final Duration duration;
-  final Curve curve;
-  final _AnimatedChromeLayerBuilder builder;
-
-  @override
-  Widget build(BuildContext context) {
-    return TweenAnimationBuilder<double>(
-      tween: Tween<double>(end: snapshot.totalHeight),
-      duration: duration,
-      curve: curve,
-      builder: (context, animatedHeight, _) {
-        return builder(
-          context,
-          SwiftPinnedHeaderChromeSnapshot(
-            entries: snapshot.entries,
-            totalHeight: animatedHeight,
-          ),
-        );
-      },
-    );
-  }
+  final double animatedHeight;
 }
 
 class SwiftPinnedHeaderChromeEntry {
   const SwiftPinnedHeaderChromeEntry({
     required this.id,
     required this.height,
+    required this.visibleHeight,
     required this.child,
     required this.link,
   });
 
   final Object id;
   final double height;
+  final double visibleHeight;
   final Widget child;
   final LayerLink link;
 }
@@ -303,6 +176,8 @@ class SwiftPinnedHeaderChromeController extends ChangeNotifier {
   final _entries = <Object, _SwiftPinnedHeaderChromeTrackedEntry>{};
   var _notifyScheduled = false;
 
+  double animatedHeight = 0;
+
   SwiftPinnedHeaderChromeSnapshot get snapshot {
     final entries = List<SwiftPinnedHeaderChromeEntry>.unmodifiable(
       _entries.values.map((entry) => entry.chromeEntry),
@@ -310,29 +185,40 @@ class SwiftPinnedHeaderChromeController extends ChangeNotifier {
 
     return SwiftPinnedHeaderChromeSnapshot(
       entries: entries,
-      totalHeight: entries.fold(0, (height, entry) => height + entry.height),
+      totalHeight: entries.fold(
+        0.0,
+        (sum, entry) => sum + entry.visibleHeight,
+      ),
+      animatedHeight: animatedHeight,
     );
   }
 
   void update({
     required Object id,
     required double height,
+    required double visibleHeight,
     required Widget child,
     required LayerLink link,
     required String signature,
-    required bool pinned,
+    bool replaceAll = false,
   }) {
-    if (!pinned) {
+    if (visibleHeight <= 0) {
       if (_entries.remove(id) != null) {
         _scheduleNotify();
       }
-
       return;
+    }
+
+    if (replaceAll) {
+      final hadEntries = _entries.isNotEmpty;
+      _entries.clear();
+      if (hadEntries) _scheduleNotify();
     }
 
     final existing = _entries[id];
     if (existing != null &&
         existing.chromeEntry.height == height &&
+        existing.chromeEntry.visibleHeight == visibleHeight &&
         existing.chromeEntry.link == link &&
         existing.signature == signature) {
       return;
@@ -343,6 +229,7 @@ class SwiftPinnedHeaderChromeController extends ChangeNotifier {
       chromeEntry: SwiftPinnedHeaderChromeEntry(
         id: id,
         height: height,
+        visibleHeight: visibleHeight,
         child: child,
         link: link,
       ),
@@ -374,13 +261,13 @@ class SwiftPinnedHeaderChromeController extends ChangeNotifier {
 }
 
 class _SwiftPinnedHeaderChromeTrackedEntry {
-  const _SwiftPinnedHeaderChromeTrackedEntry({
+  _SwiftPinnedHeaderChromeTrackedEntry({
     required this.signature,
     required this.chromeEntry,
   });
 
   final String signature;
-  final SwiftPinnedHeaderChromeEntry chromeEntry;
+  SwiftPinnedHeaderChromeEntry chromeEntry;
 }
 
 class SwiftPinnedHeaderChromeScope extends InheritedWidget {

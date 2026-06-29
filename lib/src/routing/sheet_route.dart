@@ -2,8 +2,8 @@ import 'dart:math' as math;
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import '../../services/screen_radius_service.dart';
-import 'swift_page_transitions.dart';
+import 'package:swiftuikit/src/services/screen_radius_service.dart';
+import 'package:swiftuikit/src/routing/page_transitions.dart';
 
 const bool _debugSheetGestureLogs = false;
 
@@ -25,6 +25,7 @@ class SwiftSheetRoute<T> extends PageRoute<T>
     this.sheetRadius,
     this.sheetBorderRadius,
     this.sheetMinScale = 0.92,
+    this.routeCanPop = true,
     this.transitionDurationOverride = const Duration(milliseconds: 400),
   }) : super(settings: settings);
 
@@ -40,6 +41,9 @@ class SwiftSheetRoute<T> extends PageRoute<T>
 
   /// Min scale of this sheet when another sheet is pushed on top.
   final double sheetMinScale;
+
+  /// Whether this route can be popped by system back and gestures.
+  final bool routeCanPop;
 
   /// Overridden transition duration.
   final Duration transitionDurationOverride;
@@ -97,6 +101,12 @@ class SwiftSheetRoute<T> extends PageRoute<T>
 
   @override
   bool get barrierDismissible => true;
+
+  @override
+  RoutePopDisposition get popDisposition {
+    if (!routeCanPop) return RoutePopDisposition.doNotPop;
+    return super.popDisposition;
+  }
 
   @override
   Duration get transitionDuration => transitionDurationOverride;
@@ -195,7 +205,6 @@ class _SwiftSheetRouteTransitionState
   }
 
   BorderRadius _sheetBorderRadius(BuildContext context) {
-    return BorderRadius.vertical(top: Radius.circular(32));
     return SwiftPageTransitions.resolveSheetBorderRadius(
       context,
       radius: widget.sheetRadius,
@@ -273,7 +282,11 @@ class _SwiftSheetRouteTransitionState
                 clipBehavior: Clip.hardEdge,
                 child: Container(
                   color: Theme.of(context).scaffoldBackgroundColor,
-                  child: widget.child,
+                  child: MediaQuery.removePadding(
+                    context: context,
+                    removeTop: true,
+                    child: widget.child,
+                  ),
                 ),
               ),
             );

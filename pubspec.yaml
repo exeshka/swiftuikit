@@ -1,6 +1,6 @@
 name: swiftuikit
 description: "A new Flutter package project."
-version: 0.0.1
+version: 0.1.0
 homepage:
 
 environment:
@@ -12,7 +12,9 @@ dependencies:
     sdk: flutter
   auto_route:
   inspire_blur: ^0.1.0
-  screen_corner_radius: ^3.0.0
+  screen_corner_radius:
+    git:
+      url: https://github.com/exeshka/screen_corner_radius
 
 dev_dependencies:
   flutter_test:

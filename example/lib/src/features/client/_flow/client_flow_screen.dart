@@ -41,6 +41,7 @@ class _ClientFlowScreenState extends State<ClientFlowScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.black,
       body: Stack(
         children: [
           Positioned.fill(
@@ -69,15 +70,13 @@ class _ClientFlowScreenState extends State<ClientFlowScreen> {
             left: 16,
             right: 16,
             bottom: 16,
-            child: SafeArea(
-              child: AnimatedBuilder(
-                animation: _pageController ?? PageController(),
-                builder: (context, _) => _ClientBottomNav(
-                  controller: _pageController ?? PageController(),
-                  onTap: (index) {
-                    _tabsRouter?.setActiveIndex(index);
-                  },
-                ),
+            child: AnimatedBuilder(
+              animation: _pageController ?? PageController(),
+              builder: (context, _) => _ClientBottomNav(
+                controller: _pageController ?? PageController(),
+                onTap: (index) {
+                  _tabsRouter?.setActiveIndex(index);
+                },
               ),
             ),
           ),

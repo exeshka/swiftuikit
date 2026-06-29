@@ -446,10 +446,11 @@ packages:
   screen_corner_radius:
     dependency: transitive
     description:
-      name: screen_corner_radius
-      sha256: "3e6465e9a0373852eb8af80bab2e972667b0302ed5b864366e5308158282e6f7"
-      url: "https://pub.dev"
-    source: hosted
+      path: "."
+      ref: HEAD
+      resolved-ref: "746d3bdc78c1a6938131daaeb35bacb886a2ada7"
+      url: "https://github.com/exeshka/screen_corner_radius"
+    source: git
     version: "3.0.0"
   shelf:
     dependency: transitive

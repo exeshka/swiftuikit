@@ -275,6 +275,3 @@ extension OffsetResistanceExtension on Offset {
     return this * (resistedMagnitude / magnitude);
   }
 }
-
-typedef LiquidStretch = MorphStretch;
-typedef RawLiquidStretch = RawMorphStretch;

@@ -25,11 +25,34 @@ start using the package.
 
 ## Usage
 
-TODO: Include short and useful examples for package users. Add longer examples
-to `/example` folder.
+Use `SwiftPage` from a `go_router` `pageBuilder` to apply the same iOS-style
+page transition used by the package routes:
 
 ```dart
-const like = 'sample';
+GoRoute(
+  path: '/post/:id',
+  pageBuilder: (context, state) {
+    return SwiftPage<void>(
+      key: state.pageKey,
+      name: state.name,
+      child: PostDetailScreen(id: state.pathParameters['id']!),
+    );
+  },
+);
+```
+
+Sheets are available through the same Navigator 2.0 page API:
+
+```dart
+GoRoute(
+  path: '/compose',
+  pageBuilder: (context, state) {
+    return SwiftSheetPage<void>(
+      key: state.pageKey,
+      child: ComposeScreen(),
+    );
+  },
+);
 ```
 
 ## Additional information

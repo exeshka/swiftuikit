@@ -5,9 +5,9 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
-import '../../services/screen_radius_service.dart';
-import 'swift_page_transitions.dart';
-import 'swift_sheet_route.dart';
+import 'package:swiftuikit/src/services/screen_radius_service.dart';
+import 'package:swiftuikit/src/routing/page_transitions.dart';
+import 'package:swiftuikit/src/routing/sheet_route.dart';
 
 List<double> _normalizeScrollSheetStops({
   required double initialStop,
@@ -152,6 +152,7 @@ class SwiftScrollSheetRoute<T> extends PageRoute<T>
     this.snapAnimationDuration = const Duration(milliseconds: 220),
     this.stickySnap = true,
     this.dismissOnMinStop = true,
+    this.routeCanPop = true,
     SwiftScrollSheetController? sheetController,
   }) : stops = _normalizeScrollSheetStops(
          initialStop: initialStop,
@@ -166,7 +167,9 @@ class SwiftScrollSheetRoute<T> extends PageRoute<T>
        super(settings: settings);
 
   final Widget child;
+  @override
   final double? sheetRadius;
+  @override
   final BorderRadius? sheetBorderRadius;
   final double sheetMinScale;
   final double initialStop;
@@ -175,6 +178,7 @@ class SwiftScrollSheetRoute<T> extends PageRoute<T>
   final Duration snapAnimationDuration;
   final bool stickySnap;
   final bool dismissOnMinStop;
+  final bool routeCanPop;
   final SwiftScrollSheetController sheetController;
   final bool _ownsSheetController;
 
@@ -250,6 +254,12 @@ class SwiftScrollSheetRoute<T> extends PageRoute<T>
 
   @override
   bool get barrierDismissible => true;
+
+  @override
+  RoutePopDisposition get popDisposition {
+    if (!routeCanPop) return RoutePopDisposition.doNotPop;
+    return super.popDisposition;
+  }
 
   @override
   Duration get transitionDuration => transitionDurationOverride;
@@ -500,7 +510,11 @@ class _SwiftScrollSheetTransitionState
                     color: Theme.of(context).scaffoldBackgroundColor,
                     child: PrimaryScrollController(
                       controller: scrollController,
-                      child: widget.child,
+                      child: MediaQuery.removePadding(
+                        context: context,
+                        removeTop: true,
+                        child: widget.child,
+                      ),
                     ),
                   ),
                 );

@@ -224,33 +224,29 @@ class _SwiftProgressiveBlurSliverState extends State<SwiftProgressiveBlurSliver>
     return AnimatedBuilder(
       animation: controller ?? ChangeNotifier(),
       builder: (context, _) {
-        final totalHeight = controller?.snapshot.totalHeight ?? 0.0;
-        return TweenAnimationBuilder<double>(
-          tween: Tween<double>(end: totalHeight),
-          duration: const Duration(milliseconds: 260),
-          curve: Curves.easeOutCubic,
-          builder: (context, animatedHeight, child) {
-            if (_lastAnimatedHeight != animatedHeight) {
-              _lastAnimatedHeight = animatedHeight;
-              _regenerateBlurGradientMapIfNeeded(force: true);
-            }
-            
-            WidgetsBinding.instance.addPostFrameCallback((_) => _updateBounds(animatedHeight));
+        final animatedHeight = controller?.animatedHeight ?? 0.0;
 
-            final showBlur =
-                _shadersLoaded &&
-                _blurGradientMap != null &&
-                _bounds != null &&
-                ui.ImageFilter.isShaderFilterSupported;
+        if (_lastAnimatedHeight != animatedHeight) {
+          _lastAnimatedHeight = animatedHeight;
+          _regenerateBlurGradientMapIfNeeded(force: true);
+        }
 
-            return _SwiftProgressiveBlurSliverRenderWidget(
-              horizontalShader: showBlur ? _horizontalShader : null,
-              verticalShader: showBlur ? _verticalShader : null,
-              clipBehavior: widget.clipBehavior,
-              totalHeight: animatedHeight,
-              fadeLength: widget.fadeLength,
-            );
-          },
+        WidgetsBinding.instance.addPostFrameCallback(
+          (_) => _updateBounds(animatedHeight),
+        );
+
+        final showBlur =
+            _shadersLoaded &&
+            _blurGradientMap != null &&
+            _bounds != null &&
+            ui.ImageFilter.isShaderFilterSupported;
+
+        return _SwiftProgressiveBlurSliverRenderWidget(
+          horizontalShader: showBlur ? _horizontalShader : null,
+          verticalShader: showBlur ? _verticalShader : null,
+          clipBehavior: widget.clipBehavior,
+          totalHeight: animatedHeight,
+          fadeLength: widget.fadeLength,
         );
       },
     );

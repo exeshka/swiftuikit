@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:swiftuikit/src/widgets/header/motion_utils.dart';
 import 'swift_header_chrome.dart';
 
 class SwiftSliverHeader extends StatefulWidget {
@@ -77,16 +78,26 @@ class _SwiftSliverHeaderState extends State<SwiftSliverHeader> {
       builder: (context, constraints) {
         final isFirstHeader = constraints.precedingScrollExtent == 0;
         final tracksAtRestHere = widget.trackAtRest && isFirstHeader;
-        final isPinnedToChrome =
-            widget.pinned &&
-            (tracksAtRestHere ||
-                constraints.scrollOffset > 0 ||
-                constraints.overlap.abs() > 0);
         final isFloatingOverContent =
             widget.floating && constraints.overlap.abs() > 0;
+
+        double visibleHeight;
+        if (widget.pinned && constraints.scrollOffset > 0) {
+          visibleHeight = extent;
+        } else if (isFloatingOverContent) {
+          visibleHeight = extent;
+        } else if (tracksAtRestHere && constraints.scrollOffset == 0) {
+          visibleHeight = extent;
+        } else if (widget.pinned && constraints.overlap.abs() > 0) {
+          visibleHeight = extent;
+        } else {
+          final scrollPast =
+              constraints.scrollOffset - constraints.precedingScrollExtent;
+          visibleHeight = (extent - scrollPast).clamp(0.0, extent);
+        }
+
         final trackedByChrome =
-            _chromeController != null &&
-            (isPinnedToChrome || isFloatingOverContent);
+            _chromeController != null && visibleHeight > 0;
 
         // The plain content — used for the overlay child (visible above blur).
         final plainChild = SizedBox(
@@ -95,8 +106,15 @@ class _SwiftSliverHeaderState extends State<SwiftSliverHeader> {
           child: headerChild,
         );
 
+        final route = ModalRoute.of(context);
+        final isRouteAnimating = route?.animation != null &&
+            !route!.animation!.isCompleted &&
+            !route.animation!.isDismissed;
+
         final Widget inlineHeroChild = widget.heroTag != null
-            ? Hero(
+            ? HeroMode(
+                enabled: !isRouteAnimating,
+                child: Hero(
                 tag: widget.heroTag!,
                 transitionOnUserGestures: true,
                 flightShuttleBuilder: (
@@ -153,6 +171,7 @@ class _SwiftSliverHeaderState extends State<SwiftSliverHeader> {
                   );
                 },
                 child: plainChild,
+                ),
               )
             : plainChild;
 
@@ -161,14 +180,13 @@ class _SwiftSliverHeaderState extends State<SwiftSliverHeader> {
           _chromeController!.update(
             id: _chromeId,
             height: extent,
+            visibleHeight: visibleHeight,
             child: plainChild,
             link: _link,
-            signature: '${MediaQuery.sizeOf(context).width}',
-            pinned: trackedByChrome,
+            signature: '${MediaQuery.sizeOf(context).width}_${motionSignature(widget.child)}',
           );
         }
 
-        final route = ModalRoute.of(context);
         final animation = route?.animation;
         final secondaryAnimation = route?.secondaryAnimation;
         final transitionListenable = Listenable.merge([

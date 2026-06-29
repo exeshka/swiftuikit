@@ -1,9 +1,9 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter/physics.dart';
-import 'package:swiftuikit/src/core/widgets/material_glow.dart';
-import 'package:swiftuikit/src/core/widgets/material_stretch.dart';
-import 'package:swiftuikit/src/core/widgets/swift_material.dart';
-import 'package:swiftuikit/src/core/widgets/motion_blur_row.dart';
+import 'package:swiftuikit/src/primitives/morph_glow.dart';
+import 'package:swiftuikit/src/primitives/morph_stretch.dart';
+import 'package:swiftuikit/src/primitives/morph_surface.dart';
+import 'package:swiftuikit/src/composables/motion_blur_row.dart' show MotionBlurRow, defaultMotionSignature;
 
 class ToolbarItemGroup extends StatefulWidget {
   final List<Widget> children;
@@ -45,8 +45,8 @@ class _ToolbarItemGroupState extends State<ToolbarItemGroup>
   bool _childrenChanged(List<Widget> oldChildren, List<Widget> newChildren) {
     if (oldChildren.length != newChildren.length) return true;
     for (var i = 0; i < oldChildren.length; i++) {
-      if (motionSignature(oldChildren[i]) !=
-          motionSignature(newChildren[i])) {
+      if (defaultMotionSignature(oldChildren[i]) !=
+          defaultMotionSignature(newChildren[i])) {
         return true;
       }
     }
@@ -85,8 +85,8 @@ class _ToolbarItemGroupState extends State<ToolbarItemGroup>
   Widget build(BuildContext context) {
     return ScaleTransition(
       scale: _scaleController,
-      child: LiquidStretch(
-        child: GlassGlowLayer(
+      child: MorphStretch(
+        child: MorphGlowLayer(
           child: MorphSurface(
             style: widget.style,
             child: ConstrainedBox(

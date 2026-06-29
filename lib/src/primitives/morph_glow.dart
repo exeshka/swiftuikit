@@ -296,6 +296,3 @@ class _RenderMorphGlowLayer extends RenderProxyBox {
     );
   }
 }
-
-typedef GlassGlow = MorphGlow;
-typedef GlassGlowLayer = MorphGlowLayer;

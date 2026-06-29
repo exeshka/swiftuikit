@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../services/screen_radius_service.dart';
+import 'package:swiftuikit/src/services/screen_radius_service.dart';
 
 const double _pagePositionTolerance = 0.0001;
 
@@ -140,10 +140,31 @@ class _SwiftPageViewAnimationState extends State<SwiftPageViewAnimation> {
 
   BorderRadius _borderRadiusForPage(int index) {
     final page = _currentPage;
-    final diff = (page - index).abs();
-    return diff > _pagePositionTolerance
-        ? _targetBorderRadius()
-        : BorderRadius.zero;
+    if (page == index.toDouble()) {
+      // Current page: check if we're overscrolling at edges.
+      final overscroll = _overscrollFraction();
+      if (overscroll != 0) {
+        return _targetBorderRadius();
+      }
+      return BorderRadius.zero;
+    }
+
+    return _targetBorderRadius();
+  }
+
+  /// Returns overscroll fraction: negative for backward, positive for forward.
+  double _overscrollFraction() {
+    if (!_effectiveController.hasClients) return 0;
+    final pos = _effectiveController.position;
+    if (!pos.hasPixels) return 0;
+    final px = pos.pixels;
+    if (px < 0) {
+      return (px / pos.viewportDimension).clamp(-1.0, 0.0);
+    }
+    if (pos.hasContentDimensions && pos.maxScrollExtent > 0 && px > pos.maxScrollExtent) {
+      return ((px - pos.maxScrollExtent) / pos.viewportDimension).clamp(0.0, 1.0);
+    }
+    return 0;
   }
 
   double get _currentPage {
@@ -168,7 +189,7 @@ class _SwiftPageViewAnimationState extends State<SwiftPageViewAnimation> {
       controller: _effectiveController,
       itemCount: widget.itemCount,
       onPageChanged: widget.onPageChanged,
-      physics: widget.physics,
+      physics: widget.physics ?? const BouncingScrollPhysics(),
       pageSnapping: widget.pageSnapping,
       allowImplicitScrolling: widget.allowImplicitScrolling,
       clipBehavior: Clip.none,
@@ -221,12 +242,26 @@ class _SwiftPageViewAnimationState extends State<SwiftPageViewAnimation> {
 
     final page = _currentPage;
     final diff = page - index;
+
+    // Forward direction (page ahead of index): current page slides right.
     if (diff >= 0) {
       final clampedDiff = diff.clamp(0.0, 1.0);
       return clampedDiff * width * (1 - widget.pageOverlapFraction);
-    } else {
-      return 0.0;
     }
+
+    // Backward overscroll at first page: page slides left.
+    final overscroll = _overscrollFraction();
+    if (overscroll < 0 && index == 0) {
+      return overscroll * width * (1 - widget.pageOverlapFraction);
+    }
+
+    // Forward overscroll at last page: page slides right.
+    final last = (widget.itemCount ?? 1) - 1;
+    if (overscroll > 0 && index == last) {
+      return overscroll * width * (1 - widget.pageOverlapFraction);
+    }
+
+    return 0.0;
   }
 
   double _pageScale({required int index}) {
@@ -236,11 +271,24 @@ class _SwiftPageViewAnimationState extends State<SwiftPageViewAnimation> {
 
     final page = _currentPage;
     final diff = page - index;
+
     if (diff >= 0) {
       final clampedDiff = diff.clamp(0.0, 1.0);
       return 1.0 - ((1.0 - widget.minScale) * clampedDiff);
-    } else {
-      return 1.0;
     }
+
+    // Backward overscroll at first page: shrink slightly.
+    final overscroll = _overscrollFraction();
+    if (overscroll < 0 && index == 0) {
+      return 1.0 - ((1.0 - widget.minScale) * overscroll.abs());
+    }
+
+    // Forward overscroll at last page: shrink slightly.
+    final last = (widget.itemCount ?? 1) - 1;
+    if (overscroll > 0 && index == last) {
+      return 1.0 - ((1.0 - widget.minScale) * overscroll);
+    }
+
+    return 1.0;
   }
 }

@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/physics.dart';
-import 'package:swiftuikit/src/core/widgets/morph_transition_slots.dart';
-import 'package:swiftuikit/src/core/widgets/motion_blur_row.dart';
-import 'package:swiftuikit/src/core/widgets/swift_material.dart';
+import 'package:swiftuikit/src/composables/morph_transition_slots.dart';
+import 'package:swiftuikit/src/primitives/morph_surface.dart';
+import 'package:swiftuikit/src/primitives/motion_blur.dart';
 import 'package:swiftuikit/src/widgets/toolbar/toolbar_button.dart';
 import 'package:swiftuikit/src/widgets/toolbar/toolbar_item_group.dart';
-import 'package:swiftuikit/src/core/widgets/motion_blur.dart';
+import 'package:swiftuikit/src/widgets/header/motion_utils.dart';
 import 'swift_pinned_sliver.dart';
 
 class SwiftHeader extends StatelessWidget {

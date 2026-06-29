@@ -23,6 +23,12 @@ class AppRouter extends RootStackRouter {
         ),
       ],
     ),
-    SwiftPageAutoRoute(page: PostDetailRoute.page),
+    SwiftSheetAutoRoute(page: PostDetailRoute.page),
+    SwiftPageAutoRoute(page: RouteLabRoute.page),
+    SwiftPageAutoRoute(page: RouteLabPushRoute.page),
+    SwiftPageAutoRoute(page: RouteLabReplaceRoute.page),
+    SwiftPageAutoRoute(page: RouteLabLockedRoute.page, canPop: false),
+    SwiftSheetAutoRoute(page: RouteLabSheetRoute.page, sheetRadius: 16),
+    SwiftModalAutoRoute(page: StoriesModalRoute.page),
   ];
 }
