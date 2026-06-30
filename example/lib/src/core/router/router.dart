@@ -14,6 +14,7 @@ class AppRouter extends RootStackRouter {
       page: ClientFlowRoute.page,
       initial: true,
       children: [
+        SwiftPageAutoRoute(page: ClientFlowRoute.page),
         SwiftPageAutoRoute(page: ClientCreateStoriesRoute.page),
         SwiftPageAutoRoute(
           page: ClientHomeRoute.page,
