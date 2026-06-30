@@ -399,7 +399,7 @@ class _SwiftPageRouteTransitionState extends State<_SwiftPageRouteTransition> {
         nextRoute is SwiftSheetRoute || nextStackRoute != null;
     if (isNextRouteSheet) {
       _wasNextRouteSheet = true;
-    } else {
+    } else if (widget.secondaryAnimation.value == 0.0) {
       _wasNextRouteSheet = false;
       _lastSheetBackgroundProgress = 1.0;
     }

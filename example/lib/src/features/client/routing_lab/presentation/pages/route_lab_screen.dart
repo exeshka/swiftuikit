@@ -23,6 +23,11 @@ class RouteLabScreen extends StatelessWidget {
           onTap: () => context.router.push(const RouteLabSheetRoute()),
         ),
         _RouteLabTile(
+          title: 'Sheet with nested routes',
+          subtitle: 'SwiftSheetAutoRoute with children — navigate inside the sheet.',
+          onTap: () => context.router.push(const SheetNestedRoute()),
+        ),
+        _RouteLabTile(
           title: 'Replace page',
           subtitle: 'Calls router.replace and removes this lab screen.',
           onTap: () => context.router.replace(const RouteLabReplaceRoute()),

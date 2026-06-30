@@ -18,6 +18,12 @@ import 'package:example/src/features/client/home/presentation/pages/post_detail_
     as _i4;
 import 'package:example/src/features/client/routing_lab/presentation/pages/route_lab_screen.dart'
     as _i5;
+import 'package:example/src/features/client/routing_lab/presentation/pages/sheet_nested_page1.dart'
+    as _i8;
+import 'package:example/src/features/client/routing_lab/presentation/pages/sheet_nested_page2.dart'
+    as _i9;
+import 'package:example/src/features/client/routing_lab/presentation/pages/sheet_nested_screen.dart'
+    as _i10;
 import 'package:example/src/features/client/stories/presentation/pages/create_stories_screen.dart'
     as _i1;
 import 'package:example/src/features/client/stories/presentation/pages/stories_modal_screen.dart'
@@ -179,6 +185,54 @@ class StoriesModalRoute extends _i7.PageRouteInfo<void> {
     name,
     builder: (data) {
       return const _i6.StoriesModalScreen();
+    },
+  );
+}
+
+/// generated route for
+/// [_i8.SheetNestedPage1]
+class SheetNestedPage1Route extends _i7.PageRouteInfo<void> {
+  const SheetNestedPage1Route({List<_i7.PageRouteInfo>? children})
+    : super(SheetNestedPage1Route.name, initialChildren: children);
+
+  static const String name = 'SheetNestedPage1Route';
+
+  static _i7.PageInfo page = _i7.PageInfo(
+    name,
+    builder: (data) {
+      return const _i8.SheetNestedPage1();
+    },
+  );
+}
+
+/// generated route for
+/// [_i9.SheetNestedPage2]
+class SheetNestedPage2Route extends _i7.PageRouteInfo<void> {
+  const SheetNestedPage2Route({List<_i7.PageRouteInfo>? children})
+    : super(SheetNestedPage2Route.name, initialChildren: children);
+
+  static const String name = 'SheetNestedPage2Route';
+
+  static _i7.PageInfo page = _i7.PageInfo(
+    name,
+    builder: (data) {
+      return const _i9.SheetNestedPage2();
+    },
+  );
+}
+
+/// generated route for
+/// [_i10.SheetNestedScreen]
+class SheetNestedRoute extends _i7.PageRouteInfo<void> {
+  const SheetNestedRoute({List<_i7.PageRouteInfo>? children})
+    : super(SheetNestedRoute.name, initialChildren: children);
+
+  static const String name = 'SheetNestedRoute';
+
+  static _i7.PageInfo page = _i7.PageInfo(
+    name,
+    builder: (data) {
+      return const _i10.SheetNestedScreen();
     },
   );
 }

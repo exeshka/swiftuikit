@@ -29,6 +29,14 @@ class AppRouter extends RootStackRouter {
     SwiftPageAutoRoute(page: RouteLabReplaceRoute.page),
     SwiftPageAutoRoute(page: RouteLabLockedRoute.page, canPop: false),
     SwiftSheetAutoRoute(page: RouteLabSheetRoute.page, sheetRadius: 16),
+    SwiftSheetAutoRoute(
+      page: SheetNestedRoute.page,
+      sheetRadius: 16,
+      children: [
+        SwiftPageAutoRoute(page: SheetNestedPage1Route.page, initial: true),
+        SwiftPageAutoRoute(page: SheetNestedPage2Route.page),
+      ],
+    ),
     SwiftModalAutoRoute(page: StoriesModalRoute.page),
   ];
 }

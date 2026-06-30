@@ -1,3 +1,12 @@
+## 0.1.1
+
+### Fixes
+- `SwiftSheetRoute` pop no longer causes background page to animate/jerk
+- `SwiftPageRoute` background stays stationary during both modal and sheet transitions
+
+### Example
+- Added nested routes demo inside `SwiftSheetRoute` (sheet with internal page navigation)
+
 ## 0.1.0
 
 ### New features
