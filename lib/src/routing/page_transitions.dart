@@ -206,6 +206,7 @@ class SwiftPageRoute<T> extends PageRoute<T>
 
   @override
   void changedInternalState() {
+    if (!isActive && !isCurrent) return;
     super.changedInternalState();
     previousRoute?.changedInternalState();
   }
@@ -571,18 +572,6 @@ class _SwiftPageRouteTransitionState extends State<_SwiftPageRouteTransition> {
 
 class _FullscreenBackGestureRecognizer extends HorizontalDragGestureRecognizer {
   _FullscreenBackGestureRecognizer({super.debugOwner});
-
-  @override
-  void handleEvent(PointerEvent event) {
-    super.handleEvent(event);
-    if (event is PointerMoveEvent) {
-      // If the user drags to the right and the drag is primarily horizontal,
-      // immediately claim the gesture to win the arena over parent scrollables.
-      if (event.delta.dx > 0 && event.delta.dx.abs() > event.delta.dy.abs()) {
-        resolve(GestureDisposition.accepted);
-      }
-    }
-  }
 }
 
 class _SwiftBackGestureDetector<T> extends StatefulWidget {

@@ -9,230 +9,125 @@
 // coverage:ignore-file
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'package:auto_route/auto_route.dart' as _i7;
-import 'package:example/src/features/client/_flow/client_flow_screen.dart'
-    as _i2;
-import 'package:example/src/features/client/home/presentation/pages/client_home_screen.dart'
-    as _i3;
-import 'package:example/src/features/client/home/presentation/pages/post_detail_screen.dart'
-    as _i4;
-import 'package:example/src/features/client/routing_lab/presentation/pages/route_lab_screen.dart'
-    as _i5;
-import 'package:example/src/features/client/routing_lab/presentation/pages/sheet_nested_page1.dart'
-    as _i8;
-import 'package:example/src/features/client/routing_lab/presentation/pages/sheet_nested_page2.dart'
-    as _i9;
-import 'package:example/src/features/client/routing_lab/presentation/pages/sheet_nested_screen.dart'
-    as _i10;
-import 'package:example/src/features/client/stories/presentation/pages/create_stories_screen.dart'
-    as _i1;
-import 'package:example/src/features/client/stories/presentation/pages/stories_modal_screen.dart'
-    as _i6;
+import 'package:auto_route/auto_route.dart' as _i6;
+import 'package:example/src/screens/detail_screen.dart' as _i1;
+import 'package:example/src/screens/home_screen.dart' as _i2;
+import 'package:example/src/screens/modal_screen.dart' as _i3;
+import 'package:example/src/screens/sheet_screen.dart' as _i4;
+import 'package:example/src/screens/splash_screen.dart' as _i5;
+import 'package:flutter/material.dart' as _i7;
 
 /// generated route for
-/// [_i1.ClientCreateStoriesScreen]
-class ClientCreateStoriesRoute extends _i7.PageRouteInfo<void> {
-  const ClientCreateStoriesRoute({List<_i7.PageRouteInfo>? children})
-    : super(ClientCreateStoriesRoute.name, initialChildren: children);
+/// [_i1.DetailScreen]
+class DetailRoute extends _i6.PageRouteInfo<DetailRouteArgs> {
+  DetailRoute({
+    _i7.Key? key,
+    required String heroId,
+    List<_i6.PageRouteInfo>? children,
+  }) : super(
+         DetailRoute.name,
+         args: DetailRouteArgs(key: key, heroId: heroId),
+         rawPathParams: {'heroId': heroId},
+         initialChildren: children,
+       );
 
-  static const String name = 'ClientCreateStoriesRoute';
+  static const String name = 'DetailRoute';
 
-  static _i7.PageInfo page = _i7.PageInfo(
+  static _i6.PageInfo page = _i6.PageInfo(
     name,
     builder: (data) {
-      return const _i1.ClientCreateStoriesScreen();
+      final pathParams = data.inheritedPathParams;
+      final args = data.argsAs<DetailRouteArgs>(
+        orElse: () => DetailRouteArgs(heroId: pathParams.getString('heroId')),
+      );
+      return _i1.DetailScreen(key: args.key, heroId: args.heroId);
+    },
+  );
+}
+
+class DetailRouteArgs {
+  const DetailRouteArgs({this.key, required this.heroId});
+
+  final _i7.Key? key;
+
+  final String heroId;
+
+  @override
+  String toString() {
+    return 'DetailRouteArgs{key: $key, heroId: $heroId}';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is! DetailRouteArgs) return false;
+    return key == other.key && heroId == other.heroId;
+  }
+
+  @override
+  int get hashCode => key.hashCode ^ heroId.hashCode;
+}
+
+/// generated route for
+/// [_i2.HomeScreen]
+class HomeRoute extends _i6.PageRouteInfo<void> {
+  const HomeRoute({List<_i6.PageRouteInfo>? children})
+    : super(HomeRoute.name, initialChildren: children);
+
+  static const String name = 'HomeRoute';
+
+  static _i6.PageInfo page = _i6.PageInfo(
+    name,
+    builder: (data) {
+      return const _i2.HomeScreen();
     },
   );
 }
 
 /// generated route for
-/// [_i2.ClientFlowScreen]
-class ClientFlowRoute extends _i7.PageRouteInfo<void> {
-  const ClientFlowRoute({List<_i7.PageRouteInfo>? children})
-    : super(ClientFlowRoute.name, initialChildren: children);
+/// [_i3.ModalScreen]
+class ModalRoute extends _i6.PageRouteInfo<void> {
+  const ModalRoute({List<_i6.PageRouteInfo>? children})
+    : super(ModalRoute.name, initialChildren: children);
 
-  static const String name = 'ClientFlowRoute';
+  static const String name = 'ModalRoute';
 
-  static _i7.PageInfo page = _i7.PageInfo(
+  static _i6.PageInfo page = _i6.PageInfo(
     name,
     builder: (data) {
-      return const _i2.ClientFlowScreen();
+      return const _i3.ModalScreen();
     },
   );
 }
 
 /// generated route for
-/// [_i3.ClientHomeScreen]
-class ClientHomeRoute extends _i7.PageRouteInfo<void> {
-  const ClientHomeRoute({List<_i7.PageRouteInfo>? children})
-    : super(ClientHomeRoute.name, initialChildren: children);
+/// [_i4.SheetScreen]
+class SheetRoute extends _i6.PageRouteInfo<void> {
+  const SheetRoute({List<_i6.PageRouteInfo>? children})
+    : super(SheetRoute.name, initialChildren: children);
 
-  static const String name = 'ClientHomeRoute';
+  static const String name = 'SheetRoute';
 
-  static _i7.PageInfo page = _i7.PageInfo(
+  static _i6.PageInfo page = _i6.PageInfo(
     name,
     builder: (data) {
-      return const _i3.ClientHomeScreen();
+      return const _i4.SheetScreen();
     },
   );
 }
 
 /// generated route for
-/// [_i4.PostDetailScreen]
-class PostDetailRoute extends _i7.PageRouteInfo<void> {
-  const PostDetailRoute({List<_i7.PageRouteInfo>? children})
-    : super(PostDetailRoute.name, initialChildren: children);
+/// [_i5.SplashScreen]
+class SplashRoute extends _i6.PageRouteInfo<void> {
+  const SplashRoute({List<_i6.PageRouteInfo>? children})
+    : super(SplashRoute.name, initialChildren: children);
 
-  static const String name = 'PostDetailRoute';
+  static const String name = 'SplashRoute';
 
-  static _i7.PageInfo page = _i7.PageInfo(
+  static _i6.PageInfo page = _i6.PageInfo(
     name,
     builder: (data) {
-      return const _i4.PostDetailScreen();
-    },
-  );
-}
-
-/// generated route for
-/// [_i5.RouteLabLockedScreen]
-class RouteLabLockedRoute extends _i7.PageRouteInfo<void> {
-  const RouteLabLockedRoute({List<_i7.PageRouteInfo>? children})
-    : super(RouteLabLockedRoute.name, initialChildren: children);
-
-  static const String name = 'RouteLabLockedRoute';
-
-  static _i7.PageInfo page = _i7.PageInfo(
-    name,
-    builder: (data) {
-      return const _i5.RouteLabLockedScreen();
-    },
-  );
-}
-
-/// generated route for
-/// [_i5.RouteLabPushScreen]
-class RouteLabPushRoute extends _i7.PageRouteInfo<void> {
-  const RouteLabPushRoute({List<_i7.PageRouteInfo>? children})
-    : super(RouteLabPushRoute.name, initialChildren: children);
-
-  static const String name = 'RouteLabPushRoute';
-
-  static _i7.PageInfo page = _i7.PageInfo(
-    name,
-    builder: (data) {
-      return const _i5.RouteLabPushScreen();
-    },
-  );
-}
-
-/// generated route for
-/// [_i5.RouteLabReplaceScreen]
-class RouteLabReplaceRoute extends _i7.PageRouteInfo<void> {
-  const RouteLabReplaceRoute({List<_i7.PageRouteInfo>? children})
-    : super(RouteLabReplaceRoute.name, initialChildren: children);
-
-  static const String name = 'RouteLabReplaceRoute';
-
-  static _i7.PageInfo page = _i7.PageInfo(
-    name,
-    builder: (data) {
-      return const _i5.RouteLabReplaceScreen();
-    },
-  );
-}
-
-/// generated route for
-/// [_i5.RouteLabScreen]
-class RouteLabRoute extends _i7.PageRouteInfo<void> {
-  const RouteLabRoute({List<_i7.PageRouteInfo>? children})
-    : super(RouteLabRoute.name, initialChildren: children);
-
-  static const String name = 'RouteLabRoute';
-
-  static _i7.PageInfo page = _i7.PageInfo(
-    name,
-    builder: (data) {
-      return const _i5.RouteLabScreen();
-    },
-  );
-}
-
-/// generated route for
-/// [_i5.RouteLabSheetScreen]
-class RouteLabSheetRoute extends _i7.PageRouteInfo<void> {
-  const RouteLabSheetRoute({List<_i7.PageRouteInfo>? children})
-    : super(RouteLabSheetRoute.name, initialChildren: children);
-
-  static const String name = 'RouteLabSheetRoute';
-
-  static _i7.PageInfo page = _i7.PageInfo(
-    name,
-    builder: (data) {
-      return const _i5.RouteLabSheetScreen();
-    },
-  );
-}
-
-/// generated route for
-/// [_i6.StoriesModalScreen]
-class StoriesModalRoute extends _i7.PageRouteInfo<void> {
-  const StoriesModalRoute({List<_i7.PageRouteInfo>? children})
-    : super(StoriesModalRoute.name, initialChildren: children);
-
-  static const String name = 'StoriesModalRoute';
-
-  static _i7.PageInfo page = _i7.PageInfo(
-    name,
-    builder: (data) {
-      return const _i6.StoriesModalScreen();
-    },
-  );
-}
-
-/// generated route for
-/// [_i8.SheetNestedPage1]
-class SheetNestedPage1Route extends _i7.PageRouteInfo<void> {
-  const SheetNestedPage1Route({List<_i7.PageRouteInfo>? children})
-    : super(SheetNestedPage1Route.name, initialChildren: children);
-
-  static const String name = 'SheetNestedPage1Route';
-
-  static _i7.PageInfo page = _i7.PageInfo(
-    name,
-    builder: (data) {
-      return const _i8.SheetNestedPage1();
-    },
-  );
-}
-
-/// generated route for
-/// [_i9.SheetNestedPage2]
-class SheetNestedPage2Route extends _i7.PageRouteInfo<void> {
-  const SheetNestedPage2Route({List<_i7.PageRouteInfo>? children})
-    : super(SheetNestedPage2Route.name, initialChildren: children);
-
-  static const String name = 'SheetNestedPage2Route';
-
-  static _i7.PageInfo page = _i7.PageInfo(
-    name,
-    builder: (data) {
-      return const _i9.SheetNestedPage2();
-    },
-  );
-}
-
-/// generated route for
-/// [_i10.SheetNestedScreen]
-class SheetNestedRoute extends _i7.PageRouteInfo<void> {
-  const SheetNestedRoute({List<_i7.PageRouteInfo>? children})
-    : super(SheetNestedRoute.name, initialChildren: children);
-
-  static const String name = 'SheetNestedRoute';
-
-  static _i7.PageInfo page = _i7.PageInfo(
-    name,
-    builder: (data) {
-      return const _i10.SheetNestedScreen();
+      return const _i5.SplashScreen();
     },
   );
 }

@@ -15,6 +15,9 @@ dependencies:
   screen_corner_radius:
     git:
       url: https://github.com/exeshka/screen_corner_radius
+  flutter_shaders: ^0.1.3
+  equatable: ^2.0.7
+  meta: ^1.15.0
 
 dev_dependencies:
   flutter_test:
@@ -26,6 +29,10 @@ dev_dependencies:
 
 # The following section is specific to Flutter packages.
 flutter:
+  # shaders:
+  #   - lib/src/liquid_glass/shaders/liquid_glass_arbitrary.frag
+  #   - lib/src/liquid_glass/shaders/liquid_glass_geometry.frag
+  #   - lib/src/liquid_glass/shaders/liquid_glass_final_render.frag
 
   # To add assets to your package, add an assets section, like this:
   # assets:
