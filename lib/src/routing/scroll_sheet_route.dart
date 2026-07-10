@@ -9,6 +9,88 @@ import 'package:swiftuikit/src/services/screen_radius_service.dart';
 import 'package:swiftuikit/src/routing/page_transitions.dart';
 import 'package:swiftuikit/src/routing/sheet_route.dart';
 
+/// Represents a snap detent (stop) for scroll sheet routes.
+abstract class SwiftSheetDetent {
+  const SwiftSheetDetent();
+
+  /// Resolves this detent to a relative value between 0.0 and 1.0 of the sheet height.
+  double resolve(double sheetHeight);
+
+  /// A detent at a specific fraction of the available sheet height.
+  static SwiftSheetDetent fraction(double fraction) => _FractionSwiftSheetDetent(fraction);
+
+  /// A detent at a specific absolute height in logical pixels.
+  static SwiftSheetDetent height(double height) => _HeightSwiftSheetDetent(height);
+
+  /// Fully open detent (100% of sheet height).
+  static const SwiftSheetDetent large = _LargeSwiftSheetDetent();
+
+  /// Medium open detent (50% of sheet height).
+  static const SwiftSheetDetent medium = _MediumSwiftSheetDetent();
+}
+
+class _FractionSwiftSheetDetent extends SwiftSheetDetent {
+  const _FractionSwiftSheetDetent(this.fraction);
+  final double fraction;
+
+  @override
+  double resolve(double sheetHeight) => fraction.clamp(0.0, 1.0);
+}
+
+class _HeightSwiftSheetDetent extends SwiftSheetDetent {
+  const _HeightSwiftSheetDetent(this.height);
+  final double height;
+
+  @override
+  double resolve(double sheetHeight) {
+    if (sheetHeight <= 0.0) return 0.0;
+    return (height / sheetHeight).clamp(0.0, 1.0);
+  }
+}
+
+class _LargeSwiftSheetDetent extends SwiftSheetDetent {
+  const _LargeSwiftSheetDetent();
+
+  @override
+  double resolve(double sheetHeight) => 1.0;
+}
+
+class _MediumSwiftSheetDetent extends SwiftSheetDetent {
+  const _MediumSwiftSheetDetent();
+
+  @override
+  double resolve(double sheetHeight) => 0.5;
+}
+
+List<double> _resolveScrollSheetDetents({
+  required double sheetHeight,
+  required List<SwiftSheetDetent>? detents,
+  required SwiftSheetDetent? initialDetent,
+  required List<double> fallbackStops,
+  required double fallbackInitialStop,
+}) {
+  if (detents == null && initialDetent == null) {
+    return fallbackStops;
+  }
+
+  final double resolvedInitial = initialDetent != null
+      ? initialDetent.resolve(sheetHeight)
+      : fallbackInitialStop;
+
+  final List<SwiftSheetDetent> effectiveDetents = detents ?? [
+    SwiftSheetDetent.fraction(0.0),
+    SwiftSheetDetent.large,
+  ];
+
+  final values = <double>{
+    resolvedInitial.clamp(0.0, 1.0).toDouble(),
+    ...effectiveDetents.map((detent) => detent.resolve(sheetHeight).clamp(0.0, 1.0).toDouble()),
+  }.toList()..sort();
+
+  if (values.isEmpty) return const [1.0];
+  return List.unmodifiable(values);
+}
+
 List<double> _normalizeScrollSheetStops({
   required double initialStop,
   required List<double>? stops,
@@ -67,6 +149,13 @@ class SwiftScrollSheetController extends ChangeNotifier
   void _detach(DraggableScrollableController sheetController) {
     if (_sheetController == sheetController) {
       _sheetController = null;
+    }
+  }
+
+  void _updateStops(List<double> stops, {double? initialValue}) {
+    _stops = stops;
+    if (initialValue != null) {
+      _setValue(initialValue, notify: false);
     }
   }
 
@@ -138,8 +227,7 @@ class SwiftScrollSheetController extends ChangeNotifier
 /// reference-style architecture: the sheet extent is controlled by a scroll
 /// driven sheet, not by manually splitting pointer deltas in the route.
 class SwiftScrollSheetRoute<T> extends PageRoute<T>
-    with CupertinoRouteTransitionMixin<T>
-    implements SwiftSheetStackRoute {
+    with CupertinoRouteTransitionMixin<T> {
   SwiftScrollSheetRoute({
     required this.child,
     required RouteSettings settings,
@@ -148,7 +236,9 @@ class SwiftScrollSheetRoute<T> extends PageRoute<T>
     this.sheetMinScale = 0.9,
     this.initialStop = 1.0,
     List<double>? stops,
-    this.transitionDurationOverride = const Duration(milliseconds: 400),
+    this.detents,
+    this.initialDetent,
+    this.transitionDurationOverride = const Duration(milliseconds: 500),
     this.snapAnimationDuration = const Duration(milliseconds: 220),
     this.stickySnap = true,
     this.dismissOnMinStop = true,
@@ -167,13 +257,13 @@ class SwiftScrollSheetRoute<T> extends PageRoute<T>
        super(settings: settings);
 
   final Widget child;
-  @override
   final double? sheetRadius;
-  @override
   final BorderRadius? sheetBorderRadius;
   final double sheetMinScale;
   final double initialStop;
   final List<double> stops;
+  final List<SwiftSheetDetent>? detents;
+  final SwiftSheetDetent? initialDetent;
   final Duration transitionDurationOverride;
   final Duration snapAnimationDuration;
   final bool stickySnap;
@@ -182,22 +272,37 @@ class SwiftScrollSheetRoute<T> extends PageRoute<T>
   final SwiftScrollSheetController sheetController;
   final bool _ownsSheetController;
 
+  List<double> _resolvedStops = const [];
+  List<double> get resolvedStops => _resolvedStops.isEmpty ? stops : _resolvedStops;
+
+  double? _resolvedInitialStop;
+  double get resolvedInitialStop => _resolvedInitialStop ?? initialStop;
+
   late final ValueNotifier<double> _sheetExtentNotifier = ValueNotifier<double>(
-    initialStop.clamp(0.0, 1.0).toDouble(),
+    resolvedInitialStop.clamp(0.0, 1.0).toDouble(),
   );
 
-  @override
   ValueListenable<double> get sheetExtentListenable => _sheetExtentNotifier;
 
-  @override
   double get sheetExtent => _sheetExtentNotifier.value;
+
+  /// Retrieves the closest [SwiftScrollSheetController] from the context.
+  static SwiftScrollSheetController? controllerOf(BuildContext context) {
+    final scope = context.dependOnInheritedWidgetOfExactType<_SwiftScrollSheetScope>();
+    return scope?.notifier;
+  }
+
+  /// Retrieves the current extent of the scroll sheet and registers the context for rebuilds
+  /// when the extent changes.
+  static double extentOf(BuildContext context) {
+    final scope = context.dependOnInheritedWidgetOfExactType<_SwiftScrollSheetScope>();
+    return scope?.notifier?.value ?? 0.0;
+  }
 
   Route? _nextRoute;
 
-  @override
   Route? get nextRoute => _nextRoute;
 
-  @override
   Route? previousRoute;
 
   @override
@@ -334,8 +439,41 @@ class _SwiftScrollSheetTransitionState
       ..addListener(_handleSheetExtentChanged);
     widget.route.sheetController._attach(
       _sheetController,
-      stops: widget.route.stops,
-      initialValue: widget.route.initialStop,
+      stops: widget.route.resolvedStops,
+      initialValue: widget.route.resolvedInitialStop,
+    );
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    final double screenHeight = MediaQuery.sizeOf(context).height;
+    final double topPadding = MediaQuery.paddingOf(context).top;
+    final double topOffset = math.max(
+      SwiftPageTransitions.sheetMinimumTopOffset,
+      topPadding + SwiftPageTransitions.sheetTopOffsetPadding,
+    );
+    final double sheetHeight = screenHeight - topOffset;
+
+    final resolvedStops = _resolveScrollSheetDetents(
+      sheetHeight: sheetHeight,
+      detents: widget.route.detents,
+      initialDetent: widget.route.initialDetent,
+      fallbackStops: widget.route.stops,
+      fallbackInitialStop: widget.route.initialStop,
+    );
+
+    final resolvedInitialStop = widget.route.initialDetent != null
+        ? widget.route.initialDetent!.resolve(sheetHeight).clamp(0.0, 1.0)
+        : widget.route.initialStop;
+
+    widget.route._resolvedStops = resolvedStops;
+    widget.route._resolvedInitialStop = resolvedInitialStop;
+
+    widget.route.sheetController._updateStops(
+      resolvedStops,
+      initialValue: resolvedInitialStop,
     );
   }
 
@@ -378,7 +516,7 @@ class _SwiftScrollSheetTransitionState
 
     if (!route.dismissOnMinStop ||
         _scheduledMinStopDismiss ||
-        route.stops.first > precisionErrorTolerance ||
+        route.resolvedStops.first > precisionErrorTolerance ||
         size > precisionErrorTolerance ||
         !route.isCurrent) {
       return;
@@ -401,7 +539,7 @@ class _SwiftScrollSheetTransitionState
     }
 
     final current = _sheetController.size;
-    final target = route.stops.reduce((previous, next) {
+    final target = route.resolvedStops.reduce((previous, next) {
       return (next - current).abs() < (previous - current).abs()
           ? next
           : previous;
@@ -442,7 +580,7 @@ class _SwiftScrollSheetTransitionState
     final screenHeight = MediaQuery.sizeOf(context).height;
     final topPadding = MediaQuery.paddingOf(context).top;
     final topOffset = math.max(
-      12.0,
+      SwiftPageTransitions.sheetMinimumTopOffset,
       topPadding + SwiftPageTransitions.sheetTopOffsetPadding,
     );
     final sheetHeight = screenHeight - topOffset;
@@ -495,26 +633,22 @@ class _SwiftScrollSheetTransitionState
             },
             child: DraggableScrollableSheet(
               controller: _sheetController,
-              initialChildSize: route.initialStop.clamp(0.0, 1.0).toDouble(),
-              minChildSize: route.stops.first,
-              maxChildSize: route.stops.last,
+              initialChildSize: route.resolvedInitialStop.clamp(0.0, 1.0).toDouble(),
+              minChildSize: route.resolvedStops.first,
+              maxChildSize: route.resolvedStops.last,
               snap: !route.stickySnap,
-              snapSizes: route.stops,
+              snapSizes: route.resolvedStops,
               snapAnimationDuration: route.snapAnimationDuration,
               expand: true,
               builder: (context, scrollController) {
-                Widget content = ClipRRect(
-                  borderRadius: borderRadius,
-                  clipBehavior: Clip.antiAlias,
-                  child: Container(
-                    color: Theme.of(context).scaffoldBackgroundColor,
-                    child: PrimaryScrollController(
-                      controller: scrollController,
-                      child: MediaQuery.removePadding(
-                        context: context,
-                        removeTop: true,
-                        child: widget.child,
-                      ),
+                Widget content = _SwiftScrollSheetScope(
+                  notifier: route.sheetController,
+                  child: PrimaryScrollController(
+                    controller: scrollController,
+                    child: MediaQuery.removePadding(
+                      context: context,
+                      removeTop: true,
+                      child: widget.child,
                     ),
                   ),
                 );
@@ -584,4 +718,43 @@ int _getRouteDepthAbove(Route? route) {
     current = next;
   }
   return depth;
+}
+
+class _SwiftScrollSheetScope extends InheritedNotifier<SwiftScrollSheetController> {
+  const _SwiftScrollSheetScope({
+    required super.notifier,
+    required super.child,
+  });
+}
+
+/// A gesture-directing widget that wraps any child element (like a custom header or drag handle)
+/// to make it drag-responsive. Translates vertical swipe gestures directly into size/offset updates
+/// for the parent [SwiftScrollSheetRoute] and snaps it on release.
+class SwiftScrollSheetDragTarget extends StatelessWidget {
+  const SwiftScrollSheetDragTarget({
+    super.key,
+    required this.child,
+  });
+
+  /// The child widget (e.g. a header or drag bar) to make draggable.
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final controller = SwiftScrollSheetRoute.controllerOf(context);
+    return GestureDetector(
+      behavior: HitTestBehavior.translucent,
+      onVerticalDragUpdate: (details) {
+        if (controller != null && controller.isAttached) {
+          final double screenHeight = MediaQuery.sizeOf(context).height;
+          final double delta = -details.delta.dy / screenHeight;
+          controller.jumpTo((controller.value + delta).clamp(0.0, 1.0));
+        }
+      },
+      onVerticalDragEnd: (details) {
+        controller?.snapToNearest();
+      },
+      child: child,
+    );
+  }
 }

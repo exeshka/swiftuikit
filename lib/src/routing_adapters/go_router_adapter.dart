@@ -22,7 +22,7 @@ class SwiftPage<T> extends Page<T> {
     this.radius,
     this.borderRadius,
     this.backGestureWidth,
-    this.transitionDuration = const Duration(milliseconds: 400),
+    this.transitionDuration = const Duration(milliseconds: 500),
   });
 
   final Widget child;
@@ -65,26 +65,33 @@ class SwiftSheetPage<T> extends Page<T> {
     super.onPopInvoked,
     this.sheetRadius,
     this.sheetBorderRadius,
-    this.sheetMinScale = 0.92,
-    this.transitionDuration = const Duration(milliseconds: 400),
+    this.transitionDuration = const Duration(milliseconds: 500),
+    this.showDragHandle = false,
+    this.enableDrag = true,
   });
 
   final Widget child;
   final double? sheetRadius;
   final BorderRadius? sheetBorderRadius;
-  final double sheetMinScale;
   final Duration transitionDuration;
+  final bool showDragHandle;
+  final bool enableDrag;
 
   @override
   Route<T> createRoute(BuildContext context) {
     return sheet_route.SwiftSheetRoute<T>(
-      child: child,
       settings: this,
       sheetRadius: sheetRadius,
       sheetBorderRadius: sheetBorderRadius,
-      sheetMinScale: sheetMinScale,
       routeCanPop: canPop,
       transitionDurationOverride: transitionDuration,
+      showDragHandle: showDragHandle,
+      enableDrag: enableDrag,
+      scrollableBuilder: (BuildContext context, ScrollController scrollController) =>
+          PrimaryScrollController(
+            controller: scrollController,
+            child: child,
+          ),
     );
   }
 }
@@ -105,7 +112,9 @@ class SwiftScrollSheetPage<T> extends Page<T> {
     this.sheetMinScale = 0.9,
     this.initialStop = 1.0,
     this.stops,
-    this.transitionDuration = const Duration(milliseconds: 400),
+    this.detents,
+    this.initialDetent,
+    this.transitionDuration = const Duration(milliseconds: 500),
     this.snapAnimationDuration = const Duration(milliseconds: 220),
     this.stickySnap = true,
     this.dismissOnMinStop = true,
@@ -118,6 +127,8 @@ class SwiftScrollSheetPage<T> extends Page<T> {
   final double sheetMinScale;
   final double initialStop;
   final List<double>? stops;
+  final List<SwiftSheetDetent>? detents;
+  final SwiftSheetDetent? initialDetent;
   final Duration transitionDuration;
   final Duration snapAnimationDuration;
   final bool stickySnap;
@@ -134,6 +145,8 @@ class SwiftScrollSheetPage<T> extends Page<T> {
       sheetMinScale: sheetMinScale,
       initialStop: initialStop,
       stops: stops,
+      detents: detents,
+      initialDetent: initialDetent,
       transitionDurationOverride: transitionDuration,
       snapAnimationDuration: snapAnimationDuration,
       stickySnap: stickySnap,
@@ -159,7 +172,7 @@ class SwiftModalPage<T> extends Page<T> {
     this.sheetBorderRadius,
     this.barrierDismissible = true,
     this.barrierOpacity = 0.3,
-    this.transitionDuration = const Duration(milliseconds: 400),
+    this.transitionDuration = const Duration(milliseconds: 500),
     this.dismissThreshold = 0.3,
   });
 

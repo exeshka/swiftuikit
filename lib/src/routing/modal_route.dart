@@ -169,13 +169,7 @@ class _SwiftModalRouteTransitionState
     }
   }
 
-  BorderRadius _resolveBorderRadius(BuildContext context) {
-    return SwiftPageTransitions.resolveSheetBorderRadius(
-      context,
-      radius: widget.sheetRadius,
-      borderRadius: widget.sheetBorderRadius,
-    );
-  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -188,7 +182,7 @@ class _SwiftModalRouteTransitionState
     final double screenHeight = MediaQuery.sizeOf(context).height;
     final double topPadding = MediaQuery.paddingOf(context).top;
     final double topOffset = math.max(
-      12.0,
+      SwiftPageTransitions.sheetMinimumTopOffset,
       topPadding + SwiftPageTransitions.sheetTopOffsetPadding,
     );
     final double maxHeight = screenHeight - topOffset;
@@ -219,31 +213,10 @@ class _SwiftModalRouteTransitionState
       );
     }
 
-    final borderRadius = _resolveBorderRadius(context);
-    final sheetContent = Container(
-      decoration: BoxDecoration(
-        borderRadius: borderRadius,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withAlpha(20),
-            blurRadius: 10,
-            spreadRadius: 1,
-            offset: const Offset(0, -2),
-          ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: borderRadius,
-        clipBehavior: Clip.hardEdge,
-        child: Container(
-          color: Theme.of(context).scaffoldBackgroundColor,
-          child: MediaQuery.removePadding(
-            context: context,
-            removeTop: true,
-            child: sheetBody,
-          ),
-        ),
-      ),
+    final sheetContent = MediaQuery.removePadding(
+      context: context,
+      removeTop: true,
+      child: sheetBody,
     );
 
     return _SwiftModalGestureDetector(

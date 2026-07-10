@@ -6,6 +6,7 @@ import 'package:flutter/gestures.dart';
 import 'package:swiftuikit/src/services/screen_radius_service.dart';
 import 'package:swiftuikit/src/routing/sheet_route.dart';
 import 'package:swiftuikit/src/routing/modal_route.dart';
+import 'package:swiftuikit/src/routing/scroll_sheet_route.dart';
 
 abstract interface class SwiftSheetStackRoute {
   Route? get nextRoute;
@@ -20,9 +21,24 @@ abstract interface class SwiftSheetStackRoute {
 class SwiftPageTransitions {
   const SwiftPageTransitions._();
 
+  // -- Size / layout ----------------------------------------------------------
+
+  /// Minimum offset from the top of the screen for the sheet.
+  /// Used when there is no safe area top padding.
+  static double sheetMinimumTopOffset = 12.0;
+
   /// Gap from top of the screen (below status bar) for the active sheet.
   /// Standard iOS sheets have a 10.0 pixel margin.
   static double sheetTopOffsetPadding = 10.0;
+
+  /// Gap between the top of the screen and the top of the sheet, as a ratio
+  /// of the screen height.  Default 0.08 = 8% of screen height.
+  static double sheetTopGapRatio = 0.08;
+
+  /// Top gap ratio when the sheet is stretched upward during a drag.
+  static double sheetStretchedTopGapRatio = 0.035;
+
+  // -- Background page animation ----------------------------------------------
 
   /// Vertical offset step (in pixels) per stacked level in the background.
   /// Higher values push background cards lower.
@@ -32,6 +48,31 @@ class SwiftPageTransitions {
   /// e.g. 0.08 means level 0 = 1.0, level 1 = 0.92, level 2 = 0.84.
   static double scaleStep = 0.08;
 
+  /// Scale factor for sheets moving into the background.
+  /// The scale will go from 1.0 to 1.0 - [sheetScaleFactor].
+  /// Matches native iOS 18 value of 0.0835.
+  static double sheetScaleFactor = 0.0835;
+
+  /// Vertical offset (as fraction of screen height) when a non-sheet page
+  /// is covered by a sheet.
+  static double sheetTopDownOffsetFraction = 0.07;
+
+  /// Vertical offset (as fraction of screen height) when a sheet is covered
+  /// by another sheet.
+  static double sheetMidUpOffsetFraction = 0.005;
+
+  // -- Corner radius ----------------------------------------------------------
+
+  /// Default corner radius for sheet top corners.
+  static double sheetCornerRadius = 38.0;
+
+  /// Smoothing factor applied to the device's top padding to achieve a smoother
+  /// end to the corner radius animation.
+  static double sheetDeviceCornerRadiusSmoothingFactor = 0.9;
+
+  /// Threshold in logical pixels for rounded device corners.
+  static double sheetRoundedDeviceCornersThreshold = 20.0;
+
   /// Optional top radius applied to routes when they move into the sheet background.
   /// If null, the device screen radius from [ScreenRadiusService] is used.
   static double? sheetBackgroundRadius;
@@ -39,6 +80,8 @@ class SwiftPageTransitions {
   /// Optional border radius applied to routes when they move into the sheet background.
   /// If null, [sheetBackgroundRadius] is used, then the device screen radius.
   static BorderRadius? sheetBackgroundBorderRadius;
+
+  // -- Overlay / dimming ------------------------------------------------------
 
   /// Dimming opacity applied to background routes while a sheet is above them.
   /// The original Cupertino sheet package uses 0.10.
@@ -73,16 +116,8 @@ class SwiftPageTransitions {
     bool useScreenRadius = true,
   }) {
     if (borderRadius != null) return borderRadius;
-    if (radius != null) {
-      return BorderRadius.vertical(top: Radius.circular(radius));
-    }
-    if (!useScreenRadius) return BorderRadius.zero;
-
-    final screenRadius = ScreenRadiusService.instance.radius;
-    return BorderRadius.only(
-      topLeft: screenRadius.topLeft,
-      topRight: screenRadius.topRight,
-    );
+    final double effectiveRadius = radius ?? SwiftPageTransitions.sheetCornerRadius;
+    return BorderRadius.vertical(top: Radius.circular(effectiveRadius));
   }
 
   /// Default transitions builder that can be used directly with auto_route or standard routing.
@@ -408,7 +443,8 @@ class _SwiftPageRouteTransitionState extends State<_SwiftPageRouteTransition> {
         isNextRouteSheet ||
         (_wasNextRouteSheet && widget.secondaryAnimation.value > 0.0);
 
-    final bool isNextRouteModal = nextRoute is SwiftModalRoute;
+    final bool isNextRouteModal =
+        nextRoute is SwiftModalRoute || nextRoute is SwiftScrollSheetRoute;
     if (isNextRouteModal) {
       _wasNextRouteModal = true;
     } else if (widget.secondaryAnimation.value == 0.0) {
@@ -426,12 +462,6 @@ class _SwiftPageRouteTransitionState extends State<_SwiftPageRouteTransition> {
         ]),
         builder: (context, child) {
           if (activeNextRouteSheet) {
-            final double topPadding = MediaQuery.paddingOf(context).top;
-            final double topOffset = math.max(
-              12.0,
-              topPadding + SwiftPageTransitions.sheetTopOffsetPadding,
-            );
-
             final double sheetProgress;
             if (nextStackRoute != null) {
               sheetProgress = SwiftPageTransitions.sheetBackgroundProgressFor(
@@ -448,7 +478,7 @@ class _SwiftPageRouteTransitionState extends State<_SwiftPageRouteTransition> {
 
             final double translationX = (1.0 - currentPrimary.value) * width;
             final double translationY =
-                s * (topOffset - SwiftPageTransitions.backgroundOffsetStep);
+                s * SwiftPageTransitions.backgroundOffsetStep;
             final double scale = 1.0 - (s * SwiftPageTransitions.scaleStep);
 
             if (isNextRouteSheet) {

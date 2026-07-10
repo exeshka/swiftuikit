@@ -1,6 +1,7 @@
 name: swiftuikit
 description: "A new Flutter package project."
 version: 0.1.1
+publish_to: none
 homepage:
 
 environment:

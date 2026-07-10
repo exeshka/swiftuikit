@@ -17,7 +17,7 @@ Route<T> swiftPageRouteBuilder<T>(
   BorderRadius? borderRadius,
   double? backGestureWidth,
   bool canPop = true,
-  Duration transitionDuration = const Duration(milliseconds: 400),
+  Duration transitionDuration = const Duration(milliseconds: 500),
 }) {
   return SwiftPageTransitions.routeBuilder<T>(
     context: context,
@@ -40,18 +40,24 @@ Route<T> swiftSheetRouteBuilder<T>(
   AutoRoutePage<T> page, {
   double? sheetRadius,
   BorderRadius? sheetBorderRadius,
-  double sheetMinScale = 0.92,
   bool canPop = true,
-  Duration transitionDuration = const Duration(milliseconds: 400),
+  Duration transitionDuration = const Duration(milliseconds: 500),
+  bool showDragHandle = false,
+  bool enableDrag = true,
 }) {
   return sheet_route.SwiftSheetRoute<T>(
-    child: child,
     settings: page,
     sheetRadius: sheetRadius,
     sheetBorderRadius: sheetBorderRadius,
-    sheetMinScale: sheetMinScale,
     routeCanPop: canPop,
     transitionDurationOverride: transitionDuration,
+    showDragHandle: showDragHandle,
+    enableDrag: enableDrag,
+    scrollableBuilder: (BuildContext context, ScrollController scrollController) =>
+        PrimaryScrollController(
+          controller: scrollController,
+          child: child,
+        ),
   );
 }
 
@@ -64,7 +70,9 @@ Route<T> swiftScrollSheetRouteBuilder<T>(
   double sheetMinScale = 0.9,
   double initialStop = 1.0,
   List<double>? stops,
-  Duration transitionDuration = const Duration(milliseconds: 400),
+  List<SwiftSheetDetent>? detents,
+  SwiftSheetDetent? initialDetent,
+  Duration transitionDuration = const Duration(milliseconds: 500),
   Duration snapAnimationDuration = const Duration(milliseconds: 220),
   bool stickySnap = true,
   bool dismissOnMinStop = true,
@@ -79,6 +87,8 @@ Route<T> swiftScrollSheetRouteBuilder<T>(
     sheetMinScale: sheetMinScale,
     initialStop: initialStop,
     stops: stops,
+    detents: detents,
+    initialDetent: initialDetent,
     transitionDurationOverride: transitionDuration,
     snapAnimationDuration: snapAnimationDuration,
     stickySnap: stickySnap,
@@ -97,7 +107,7 @@ Route<T> swiftModalRouteBuilder<T>(
   bool canPop = true,
   bool barrierDismissible = true,
   double barrierOpacity = 0.3,
-  Duration transitionDuration = const Duration(milliseconds: 400),
+  Duration transitionDuration = const Duration(milliseconds: 500),
   double dismissThreshold = 0.3,
 }) {
   return modal_route.SwiftModalRoute<T>(
@@ -136,7 +146,7 @@ class SwiftPageAutoRoute<R> extends CustomRoute<R> {
     this.borderRadius,
     this.backGestureWidth,
     this.canPop = true,
-    this.transitionDuration = const Duration(milliseconds: 400),
+    this.transitionDuration = const Duration(milliseconds: 500),
   }) : super(
          customRouteBuilder:
              <T>(BuildContext context, Widget child, AutoRoutePage<T> page) {
@@ -184,9 +194,10 @@ class SwiftSheetAutoRoute<R> extends CustomRoute<R> {
     super.restorationId,
     this.sheetRadius,
     this.sheetBorderRadius,
-    this.sheetMinScale = 0.92,
     this.canPop = true,
-    this.transitionDuration = const Duration(milliseconds: 400),
+    this.transitionDuration = const Duration(milliseconds: 500),
+    this.showDragHandle = false,
+    this.enableDrag = true,
   }) : super(
          opaque: false,
          barrierDismissible: true,
@@ -199,18 +210,20 @@ class SwiftSheetAutoRoute<R> extends CustomRoute<R> {
                  page,
                  sheetRadius: sheetRadius,
                  sheetBorderRadius: sheetBorderRadius,
-                 sheetMinScale: sheetMinScale,
                  canPop: canPop,
                  transitionDuration: transitionDuration,
+                 showDragHandle: showDragHandle,
+                 enableDrag: enableDrag,
                );
              },
-       );
+        );
 
   final double? sheetRadius;
   final BorderRadius? sheetBorderRadius;
-  final double sheetMinScale;
   final bool canPop;
   final Duration transitionDuration;
+  final bool showDragHandle;
+  final bool enableDrag;
 }
 
 class SwiftScrollSheetAutoRoute<R> extends CustomRoute<R> {
@@ -234,7 +247,9 @@ class SwiftScrollSheetAutoRoute<R> extends CustomRoute<R> {
     this.sheetMinScale = 0.9,
     this.initialStop = 1.0,
     this.stops,
-    this.transitionDuration = const Duration(milliseconds: 400),
+    this.detents,
+    this.initialDetent,
+    this.transitionDuration = const Duration(milliseconds: 500),
     this.snapAnimationDuration = const Duration(milliseconds: 220),
     this.stickySnap = true,
     this.dismissOnMinStop = true,
@@ -255,6 +270,8 @@ class SwiftScrollSheetAutoRoute<R> extends CustomRoute<R> {
                  sheetMinScale: sheetMinScale,
                  initialStop: initialStop,
                  stops: stops,
+                 detents: detents,
+                 initialDetent: initialDetent,
                  transitionDuration: transitionDuration,
                  snapAnimationDuration: snapAnimationDuration,
                  stickySnap: stickySnap,
@@ -270,6 +287,8 @@ class SwiftScrollSheetAutoRoute<R> extends CustomRoute<R> {
   final double sheetMinScale;
   final double initialStop;
   final List<double>? stops;
+  final List<SwiftSheetDetent>? detents;
+  final SwiftSheetDetent? initialDetent;
   final Duration transitionDuration;
   final Duration snapAnimationDuration;
   final bool stickySnap;
@@ -299,7 +318,7 @@ class SwiftModalAutoRoute<R> extends CustomRoute<R> {
     this.canPop = true,
     this.barrierDismissible = true,
     this.barrierOpacity = 0.3,
-    this.transitionDuration = const Duration(milliseconds: 400),
+    this.transitionDuration = const Duration(milliseconds: 500),
     this.dismissThreshold = 0.3,
   }) : super(
          opaque: false,

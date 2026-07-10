@@ -1,7 +1,9 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:example/src/screens/detail_screen.dart';
 import 'package:flutter/material.dart' hide ModalRoute;
 
 import 'package:example/src/core/router/router.gr.dart';
+import 'package:swiftuikit/swiftuikit.dart';
 
 @RoutePage()
 class HomeScreen extends StatelessWidget {
@@ -10,6 +12,7 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.blueAccent,
       appBar: AppBar(title: const Text('Home')),
       body: ListView(
         padding: const EdgeInsets.all(16),
@@ -37,7 +40,21 @@ class HomeScreen extends StatelessWidget {
           const SizedBox(height: 16),
           GestureDetector(
             onTap: () {
-              context.router.push(DetailRoute(heroId: 'card-2'));
+              // context.router.push(DetailRoute(heroId: 'card-2'));
+
+              Navigator.of(context).push(
+                SwiftSheetRoute(
+                  showDragHandle: true,
+                  // topGap: 0.08,
+                  enableDrag: true,
+                  sheetRadius: 38,
+                  scrollableBuilder: (context, scrollController) =>
+                      PrimaryScrollController(
+                        controller: scrollController,
+                        child: DetailScreen(heroId: ""),
+                      ),
+                ),
+              );
             },
             child: Hero(
               tag: 'card-2',
@@ -58,15 +75,25 @@ class HomeScreen extends StatelessWidget {
           const SizedBox(height: 16),
           ListTile(
             tileColor: Colors.green,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            title: const Text('Open Sheet', style: TextStyle(color: Colors.white)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            title: const Text(
+              'Open Sheet',
+              style: TextStyle(color: Colors.white),
+            ),
             onTap: () => context.router.push(const SheetRoute()),
           ),
           const SizedBox(height: 8),
           ListTile(
             tileColor: Colors.orange,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            title: const Text('Open Modal', style: TextStyle(color: Colors.white)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            title: const Text(
+              'Open Modal',
+              style: TextStyle(color: Colors.white),
+            ),
             onTap: () => context.router.push(const ModalRoute()),
           ),
         ],
