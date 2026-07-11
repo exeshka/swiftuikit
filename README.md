@@ -3,9 +3,9 @@
 iOS-style page transitions and sheet routes for Flutter.
 
 <p align="center">
-  <img src="assets/image.png" width="24%" />
-  <img src="assets/image copy.png" width="24%" />
-  <img src="assets/image copy 2.png" width="24%" />
+  <img src="https://raw.githubusercontent.com/exeshka/swiftuikit/main/assets/image.png" width="24%" />
+  <img src="https://raw.githubusercontent.com/exeshka/swiftuikit/main/assets/image%20copy.png" width="24%" />
+  <img src="https://raw.githubusercontent.com/exeshka/swiftuikit/main/assets/image%20copy%202.png" width="24%" />
 </p>
 
 Provides two routing adapters: **go_router / Navigator 2.0** and **auto_route**.
