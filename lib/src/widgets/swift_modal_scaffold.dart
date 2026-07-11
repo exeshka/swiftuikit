@@ -70,6 +70,9 @@ class SwiftModalScaffold extends StatelessWidget {
       child: Padding(
         padding: EdgeInsets.only(left: margin, right: margin, bottom: margin),
         child: Container(
+          // margin: EdgeInsets.only(
+          //   bottom: MediaQuery.of(context).viewInsets.bottom,
+          // )
           decoration: BoxDecoration(
             color: bgColor,
             borderRadius: BorderRadius.only(
@@ -112,7 +115,8 @@ class SwiftModalScaffold extends StatelessWidget {
                     height: height,
                     child: Column(
                       children: [
-                        if (header != null) SwiftScrollSheetDragTarget(child: header!),
+                        if (header != null)
+                          SwiftScrollSheetDragTarget(child: header!),
                         Expanded(child: body),
                       ],
                     ),

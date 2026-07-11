@@ -17,13 +17,8 @@ class AppRouter extends RootStackRouter {
     ),
     SwiftScrollSheetAutoRoute(
       page: ModalRoute.page,
-      detents: [
-        SwiftSheetDetent.fraction(0.0),
-        SwiftSheetDetent.height(260),
-        SwiftSheetDetent.fraction(0.8),
-        SwiftSheetDetent.large,
-      ],
-      initialDetent: SwiftSheetDetent.height(260),
+      detents: [SwiftSheetDetent.fraction(0.0), SwiftSheetDetent.height(420)],
+      initialDetent: SwiftSheetDetent.height(420),
     ),
   ];
 }

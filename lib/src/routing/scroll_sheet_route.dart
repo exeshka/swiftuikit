@@ -17,10 +17,12 @@ abstract class SwiftSheetDetent {
   double resolve(double sheetHeight);
 
   /// A detent at a specific fraction of the available sheet height.
-  static SwiftSheetDetent fraction(double fraction) => _FractionSwiftSheetDetent(fraction);
+  static SwiftSheetDetent fraction(double fraction) =>
+      _FractionSwiftSheetDetent(fraction);
 
   /// A detent at a specific absolute height in logical pixels.
-  static SwiftSheetDetent height(double height) => _HeightSwiftSheetDetent(height);
+  static SwiftSheetDetent height(double height) =>
+      _HeightSwiftSheetDetent(height);
 
   /// Fully open detent (100% of sheet height).
   static const SwiftSheetDetent large = _LargeSwiftSheetDetent();
@@ -77,14 +79,14 @@ List<double> _resolveScrollSheetDetents({
       ? initialDetent.resolve(sheetHeight)
       : fallbackInitialStop;
 
-  final List<SwiftSheetDetent> effectiveDetents = detents ?? [
-    SwiftSheetDetent.fraction(0.0),
-    SwiftSheetDetent.large,
-  ];
+  final List<SwiftSheetDetent> effectiveDetents =
+      detents ?? [SwiftSheetDetent.fraction(0.0), SwiftSheetDetent.large];
 
   final values = <double>{
     resolvedInitial.clamp(0.0, 1.0).toDouble(),
-    ...effectiveDetents.map((detent) => detent.resolve(sheetHeight).clamp(0.0, 1.0).toDouble()),
+    ...effectiveDetents.map(
+      (detent) => detent.resolve(sheetHeight).clamp(0.0, 1.0).toDouble(),
+    ),
   }.toList()..sort();
 
   if (values.isEmpty) return const [1.0];
@@ -160,7 +162,7 @@ class SwiftScrollSheetController extends ChangeNotifier
   }
 
   void _setValue(double value, {bool notify = true}) {
-    final nextValue = value.clamp(0.0, 1.0).toDouble();
+    final nextValue = value.clamp(minStop, maxStop).toDouble();
     if ((_value - nextValue).abs() <= precisionErrorTolerance) return;
     _value = nextValue;
     if (notify) notifyListeners();
@@ -171,7 +173,7 @@ class SwiftScrollSheetController extends ChangeNotifier
     Duration duration = const Duration(milliseconds: 220),
     Curve curve = Curves.easeOutCubic,
   }) {
-    final target = value.clamp(0.0, 1.0).toDouble();
+    final target = value.clamp(minStop, maxStop).toDouble();
     final sheetController = _sheetController;
     if (sheetController == null || !sheetController.isAttached) {
       _pendingJumpTo = target;
@@ -182,7 +184,7 @@ class SwiftScrollSheetController extends ChangeNotifier
   }
 
   void jumpTo(double value) {
-    final target = value.clamp(0.0, 1.0).toDouble();
+    final target = value.clamp(minStop, maxStop).toDouble();
     final sheetController = _sheetController;
     if (sheetController == null || !sheetController.isAttached) {
       _pendingJumpTo = target;
@@ -273,7 +275,8 @@ class SwiftScrollSheetRoute<T> extends PageRoute<T>
   final bool _ownsSheetController;
 
   List<double> _resolvedStops = const [];
-  List<double> get resolvedStops => _resolvedStops.isEmpty ? stops : _resolvedStops;
+  List<double> get resolvedStops =>
+      _resolvedStops.isEmpty ? stops : _resolvedStops;
 
   double? _resolvedInitialStop;
   double get resolvedInitialStop => _resolvedInitialStop ?? initialStop;
@@ -288,14 +291,16 @@ class SwiftScrollSheetRoute<T> extends PageRoute<T>
 
   /// Retrieves the closest [SwiftScrollSheetController] from the context.
   static SwiftScrollSheetController? controllerOf(BuildContext context) {
-    final scope = context.dependOnInheritedWidgetOfExactType<_SwiftScrollSheetScope>();
+    final scope = context
+        .dependOnInheritedWidgetOfExactType<_SwiftScrollSheetScope>();
     return scope?.notifier;
   }
 
   /// Retrieves the current extent of the scroll sheet and registers the context for rebuilds
   /// when the extent changes.
   static double extentOf(BuildContext context) {
-    final scope = context.dependOnInheritedWidgetOfExactType<_SwiftScrollSheetScope>();
+    final scope = context
+        .dependOnInheritedWidgetOfExactType<_SwiftScrollSheetScope>();
     return scope?.notifier?.value ?? 0.0;
   }
 
@@ -633,7 +638,9 @@ class _SwiftScrollSheetTransitionState
             },
             child: DraggableScrollableSheet(
               controller: _sheetController,
-              initialChildSize: route.resolvedInitialStop.clamp(0.0, 1.0).toDouble(),
+              initialChildSize: route.resolvedInitialStop
+                  .clamp(0.0, 1.0)
+                  .toDouble(),
               minChildSize: route.resolvedStops.first,
               maxChildSize: route.resolvedStops.last,
               snap: !route.stickySnap,
@@ -720,21 +727,16 @@ int _getRouteDepthAbove(Route? route) {
   return depth;
 }
 
-class _SwiftScrollSheetScope extends InheritedNotifier<SwiftScrollSheetController> {
-  const _SwiftScrollSheetScope({
-    required super.notifier,
-    required super.child,
-  });
+class _SwiftScrollSheetScope
+    extends InheritedNotifier<SwiftScrollSheetController> {
+  const _SwiftScrollSheetScope({required super.notifier, required super.child});
 }
 
 /// A gesture-directing widget that wraps any child element (like a custom header or drag handle)
 /// to make it drag-responsive. Translates vertical swipe gestures directly into size/offset updates
 /// for the parent [SwiftScrollSheetRoute] and snaps it on release.
 class SwiftScrollSheetDragTarget extends StatelessWidget {
-  const SwiftScrollSheetDragTarget({
-    super.key,
-    required this.child,
-  });
+  const SwiftScrollSheetDragTarget({super.key, required this.child});
 
   /// The child widget (e.g. a header or drag bar) to make draggable.
   final Widget child;

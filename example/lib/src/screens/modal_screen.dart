@@ -62,6 +62,17 @@ class ModalScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 24),
+          TextField(
+            decoration: InputDecoration(
+              hintText: 'Type to test keyboard...',
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              filled: true,
+              fillColor: Theme.of(context).colorScheme.surfaceContainerHighest,
+            ),
+          ),
+          const SizedBox(height: 24),
           Wrap(
             spacing: 12,
             runSpacing: 12,

@@ -16,6 +16,7 @@ Route<T> swiftPageRouteBuilder<T>(
   double? radius,
   BorderRadius? borderRadius,
   double? backGestureWidth,
+  bool canOnlySwipeFromEdge = false,
   bool canPop = true,
   Duration transitionDuration = const Duration(milliseconds: 500),
 }) {
@@ -29,6 +30,7 @@ Route<T> swiftPageRouteBuilder<T>(
     radius: radius,
     borderRadius: borderRadius,
     backGestureWidth: backGestureWidth,
+    canOnlySwipeFromEdge: canOnlySwipeFromEdge,
     routeCanPop: canPop,
     transitionDuration: transitionDuration,
   );
@@ -145,6 +147,7 @@ class SwiftPageAutoRoute<R> extends CustomRoute<R> {
     this.radius,
     this.borderRadius,
     this.backGestureWidth,
+    this.canOnlySwipeFromEdge = false,
     this.canPop = true,
     this.transitionDuration = const Duration(milliseconds: 500),
   }) : super(
@@ -160,6 +163,7 @@ class SwiftPageAutoRoute<R> extends CustomRoute<R> {
                  radius: radius,
                  borderRadius: borderRadius,
                  backGestureWidth: backGestureWidth,
+                 canOnlySwipeFromEdge: canOnlySwipeFromEdge,
                  canPop: canPop,
                  transitionDuration: transitionDuration,
                );
@@ -172,6 +176,7 @@ class SwiftPageAutoRoute<R> extends CustomRoute<R> {
   final double? radius;
   final BorderRadius? borderRadius;
   final double? backGestureWidth;
+  final bool canOnlySwipeFromEdge;
   final bool canPop;
   final Duration transitionDuration;
 }

@@ -22,6 +22,7 @@ class SwiftPage<T> extends Page<T> {
     this.radius,
     this.borderRadius,
     this.backGestureWidth,
+    this.canOnlySwipeFromEdge = false,
     this.transitionDuration = const Duration(milliseconds: 500),
   });
 
@@ -32,6 +33,7 @@ class SwiftPage<T> extends Page<T> {
   final double? radius;
   final BorderRadius? borderRadius;
   final double? backGestureWidth;
+  final bool canOnlySwipeFromEdge;
   final Duration transitionDuration;
 
   @override
@@ -46,6 +48,7 @@ class SwiftPage<T> extends Page<T> {
       radius: radius,
       borderRadius: borderRadius,
       backGestureWidth: backGestureWidth,
+      canOnlySwipeFromEdge: canOnlySwipeFromEdge,
       routeCanPop: canPop,
       transitionDuration: transitionDuration,
     );

@@ -1,5 +1,6 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:example/src/screens/detail_screen.dart';
+import 'package:example/src/screens/modal_screen.dart';
 import 'package:flutter/material.dart' hide ModalRoute;
 
 import 'package:example/src/core/router/router.gr.dart';
@@ -95,6 +96,28 @@ class HomeScreen extends StatelessWidget {
               style: TextStyle(color: Colors.white),
             ),
             onTap: () => context.router.push(const ModalRoute()),
+          ),
+
+          ListTile(
+            tileColor: Colors.orange,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            title: const Text(
+              'Open Modal',
+              style: TextStyle(color: Colors.white),
+            ),
+            onTap: () {
+              Navigator.of(context).push(
+                SwiftScrollSheetRoute(
+                  detents: [.fraction(0.3), .medium, .large],
+                  // topGap: 0.08,
+                  settings: RouteSettings(),
+
+                  child: ModalScreen(),
+                ),
+              );
+            },
           ),
         ],
       ),

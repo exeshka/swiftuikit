@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'dart:math' as math;
+import 'dart:ui' show lerpDouble;
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
@@ -132,7 +134,6 @@ class SwiftPageTransitions {
 
   /// Custom transitions builder creator that allows configuring parameters.
   static RouteTransitionsBuilder customBuilder({
-    double minScale = 0.95,
     double pageOverlapFraction = 0.20,
     bool clipWithScreenRadius = true,
     double? radius,
@@ -147,7 +148,6 @@ class SwiftPageTransitions {
       return _SwiftPageRouteTransition(
         animation: animation,
         secondaryAnimation: secondaryAnimation,
-        minScale: minScale,
         pageOverlapFraction: pageOverlapFraction,
         clipWithScreenRadius: clipWithScreenRadius,
         radius: radius,
@@ -169,6 +169,7 @@ class SwiftPageTransitions {
     double? radius,
     BorderRadius? borderRadius,
     double? backGestureWidth,
+    bool canOnlySwipeFromEdge = false,
     bool routeCanPop = true,
     Duration transitionDuration = const Duration(milliseconds: 400),
   }) {
@@ -181,6 +182,7 @@ class SwiftPageTransitions {
       radius: radius,
       borderRadius: borderRadius,
       backGestureWidth: backGestureWidth,
+      canOnlySwipeFromEdge: canOnlySwipeFromEdge,
       routeCanPop: routeCanPop,
       customTransitionDuration: transitionDuration,
     );
@@ -198,6 +200,7 @@ class SwiftPageRoute<T> extends PageRoute<T>
     this.radius,
     this.borderRadius,
     this.backGestureWidth,
+    this.canOnlySwipeFromEdge = false,
     this.routeCanPop = true,
     this.customTransitionDuration,
   }) : super(settings: settings);
@@ -209,6 +212,7 @@ class SwiftPageRoute<T> extends PageRoute<T>
   final double? radius;
   final BorderRadius? borderRadius;
   final double? backGestureWidth;
+  final bool canOnlySwipeFromEdge;
   final bool routeCanPop;
   final Duration? customTransitionDuration;
 
@@ -277,7 +281,6 @@ class SwiftPageRoute<T> extends PageRoute<T>
     Widget child,
   ) {
     final transitionWidget = SwiftPageTransitions.customBuilder(
-      minScale: minScale,
       pageOverlapFraction: pageOverlapFraction,
       clipWithScreenRadius: clipWithScreenRadius,
       radius: radius,
@@ -289,6 +292,7 @@ class SwiftPageRoute<T> extends PageRoute<T>
     return _SwiftBackGestureDetector<T>(
       route: this,
       backGestureWidth: backGestureWidth,
+      canOnlySwipeFromEdge: canOnlySwipeFromEdge,
       child: transitionWidget,
     );
   }
@@ -298,7 +302,6 @@ class _SwiftPageRouteTransition extends StatefulWidget {
   const _SwiftPageRouteTransition({
     required this.animation,
     required this.secondaryAnimation,
-    required this.minScale,
     required this.pageOverlapFraction,
     required this.clipWithScreenRadius,
     required this.radius,
@@ -308,7 +311,6 @@ class _SwiftPageRouteTransition extends StatefulWidget {
 
   final Animation<double> animation;
   final Animation<double> secondaryAnimation;
-  final double minScale;
   final double pageOverlapFraction;
   final bool clipWithScreenRadius;
   final double? radius;
@@ -554,8 +556,6 @@ class _SwiftPageRouteTransitionState extends State<_SwiftPageRouteTransition> {
             final double translationX =
                 (1.0 - currentPrimary.value) * width -
                 secondaryValue * width * widget.pageOverlapFraction;
-            final double scale =
-                1.0 - (1.0 - widget.minScale) * secondaryValue;
             final double radiusProgress = math.max(
               (1.0 - currentPrimary.value).abs(),
               secondaryValue,
@@ -588,7 +588,7 @@ class _SwiftPageRouteTransitionState extends State<_SwiftPageRouteTransition> {
 
             final transitionChild = Transform.translate(
               offset: Offset(translationX, 0.0),
-              child: Transform.scale(scale: scale, child: clippedChild),
+              child: clippedChild,
             );
 
             return transitionChild;
@@ -600,8 +600,50 @@ class _SwiftPageRouteTransitionState extends State<_SwiftPageRouteTransition> {
   }
 }
 
-class _FullscreenBackGestureRecognizer extends HorizontalDragGestureRecognizer {
-  _FullscreenBackGestureRecognizer({super.debugOwner});
+class _DirectionDependentDragGestureRecognizer
+    extends HorizontalDragGestureRecognizer {
+  _DirectionDependentDragGestureRecognizer({
+    required this.directionality,
+    required this.enabledCallback,
+    required this.checkStartedCallback,
+    required this.detectionArea,
+    super.debugOwner,
+  });
+
+  final TextDirection directionality;
+  final ValueGetter<bool> enabledCallback;
+  final ValueGetter<bool> checkStartedCallback;
+  final ValueGetter<({double startOffset, double width})?> detectionArea;
+
+  @override
+  void handleEvent(PointerEvent event) {
+    if (_shouldHandle(event)) {
+      super.handleEvent(event);
+    } else {
+      stopTrackingPointer(event.pointer);
+    }
+  }
+
+  bool _shouldHandle(PointerEvent event) {
+    if (checkStartedCallback()) return true;
+    if (!enabledCallback()) return false;
+
+    final isCorrectDirection = switch ((directionality, event.delta.dx)) {
+      (TextDirection.ltr, > 0) || (TextDirection.rtl, < 0) || (_, 0) => true,
+      _ => false,
+    };
+    if (!isCorrectDirection) return false;
+
+    final area = detectionArea();
+    if (area != null &&
+        event is PointerDownEvent &&
+        (event.localPosition.dx < area.startOffset ||
+            event.localPosition.dx > area.startOffset + area.width)) {
+      return false;
+    }
+
+    return true;
+  }
 }
 
 class _SwiftBackGestureDetector<T> extends StatefulWidget {
@@ -610,11 +652,13 @@ class _SwiftBackGestureDetector<T> extends StatefulWidget {
     required this.child,
     required this.route,
     required this.backGestureWidth,
+    required this.canOnlySwipeFromEdge,
   });
 
   final Widget child;
   final SwiftPageRoute<T> route;
   final double? backGestureWidth;
+  final bool canOnlySwipeFromEdge;
 
   @override
   State<_SwiftBackGestureDetector<T>> createState() =>
@@ -625,21 +669,8 @@ class _SwiftBackGestureDetectorState<T>
     extends State<_SwiftBackGestureDetector<T>> {
   _SwiftBackGestureController<T>? _backGestureController;
 
-  late _FullscreenBackGestureRecognizer _recognizer;
-
-  @override
-  void initState() {
-    super.initState();
-    _recognizer = _FullscreenBackGestureRecognizer(debugOwner: this)
-      ..onStart = _handleDragStart
-      ..onUpdate = _handleDragUpdate
-      ..onEnd = _handleDragEnd
-      ..onCancel = _handleDragCancel;
-  }
-
   @override
   void dispose() {
-    _recognizer.dispose();
     if (_backGestureController != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (_backGestureController?.navigator.mounted ?? false) {
@@ -651,6 +682,27 @@ class _SwiftBackGestureDetectorState<T>
     super.dispose();
   }
 
+  _DirectionDependentDragGestureRecognizer _createRecognizer() {
+    final directionality = Directionality.of(context);
+    return _DirectionDependentDragGestureRecognizer(
+      debugOwner: this,
+      directionality: directionality,
+      checkStartedCallback: () => _backGestureController != null,
+      enabledCallback: () => widget.route.popGestureEnabled,
+      detectionArea: () => widget.canOnlySwipeFromEdge
+          ? (
+              startOffset: 0.0,
+              width: widget.backGestureWidth ??
+                  MediaQuery.sizeOf(context).width * 0.2,
+            )
+          : null,
+    )
+      ..onStart = _handleDragStart
+      ..onUpdate = _handleDragUpdate
+      ..onEnd = _handleDragEnd
+      ..onCancel = _handleDragCancel;
+  }
+
   void _handleDragStart(DragStartDetails details) {
     assert(mounted);
     assert(_backGestureController == null);
@@ -660,7 +712,6 @@ class _SwiftBackGestureDetectorState<T>
       controller: widget.route.controller!,
       getIsActive: () => widget.route.isActive,
       getIsCurrent: () => widget.route.isCurrent,
-      transitionDuration: widget.route.transitionDuration,
     );
   }
 
@@ -689,12 +740,6 @@ class _SwiftBackGestureDetectorState<T>
     _backGestureController = null;
   }
 
-  void _handlePointerDown(PointerDownEvent event) {
-    if (widget.route.popGestureEnabled) {
-      _recognizer.addPointer(event);
-    }
-  }
-
   double _convertToLogical(double value) {
     return switch (Directionality.of(context)) {
       TextDirection.rtl => -value,
@@ -705,23 +750,22 @@ class _SwiftBackGestureDetectorState<T>
   @override
   Widget build(BuildContext context) {
     assert(debugCheckHasDirectionality(context));
-    final width = MediaQuery.sizeOf(context).width;
-    final gestureWidth = widget.backGestureWidth ?? width;
+
+    final gestureDetector = RawGestureDetector(
+      behavior: HitTestBehavior.translucent,
+      gestures: {
+        _DirectionDependentDragGestureRecognizer:
+            GestureRecognizerFactoryWithHandlers<
+              _DirectionDependentDragGestureRecognizer
+            >(_createRecognizer, (instance) {}),
+      },
+    );
 
     return Stack(
       fit: StackFit.passthrough,
       children: [
         widget.child,
-        PositionedDirectional(
-          start: 0.0,
-          width: gestureWidth,
-          top: 0.0,
-          bottom: 0.0,
-          child: Listener(
-            onPointerDown: _handlePointerDown,
-            behavior: HitTestBehavior.translucent,
-          ),
-        ),
+        Positioned.fill(child: gestureDetector),
       ],
     );
   }
@@ -733,7 +777,6 @@ class _SwiftBackGestureController<T> {
     required this.controller,
     required this.getIsActive,
     required this.getIsCurrent,
-    required this.transitionDuration,
   }) {
     navigator.didStartUserGesture();
   }
@@ -742,7 +785,6 @@ class _SwiftBackGestureController<T> {
   final NavigatorState navigator;
   final ValueGetter<bool> getIsActive;
   final ValueGetter<bool> getIsCurrent;
-  final Duration transitionDuration;
 
   void dragUpdate(double delta) {
     controller.value -= delta;
@@ -750,6 +792,8 @@ class _SwiftBackGestureController<T> {
 
   void dragEnd(double velocity) {
     const Curve animationCurve = Curves.fastEaseInToSlowEaseOut;
+    const int maxDroppedSwipeForwardTime = 800;
+    const int maxPageBackAnimationTime = 300;
     final bool isCurrent = getIsCurrent();
     final bool animateForward;
 
@@ -763,10 +807,20 @@ class _SwiftBackGestureController<T> {
     }
 
     if (animateForward) {
-      controller.animateTo(
-        1.0,
-        duration: transitionDuration,
-        curve: animationCurve,
+      final droppedForwardTime = math.min(
+        lerpDouble(
+          maxDroppedSwipeForwardTime.toDouble(),
+          0,
+          controller.value,
+        )!.floor(),
+        maxPageBackAnimationTime,
+      );
+      unawaited(
+        controller.animateTo(
+          1.0,
+          duration: Duration(milliseconds: droppedForwardTime),
+          curve: animationCurve,
+        ),
       );
     } else {
       if (isCurrent) {
@@ -774,10 +828,17 @@ class _SwiftBackGestureController<T> {
       }
 
       if (controller.isAnimating) {
-        controller.animateBack(
-          0.0,
-          duration: transitionDuration,
-          curve: animationCurve,
+        final droppedBackTime = lerpDouble(
+          0,
+          maxDroppedSwipeForwardTime.toDouble(),
+          controller.value,
+        )!.floor();
+        unawaited(
+          controller.animateBack(
+            0.0,
+            duration: Duration(milliseconds: droppedBackTime),
+            curve: animationCurve,
+          ),
         );
       }
     }
