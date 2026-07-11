@@ -1,3 +1,7 @@
+## 0.1.3
+
+- Re-publish with hosted `screen_corner_radius` dependency (pub.dev compatible)
+
 ## 0.1.2
 
 ### Fixes

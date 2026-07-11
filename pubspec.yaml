@@ -1,6 +1,6 @@
 name: swiftuikit
 description: "iOS-style page transitions, sheet routes, and routing adapters for Flutter. Provides SwiftPage and SwiftSheet with swipe-back gestures, drag-to-dismiss, and custom transitions for go_router and auto_route."
-version: 0.1.2
+version: 0.1.3
 homepage: https://github.com/exeshka/swiftuikit
 
 environment:
