@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:meta/meta.dart';
 
 /// A multi-step sheet container widget that automatically manages dynamic height transitions
 /// between steps, and exposes step state and the modal route's open progress directly to
 /// child contexts via `SwiftStepSheet.of(context)`.
+///
+/// **Not stable** — API may change.
+@experimental
 class SwiftStepSheet extends StatefulWidget {
   const SwiftStepSheet({
     super.key,

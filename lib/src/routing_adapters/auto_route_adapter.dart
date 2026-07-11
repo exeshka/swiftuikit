@@ -1,5 +1,6 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:meta/meta.dart';
 
 import 'package:swiftuikit/src/routing/page_transitions.dart';
 import 'package:swiftuikit/src/routing/scroll_sheet_route.dart';
@@ -11,11 +12,12 @@ Route<T> swiftPageRouteBuilder<T>(
   Widget child,
   AutoRoutePage<T> page, {
   double minScale = 0.95,
-  double pageOverlapFraction = 0.20,
+  double pageOverlapFraction = 0.40,
   bool clipWithScreenRadius = true,
   double? radius,
   BorderRadius? borderRadius,
   double? backGestureWidth,
+  bool canSwipe = true,
   bool canOnlySwipeFromEdge = false,
   bool canPop = true,
   Duration transitionDuration = const Duration(milliseconds: 500),
@@ -30,6 +32,7 @@ Route<T> swiftPageRouteBuilder<T>(
     radius: radius,
     borderRadius: borderRadius,
     backGestureWidth: backGestureWidth,
+    canSwipe: canSwipe,
     canOnlySwipeFromEdge: canOnlySwipeFromEdge,
     routeCanPop: canPop,
     transitionDuration: transitionDuration,
@@ -46,6 +49,7 @@ Route<T> swiftSheetRouteBuilder<T>(
   Duration transitionDuration = const Duration(milliseconds: 500),
   bool showDragHandle = false,
   bool enableDrag = true,
+  bool animateBackground = true,
 }) {
   return sheet_route.SwiftSheetRoute<T>(
     settings: page,
@@ -55,6 +59,7 @@ Route<T> swiftSheetRouteBuilder<T>(
     transitionDurationOverride: transitionDuration,
     showDragHandle: showDragHandle,
     enableDrag: enableDrag,
+    animateBackground: animateBackground,
     scrollableBuilder: (BuildContext context, ScrollController scrollController) =>
         PrimaryScrollController(
           controller: scrollController,
@@ -142,11 +147,12 @@ class SwiftPageAutoRoute<R> extends CustomRoute<R> {
     super.allowSnapshotting,
     super.restorationId,
     this.minScale = 0.95,
-    this.pageOverlapFraction = 0.20,
+    this.pageOverlapFraction = 0.40,
     this.clipWithScreenRadius = true,
     this.radius,
     this.borderRadius,
     this.backGestureWidth,
+    this.canSwipe = true,
     this.canOnlySwipeFromEdge = false,
     this.canPop = true,
     this.transitionDuration = const Duration(milliseconds: 500),
@@ -163,6 +169,7 @@ class SwiftPageAutoRoute<R> extends CustomRoute<R> {
                  radius: radius,
                  borderRadius: borderRadius,
                  backGestureWidth: backGestureWidth,
+                 canSwipe: canSwipe,
                  canOnlySwipeFromEdge: canOnlySwipeFromEdge,
                  canPop: canPop,
                  transitionDuration: transitionDuration,
@@ -176,6 +183,7 @@ class SwiftPageAutoRoute<R> extends CustomRoute<R> {
   final double? radius;
   final BorderRadius? borderRadius;
   final double? backGestureWidth;
+  final bool canSwipe;
   final bool canOnlySwipeFromEdge;
   final bool canPop;
   final Duration transitionDuration;
@@ -203,6 +211,7 @@ class SwiftSheetAutoRoute<R> extends CustomRoute<R> {
     this.transitionDuration = const Duration(milliseconds: 500),
     this.showDragHandle = false,
     this.enableDrag = true,
+    this.animateBackground = true,
   }) : super(
          opaque: false,
          barrierDismissible: true,
@@ -219,9 +228,10 @@ class SwiftSheetAutoRoute<R> extends CustomRoute<R> {
                  transitionDuration: transitionDuration,
                  showDragHandle: showDragHandle,
                  enableDrag: enableDrag,
+                 animateBackground: animateBackground,
                );
              },
-        );
+       );
 
   final double? sheetRadius;
   final BorderRadius? sheetBorderRadius;
@@ -229,8 +239,11 @@ class SwiftSheetAutoRoute<R> extends CustomRoute<R> {
   final Duration transitionDuration;
   final bool showDragHandle;
   final bool enableDrag;
+  final bool animateBackground;
 }
 
+/// **Not stable** — API may change.
+@experimental
 class SwiftScrollSheetAutoRoute<R> extends CustomRoute<R> {
   SwiftScrollSheetAutoRoute({
     required super.page,
@@ -302,6 +315,8 @@ class SwiftScrollSheetAutoRoute<R> extends CustomRoute<R> {
   final SwiftScrollSheetController Function()? sheetControllerBuilder;
 }
 
+/// **Not stable** — API may change.
+@experimental
 class SwiftModalAutoRoute<R> extends CustomRoute<R> {
   SwiftModalAutoRoute({
     required super.page,

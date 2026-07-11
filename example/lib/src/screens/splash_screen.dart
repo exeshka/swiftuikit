@@ -4,29 +4,17 @@ import 'package:flutter/material.dart';
 import 'package:example/src/core/router/router.gr.dart';
 
 @RoutePage()
-class SplashScreen extends StatefulWidget {
+class SplashScreen extends StatelessWidget {
   const SplashScreen({super.key});
 
   @override
-  State<SplashScreen> createState() => _SplashScreenState();
-}
-
-class _SplashScreenState extends State<SplashScreen> {
-  @override
-  void initState() {
-    super.initState();
-    Future.delayed(const Duration(seconds: 1), () {
-      if (mounted) {
-        context.router.replace(const HomeRoute());
-      }
-    });
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return const Scaffold(
+    return Scaffold(
       body: Center(
-        child: CircularProgressIndicator(),
+        child: FilledButton(
+          onPressed: () => context.router.push(const HomeRoute()),
+          child: const Text('Enter'),
+        ),
       ),
     );
   }

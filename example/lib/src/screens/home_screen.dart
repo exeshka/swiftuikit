@@ -1,10 +1,8 @@
 import 'package:auto_route/auto_route.dart';
-import 'package:example/src/screens/detail_screen.dart';
-import 'package:example/src/screens/modal_screen.dart';
-import 'package:flutter/material.dart' hide ModalRoute;
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 
 import 'package:example/src/core/router/router.gr.dart';
-import 'package:swiftuikit/swiftuikit.dart';
 
 @RoutePage()
 class HomeScreen extends StatelessWidget {
@@ -13,113 +11,98 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.blueAccent,
-      appBar: AppBar(title: const Text('Home')),
+      appBar: AppBar(title: const Text('swiftuikit demos')),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          GestureDetector(
-            onTap: () {
-              context.router.push(DetailRoute(heroId: 'card-1'));
-            },
-            child: Hero(
-              tag: 'card-1',
-              child: Container(
-                height: 200,
-                decoration: BoxDecoration(
-                  color: Colors.blue,
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                alignment: Alignment.center,
-                child: const Text(
-                  'Tap me — Hero card',
-                  style: TextStyle(color: Colors.white, fontSize: 20),
-                ),
-              ),
-            ),
+          _SectionHeader('SwiftPage'),
+          _DemoTile(
+            label: 'SwiftPage',
+            subtitle: 'Default iOS transition + swipe back',
+            onTap: () => context.router.push(DetailRoute(heroId: '')),
           ),
-          const SizedBox(height: 16),
-          GestureDetector(
-            onTap: () {
-              // context.router.push(DetailRoute(heroId: 'card-2'));
-
-              Navigator.of(context).push(
-                SwiftSheetRoute(
-                  showDragHandle: true,
-                  // topGap: 0.08,
-                  enableDrag: true,
-                  sheetRadius: 38,
-                  scrollableBuilder: (context, scrollController) =>
-                      PrimaryScrollController(
-                        controller: scrollController,
-                        child: DetailScreen(heroId: ""),
-                      ),
-                ),
-              );
-            },
-            child: Hero(
-              tag: 'card-2',
-              child: Container(
-                height: 200,
-                decoration: BoxDecoration(
-                  color: Colors.deepPurple,
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                alignment: Alignment.center,
-                child: const Text(
-                  'Tap me — Hero card',
-                  style: TextStyle(color: Colors.white, fontSize: 20),
-                ),
-              ),
-            ),
+          _DemoTile(
+            label: 'SwiftPage (no swipe)',
+            subtitle: 'canSwipe: false, canOnlySwipeFromEdge: true',
+            onTap: () => context.router.push(const DetailNoSwipeRoute()),
           ),
-          const SizedBox(height: 16),
-          ListTile(
-            tileColor: Colors.green,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-            title: const Text(
-              'Open Sheet',
-              style: TextStyle(color: Colors.white),
-            ),
+          const SizedBox(height: 24),
+          _SectionHeader('SwiftSheet'),
+          _DemoTile(
+            label: 'SwiftSheet',
+            subtitle: 'Default sheet with drag-to-dismiss',
+            color: Colors.green.shade600,
             onTap: () => context.router.push(const SheetRoute()),
           ),
-          const SizedBox(height: 8),
-          ListTile(
-            tileColor: Colors.orange,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-            title: const Text(
-              'Open Modal',
-              style: TextStyle(color: Colors.white),
-            ),
-            onTap: () => context.router.push(const ModalRoute()),
+          _DemoTile(
+            label: 'SwiftSheet (no bg animation)',
+            subtitle: 'animateBackground: false',
+            color: Colors.green.shade600,
+            onTap: () => context.router.push(const SheetNoBgRoute()),
           ),
-
-          ListTile(
-            tileColor: Colors.orange,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-            title: const Text(
-              'Open Modal',
-              style: TextStyle(color: Colors.white),
-            ),
-            onTap: () {
-              Navigator.of(context).push(
-                SwiftScrollSheetRoute(
-                  detents: [.fraction(0.3), .medium, .large],
-                  // topGap: 0.08,
-                  settings: RouteSettings(),
-
-                  child: ModalScreen(),
-                ),
-              );
-            },
+          _DemoTile(
+            label: 'SwiftSheet (no swipe)',
+            subtitle: 'enableDrag: false',
+            color: Colors.green.shade600,
+            onTap: () => context.router.push(const SheetNoSwipeRoute()),
+          ),
+          _DemoTile(
+            label: 'SwiftSheet (radius 16)',
+            subtitle: 'sheetRadius: 16',
+            color: Colors.green.shade600,
+            onTap: () => context.router.push(const SheetCustomRadiusRoute()),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _SectionHeader extends StatelessWidget {
+  const _SectionHeader(this.title);
+
+  final String title;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Text(
+        title,
+        style: Theme.of(
+          context,
+        ).textTheme.titleSmall?.copyWith(color: CupertinoColors.secondaryLabel),
+      ),
+    );
+  }
+}
+
+class _DemoTile extends StatelessWidget {
+  const _DemoTile({
+    required this.label,
+    required this.subtitle,
+    required this.onTap,
+    this.color,
+  });
+
+  final String label;
+  final String subtitle;
+  final VoidCallback onTap;
+  final Color? color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: ListTile(
+        tileColor: color ?? CupertinoColors.systemBlue,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        title: Text(label, style: const TextStyle(color: Colors.white)),
+        subtitle: Text(
+          subtitle,
+          style: TextStyle(color: Colors.white.withValues(alpha: 0.7)),
+        ),
+        onTap: onTap,
       ),
     );
   }

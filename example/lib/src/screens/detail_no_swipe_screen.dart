@@ -2,24 +2,22 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 
 @RoutePage()
-class DetailScreen extends StatelessWidget {
-  const DetailScreen({super.key, required this.heroId});
-
-  final String heroId;
+class DetailNoSwipeScreen extends StatelessWidget {
+  const DetailNoSwipeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Detail')),
+      appBar: AppBar(title: const Text('No Swipe Back')),
       body: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.check_circle_outline, size: 64),
+            const Icon(Icons.lock_outline, size: 64),
             const SizedBox(height: 16),
-            Text('SwiftPage demo', style: Theme.of(context).textTheme.titleLarge),
+            Text('Swipe-back disabled', style: Theme.of(context).textTheme.titleLarge),
             const SizedBox(height: 8),
-            const Text('Swipe from the left edge to go back'),
+            const Text('Use the back button or edge swipe only'),
           ],
         ),
       ),

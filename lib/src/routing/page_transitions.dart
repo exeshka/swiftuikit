@@ -18,6 +18,7 @@ abstract interface class SwiftSheetStackRoute {
   BorderRadius? get sheetBorderRadius;
   ValueListenable<double> get sheetExtentListenable;
   double get sheetExtent;
+  bool get animateBackground;
 }
 
 class SwiftPageTransitions {
@@ -38,7 +39,7 @@ class SwiftPageTransitions {
   static double sheetTopGapRatio = 0.08;
 
   /// Top gap ratio when the sheet is stretched upward during a drag.
-  static double sheetStretchedTopGapRatio = 0.035;
+  static double sheetStretchedTopGapRatio = 0.06;
 
   // -- Background page animation ----------------------------------------------
 
@@ -134,7 +135,7 @@ class SwiftPageTransitions {
 
   /// Custom transitions builder creator that allows configuring parameters.
   static RouteTransitionsBuilder customBuilder({
-    double pageOverlapFraction = 0.20,
+    double pageOverlapFraction = 0.40,
     bool clipWithScreenRadius = true,
     double? radius,
     BorderRadius? borderRadius,
@@ -164,11 +165,12 @@ class SwiftPageTransitions {
     required Widget child,
     required RouteSettings settings,
     double minScale = 0.95,
-    double pageOverlapFraction = 0.20,
+    double pageOverlapFraction = 0.40,
     bool clipWithScreenRadius = true,
     double? radius,
     BorderRadius? borderRadius,
     double? backGestureWidth,
+    bool canSwipe = true,
     bool canOnlySwipeFromEdge = false,
     bool routeCanPop = true,
     Duration transitionDuration = const Duration(milliseconds: 400),
@@ -182,6 +184,7 @@ class SwiftPageTransitions {
       radius: radius,
       borderRadius: borderRadius,
       backGestureWidth: backGestureWidth,
+      canSwipe: canSwipe,
       canOnlySwipeFromEdge: canOnlySwipeFromEdge,
       routeCanPop: routeCanPop,
       customTransitionDuration: transitionDuration,
@@ -195,11 +198,12 @@ class SwiftPageRoute<T> extends PageRoute<T>
     required this.child,
     required RouteSettings settings,
     this.minScale = 0.95,
-    this.pageOverlapFraction = 0.20,
+    this.pageOverlapFraction = 0.40,
     this.clipWithScreenRadius = true,
     this.radius,
     this.borderRadius,
     this.backGestureWidth,
+    this.canSwipe = true,
     this.canOnlySwipeFromEdge = false,
     this.routeCanPop = true,
     this.customTransitionDuration,
@@ -212,6 +216,7 @@ class SwiftPageRoute<T> extends PageRoute<T>
   final double? radius;
   final BorderRadius? borderRadius;
   final double? backGestureWidth;
+  final bool canSwipe;
   final bool canOnlySwipeFromEdge;
   final bool routeCanPop;
   final Duration? customTransitionDuration;
@@ -292,6 +297,7 @@ class SwiftPageRoute<T> extends PageRoute<T>
     return _SwiftBackGestureDetector<T>(
       route: this,
       backGestureWidth: backGestureWidth,
+      canSwipe: canSwipe,
       canOnlySwipeFromEdge: canOnlySwipeFromEdge,
       child: transitionWidget,
     );
@@ -329,6 +335,7 @@ class _SwiftPageRouteTransitionState extends State<_SwiftPageRouteTransition> {
   bool _wasNextRouteModal = false;
   double _lastSheetBackgroundProgress = 1.0;
   BorderRadius? _lastSheetBackgroundBorderRadius;
+  bool _lastAnimateBackground = true;
 
   @override
   void initState() {
@@ -444,6 +451,19 @@ class _SwiftPageRouteTransitionState extends State<_SwiftPageRouteTransition> {
     final bool activeNextRouteSheet =
         isNextRouteSheet ||
         (_wasNextRouteSheet && widget.secondaryAnimation.value > 0.0);
+    final bool animateBackground;
+    if (nextRoute is SwiftSheetRoute) {
+      animateBackground = nextRoute.animateBackground;
+      _lastAnimateBackground = animateBackground;
+    } else if (nextStackRoute != null) {
+      animateBackground = nextStackRoute.animateBackground;
+      _lastAnimateBackground = animateBackground;
+    } else if (_wasNextRouteSheet && widget.secondaryAnimation.value > 0.0) {
+      animateBackground = _lastAnimateBackground;
+    } else {
+      animateBackground = true;
+      _lastAnimateBackground = true;
+    }
 
     final bool isNextRouteModal =
         nextRoute is SwiftModalRoute || nextRoute is SwiftScrollSheetRoute;
@@ -464,6 +484,9 @@ class _SwiftPageRouteTransitionState extends State<_SwiftPageRouteTransition> {
         ]),
         builder: (context, child) {
           if (activeNextRouteSheet) {
+            if (!animateBackground) {
+              return child ?? const SizedBox.shrink();
+            }
             final double sheetProgress;
             if (nextStackRoute != null) {
               sheetProgress = SwiftPageTransitions.sheetBackgroundProgressFor(
@@ -586,9 +609,25 @@ class _SwiftPageRouteTransitionState extends State<_SwiftPageRouteTransition> {
                   )
                 : child;
 
+            final shadowOpacity = currentPrimary.value * 0.3;
+            final shadowChild = Container(
+              decoration: BoxDecoration(
+                borderRadius: borderRadius,
+                boxShadow: [
+                  BoxShadow(
+                    color: CupertinoColors.black.withValues(alpha: shadowOpacity),
+                    offset: const Offset(0, 10),
+                    blurRadius: 100,
+                    spreadRadius: 0,
+                  ),
+                ],
+              ),
+              child: clippedChild,
+            );
+
             final transitionChild = Transform.translate(
               offset: Offset(translationX, 0.0),
-              child: clippedChild,
+              child: shadowChild,
             );
 
             return transitionChild;
@@ -652,12 +691,14 @@ class _SwiftBackGestureDetector<T> extends StatefulWidget {
     required this.child,
     required this.route,
     required this.backGestureWidth,
+    required this.canSwipe,
     required this.canOnlySwipeFromEdge,
   });
 
   final Widget child;
   final SwiftPageRoute<T> route;
   final double? backGestureWidth;
+  final bool canSwipe;
   final bool canOnlySwipeFromEdge;
 
   @override
@@ -688,7 +729,15 @@ class _SwiftBackGestureDetectorState<T>
       debugOwner: this,
       directionality: directionality,
       checkStartedCallback: () => _backGestureController != null,
-      enabledCallback: () => widget.route.popGestureEnabled,
+      enabledCallback: () {
+        if (!widget.canSwipe) return false;
+        final route = widget.route;
+        if (route.isFirst) return false;
+        if (route.willHandlePopInternally) return false;
+        if (route.fullscreenDialog) return false;
+        if (!route.isActive || !route.isCurrent) return false;
+        return true;
+      },
       detectionArea: () => widget.canOnlySwipeFromEdge
           ? (
               startOffset: 0.0,
@@ -828,11 +877,14 @@ class _SwiftBackGestureController<T> {
       }
 
       if (controller.isAnimating) {
-        final droppedBackTime = lerpDouble(
-          0,
-          maxDroppedSwipeForwardTime.toDouble(),
-          controller.value,
-        )!.floor();
+        final droppedBackTime = math.max(
+          lerpDouble(
+            0,
+            maxDroppedSwipeForwardTime.toDouble(),
+            controller.value,
+          )!.floor(),
+          250,
+        );
         unawaited(
           controller.animateBack(
             0.0,

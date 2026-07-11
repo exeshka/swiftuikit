@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:meta/meta.dart';
 import 'package:swiftuikit/src/routing/scroll_sheet_route.dart';
 import 'package:swiftuikit/src/services/screen_radius_service.dart';
 
@@ -10,6 +11,9 @@ import 'package:swiftuikit/src/services/screen_radius_service.dart';
 /// towards `1.0`), it smoothly decreases the horizontal/bottom margins to `0.0`,
 /// fades out the card drop shadows, and morphs the corner radii (top corners match the
 /// device's hardware corner radius, and bottom corners flatten out to `0.0`).
+///
+/// **Not stable** — API may change.
+@experimental
 class SwiftModalScaffold extends StatelessWidget {
   const SwiftModalScaffold({
     super.key,

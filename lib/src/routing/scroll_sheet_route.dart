@@ -4,12 +4,16 @@ import 'dart:math' as math;
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:meta/meta.dart';
 
 import 'package:swiftuikit/src/services/screen_radius_service.dart';
 import 'package:swiftuikit/src/routing/page_transitions.dart';
 import 'package:swiftuikit/src/routing/sheet_route.dart';
 
 /// Represents a snap detent (stop) for scroll sheet routes.
+///
+/// **Not stable** — API may change.
+@experimental
 abstract class SwiftSheetDetent {
   const SwiftSheetDetent();
 
@@ -107,6 +111,8 @@ List<double> _normalizeScrollSheetStops({
   return List.unmodifiable(values);
 }
 
+/// **Not stable** — API may change.
+@experimental
 class SwiftScrollSheetController extends ChangeNotifier
     implements ValueListenable<double> {
   SwiftScrollSheetController({double initialValue = 1.0})
@@ -223,11 +229,8 @@ class SwiftScrollSheetController extends ChangeNotifier
   }
 }
 
-/// Experimental scroll-driven version of [SwiftSheetRoute].
-///
-/// This route intentionally lives next to the production route while we test the
-/// reference-style architecture: the sheet extent is controlled by a scroll
-/// driven sheet, not by manually splitting pointer deltas in the route.
+/// **Not stable** — API may change.
+@experimental
 class SwiftScrollSheetRoute<T> extends PageRoute<T>
     with CupertinoRouteTransitionMixin<T> {
   SwiftScrollSheetRoute({
@@ -735,6 +738,9 @@ class _SwiftScrollSheetScope
 /// A gesture-directing widget that wraps any child element (like a custom header or drag handle)
 /// to make it drag-responsive. Translates vertical swipe gestures directly into size/offset updates
 /// for the parent [SwiftScrollSheetRoute] and snaps it on release.
+///
+/// **Not stable** — API may change.
+@experimental
 class SwiftScrollSheetDragTarget extends StatelessWidget {
   const SwiftScrollSheetDragTarget({super.key, required this.child});
 

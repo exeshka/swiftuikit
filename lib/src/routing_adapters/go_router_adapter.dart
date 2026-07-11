@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:meta/meta.dart';
 
 import 'package:swiftuikit/src/routing/page_transitions.dart';
 import 'package:swiftuikit/src/routing/scroll_sheet_route.dart';
@@ -17,11 +18,12 @@ class SwiftPage<T> extends Page<T> {
     super.canPop,
     super.onPopInvoked,
     this.minScale = 0.95,
-    this.pageOverlapFraction = 0.20,
+    this.pageOverlapFraction = 0.40,
     this.clipWithScreenRadius = true,
     this.radius,
     this.borderRadius,
     this.backGestureWidth,
+    this.canSwipe = true,
     this.canOnlySwipeFromEdge = false,
     this.transitionDuration = const Duration(milliseconds: 500),
   });
@@ -33,6 +35,7 @@ class SwiftPage<T> extends Page<T> {
   final double? radius;
   final BorderRadius? borderRadius;
   final double? backGestureWidth;
+  final bool canSwipe;
   final bool canOnlySwipeFromEdge;
   final Duration transitionDuration;
 
@@ -48,6 +51,7 @@ class SwiftPage<T> extends Page<T> {
       radius: radius,
       borderRadius: borderRadius,
       backGestureWidth: backGestureWidth,
+      canSwipe: canSwipe,
       canOnlySwipeFromEdge: canOnlySwipeFromEdge,
       routeCanPop: canPop,
       transitionDuration: transitionDuration,
@@ -71,6 +75,7 @@ class SwiftSheetPage<T> extends Page<T> {
     this.transitionDuration = const Duration(milliseconds: 500),
     this.showDragHandle = false,
     this.enableDrag = true,
+    this.animateBackground = true,
   });
 
   final Widget child;
@@ -79,6 +84,7 @@ class SwiftSheetPage<T> extends Page<T> {
   final Duration transitionDuration;
   final bool showDragHandle;
   final bool enableDrag;
+  final bool animateBackground;
 
   @override
   Route<T> createRoute(BuildContext context) {
@@ -90,6 +96,7 @@ class SwiftSheetPage<T> extends Page<T> {
       transitionDurationOverride: transitionDuration,
       showDragHandle: showDragHandle,
       enableDrag: enableDrag,
+      animateBackground: animateBackground,
       scrollableBuilder: (BuildContext context, ScrollController scrollController) =>
           PrimaryScrollController(
             controller: scrollController,
@@ -101,6 +108,9 @@ class SwiftSheetPage<T> extends Page<T> {
 
 /// A [Page] adapter for go_router and Navigator 2.0 that uses
 /// [SwiftScrollSheetRoute].
+///
+/// **Not stable** — API may change.
+@experimental
 class SwiftScrollSheetPage<T> extends Page<T> {
   const SwiftScrollSheetPage({
     required this.child,
@@ -162,6 +172,9 @@ class SwiftScrollSheetPage<T> extends Page<T> {
 
 /// A [Page] adapter for go_router and Navigator 2.0 that uses
 /// [modal_route.SwiftModalRoute].
+///
+/// **Not stable** — API may change.
+@experimental
 class SwiftModalPage<T> extends Page<T> {
   const SwiftModalPage({
     required this.child,

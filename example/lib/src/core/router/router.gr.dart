@@ -10,15 +10,31 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:auto_route/auto_route.dart' as _i6;
-import 'package:example/src/screens/detail_screen.dart' as _i1;
-import 'package:example/src/screens/home_screen.dart' as _i2;
-import 'package:example/src/screens/modal_screen.dart' as _i3;
+import 'package:example/src/screens/detail_no_swipe_screen.dart' as _i1;
+import 'package:example/src/screens/detail_screen.dart' as _i2;
+import 'package:example/src/screens/home_screen.dart' as _i3;
 import 'package:example/src/screens/sheet_screen.dart' as _i4;
 import 'package:example/src/screens/splash_screen.dart' as _i5;
 import 'package:flutter/material.dart' as _i7;
 
 /// generated route for
-/// [_i1.DetailScreen]
+/// [_i1.DetailNoSwipeScreen]
+class DetailNoSwipeRoute extends _i6.PageRouteInfo<void> {
+  const DetailNoSwipeRoute({List<_i6.PageRouteInfo>? children})
+    : super(DetailNoSwipeRoute.name, initialChildren: children);
+
+  static const String name = 'DetailNoSwipeRoute';
+
+  static _i6.PageInfo page = _i6.PageInfo(
+    name,
+    builder: (data) {
+      return const _i1.DetailNoSwipeScreen();
+    },
+  );
+}
+
+/// generated route for
+/// [_i2.DetailScreen]
 class DetailRoute extends _i6.PageRouteInfo<DetailRouteArgs> {
   DetailRoute({
     _i7.Key? key,
@@ -27,7 +43,6 @@ class DetailRoute extends _i6.PageRouteInfo<DetailRouteArgs> {
   }) : super(
          DetailRoute.name,
          args: DetailRouteArgs(key: key, heroId: heroId),
-         rawPathParams: {'heroId': heroId},
          initialChildren: children,
        );
 
@@ -36,11 +51,8 @@ class DetailRoute extends _i6.PageRouteInfo<DetailRouteArgs> {
   static _i6.PageInfo page = _i6.PageInfo(
     name,
     builder: (data) {
-      final pathParams = data.inheritedPathParams;
-      final args = data.argsAs<DetailRouteArgs>(
-        orElse: () => DetailRouteArgs(heroId: pathParams.getString('heroId')),
-      );
-      return _i1.DetailScreen(key: args.key, heroId: args.heroId);
+      final args = data.argsAs<DetailRouteArgs>();
+      return _i2.DetailScreen(key: args.key, heroId: args.heroId);
     },
   );
 }
@@ -69,7 +81,7 @@ class DetailRouteArgs {
 }
 
 /// generated route for
-/// [_i2.HomeScreen]
+/// [_i3.HomeScreen]
 class HomeRoute extends _i6.PageRouteInfo<void> {
   const HomeRoute({List<_i6.PageRouteInfo>? children})
     : super(HomeRoute.name, initialChildren: children);
@@ -79,23 +91,55 @@ class HomeRoute extends _i6.PageRouteInfo<void> {
   static _i6.PageInfo page = _i6.PageInfo(
     name,
     builder: (data) {
-      return const _i2.HomeScreen();
+      return const _i3.HomeScreen();
     },
   );
 }
 
 /// generated route for
-/// [_i3.ModalScreen]
-class ModalRoute extends _i6.PageRouteInfo<void> {
-  const ModalRoute({List<_i6.PageRouteInfo>? children})
-    : super(ModalRoute.name, initialChildren: children);
+/// [_i4.SheetCustomRadiusScreen]
+class SheetCustomRadiusRoute extends _i6.PageRouteInfo<void> {
+  const SheetCustomRadiusRoute({List<_i6.PageRouteInfo>? children})
+    : super(SheetCustomRadiusRoute.name, initialChildren: children);
 
-  static const String name = 'ModalRoute';
+  static const String name = 'SheetCustomRadiusRoute';
 
   static _i6.PageInfo page = _i6.PageInfo(
     name,
     builder: (data) {
-      return const _i3.ModalScreen();
+      return const _i4.SheetCustomRadiusScreen();
+    },
+  );
+}
+
+/// generated route for
+/// [_i4.SheetNoBgScreen]
+class SheetNoBgRoute extends _i6.PageRouteInfo<void> {
+  const SheetNoBgRoute({List<_i6.PageRouteInfo>? children})
+    : super(SheetNoBgRoute.name, initialChildren: children);
+
+  static const String name = 'SheetNoBgRoute';
+
+  static _i6.PageInfo page = _i6.PageInfo(
+    name,
+    builder: (data) {
+      return const _i4.SheetNoBgScreen();
+    },
+  );
+}
+
+/// generated route for
+/// [_i4.SheetNoSwipeScreen]
+class SheetNoSwipeRoute extends _i6.PageRouteInfo<void> {
+  const SheetNoSwipeRoute({List<_i6.PageRouteInfo>? children})
+    : super(SheetNoSwipeRoute.name, initialChildren: children);
+
+  static const String name = 'SheetNoSwipeRoute';
+
+  static _i6.PageInfo page = _i6.PageInfo(
+    name,
+    builder: (data) {
+      return const _i4.SheetNoSwipeScreen();
     },
   );
 }

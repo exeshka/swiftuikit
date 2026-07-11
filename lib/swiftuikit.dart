@@ -1,5 +1,3 @@
-export 'package:inspire_blur/inspire_blur.dart';
-
 export 'src/widgets/swift_step_sheet.dart';
 export 'src/widgets/swift_modal_scaffold.dart';
 

@@ -2,6 +2,7 @@ import 'dart:math' as math;
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:meta/meta.dart';
 import 'package:swiftuikit/src/services/screen_radius_service.dart';
 import 'package:swiftuikit/src/routing/page_transitions.dart';
 
@@ -12,6 +13,9 @@ import 'package:swiftuikit/src/routing/page_transitions.dart';
 /// Slides up from the bottom, supports drag-to-dismiss with scroll handoff,
 /// and background dimming. Does NOT participate in the sheet stack system
 /// (no [SwiftSheetStackRoute] — previous route does not animate).
+///
+/// **Not stable** — API may change.
+@experimental
 class SwiftModalRoute<T> extends PageRoute<T>
     with CupertinoRouteTransitionMixin<T> {
   SwiftModalRoute({

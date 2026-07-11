@@ -1,3 +1,5 @@
+// ignore_for_file: experimental_member_use
+
 import 'package:auto_route/auto_route.dart';
 import 'package:example/src/core/router/router.gr.dart';
 import 'package:swiftuikit/swiftuikit.dart';
@@ -9,16 +11,23 @@ class AppRouter extends RootStackRouter {
     SwiftPageAutoRoute(page: SplashRoute.page, initial: true),
     SwiftPageAutoRoute(page: HomeRoute.page),
     SwiftPageAutoRoute(page: DetailRoute.page),
-    SwiftSheetAutoRoute(
-      page: SheetRoute.page,
-      sheetRadius: 38,
-      showDragHandle: true,
-      enableDrag: true,
+    SwiftPageAutoRoute(
+      page: DetailNoSwipeRoute.page,
+      canSwipe: false,
+      canOnlySwipeFromEdge: true,
     ),
-    SwiftScrollSheetAutoRoute(
-      page: ModalRoute.page,
-      detents: [SwiftSheetDetent.fraction(0.0), SwiftSheetDetent.height(420)],
-      initialDetent: SwiftSheetDetent.height(420),
+    SwiftSheetAutoRoute(page: SheetRoute.page),
+    SwiftSheetAutoRoute(
+      page: SheetNoBgRoute.page,
+      animateBackground: false,
+    ),
+    SwiftSheetAutoRoute(
+      page: SheetNoSwipeRoute.page,
+      enableDrag: false,
+    ),
+    SwiftSheetAutoRoute(
+      page: SheetCustomRadiusRoute.page,
+      sheetRadius: 16,
     ),
   ];
 }

@@ -1,3 +1,19 @@
+## 0.1.2
+
+### Fixes
+- `animateBackground: false` now correctly disables background animation when pushing a `SwiftSheetRoute`
+- Custom `sheetRadius` / `sheetBorderRadius` now applies to the background page's corner radius during sheet transitions
+
+### API
+- Marked experimental route types with `@experimental`: `SwiftScrollSheetRoute`, `SwiftScrollSheetController`, `SwiftSheetDetent`, `SwiftScrollSheetDragTarget`, `SwiftModalRoute`, `SwiftPageViewAnimation`, `SwiftStepSheet`, `SwiftModalScaffold`, and their go_router / auto_route adapters
+
+### Documentation
+- Added README with quick start, setup guide, route type reference, and property tables for `SwiftPage` and `SwiftSheet`
+- Added roadmap section
+
+### Example
+- Added demo screens: `SwiftPage`, `SwiftPage` (no swipe), `SwiftSheet`, `SwiftSheet` (no background animation), `SwiftSheet` (no drag), `SwiftSheet` (custom radius 16)
+
 ## 0.1.1
 
 ### Fixes
