@@ -1,8 +1,8 @@
 name: swiftuikit
-description: "A new Flutter package project."
+description: "iOS-style page transitions, sheet routes, and routing adapters for Flutter. Provides SwiftPage and SwiftSheet with swipe-back gestures, drag-to-dismiss, and custom transitions for go_router and auto_route."
 version: 0.1.2
 publish_to: none
-homepage:
+homepage: https://github.com/exeshka/swiftuikit
 
 environment:
   sdk: ^3.12.1
@@ -11,7 +11,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  auto_route:
+  auto_route: ^11.1.0
   screen_corner_radius:
     git:
       url: https://github.com/exeshka/screen_corner_radius
