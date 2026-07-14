@@ -52,6 +52,14 @@ class HomeScreen extends StatelessWidget {
             color: Colors.green.shade600,
             onTap: () => context.router.push(const SheetCustomRadiusRoute()),
           ),
+          const SizedBox(height: 24),
+          _SectionHeader('Hero Flow'),
+          _DemoTile(
+            label: 'Hero Test Flow',
+            subtitle: 'Page → Page → Sheet → Sheet with CupertinoNavBar',
+            color: Colors.deepPurple,
+            onTap: () => context.router.push(const HeroRouteOneRoute()),
+          ),
         ],
       ),
     );

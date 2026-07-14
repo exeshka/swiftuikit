@@ -237,8 +237,10 @@ class SwiftSheetTransition extends StatefulWidget {
     double? sheetRadius,
     BorderRadius? sheetBorderRadius,
   }) {
-    if (SwiftSheetRoute.hasParentSheet(context)) {
-      return _delegatedCoverSheetSecondaryTransition(secondaryAnimation, child);
+    final route = ModalRoute.of(context);
+    final isSheet = route is SwiftSheetRoute || route is CupertinoSheetRoute;
+    if (isSheet || SwiftSheetRoute.hasParentSheet(context)) {
+      return _delegatedCoverSheetSecondaryTransition(context, secondaryAnimation, child);
     }
     final bool linear = Navigator.of(context).userGestureInProgress;
 
@@ -310,7 +312,6 @@ class SwiftSheetTransition extends StatefulWidget {
       end: 1.0 - SwiftPageTransitions.sheetScaleFactor,
     );
     final Animation<double> scaleAnimation = curvedAnimation.drive(scaleTween);
-    curvedAnimation.dispose();
 
     final isDarkMode = CupertinoTheme.brightnessOf(context) == Brightness.dark;
     final overlayColor = isDarkMode
@@ -371,11 +372,13 @@ class SwiftSheetTransition extends StatefulWidget {
   }
 
   static Widget _delegatedCoverSheetSecondaryTransition(
+    BuildContext context,
     Animation<double> secondaryAnimation,
     Widget? child,
   ) {
-    const Curve curve = Curves.linearToEaseOut;
-    const Curve reverseCurve = Curves.easeInToLinear;
+    final bool linear = Navigator.of(context).userGestureInProgress;
+    final Curve curve = linear ? Curves.linear : Curves.linearToEaseOut;
+    final Curve reverseCurve = linear ? Curves.linear : Curves.easeInToLinear;
     final curvedAnimation = CurvedAnimation(
       curve: curve,
       reverseCurve: reverseCurve,
@@ -393,7 +396,6 @@ class SwiftSheetTransition extends StatefulWidget {
       end: 1.0 - SwiftPageTransitions.sheetScaleFactor,
     );
     final Animation<double> scaleAnimation = curvedAnimation.drive(scaleTween);
-    curvedAnimation.dispose();
 
     return SlideTransition(
       position: slideAnimation,
@@ -618,8 +620,7 @@ class _StretchDragControllerProvider extends InheritedWidget {
 /// Any time a SwiftSheetRoute contains a large scrollable that might conflict
 /// with the dismiss drag gesture, pass the provided [ScrollController] from `scrollableBuilder`
 /// to the scrollable.
-class SwiftSheetRoute<T> extends PageRoute<T>
-    with _SwiftSheetRouteTransitionMixin<T> {
+class SwiftSheetRoute<T> extends CupertinoSheetRoute<T> {
   /// Creates a page route that displays an iOS styled sheet.
   SwiftSheetRoute({
     super.settings,
@@ -627,58 +628,35 @@ class SwiftSheetRoute<T> extends PageRoute<T>
       'Use scrollableBuilder instead. '
       'This feature was deprecated after v3.40.0-0.2.pre.',
     )
-    this.builder,
-    this.scrollableBuilder,
-    this.enableDrag = true,
-    this.showDragHandle = false,
+    WidgetBuilder? builder,
+    ScrollableWidgetBuilder? scrollableBuilder,
+    bool enableDrag = true,
+    bool showDragHandle = false,
     double? topGap,
     this.sheetRadius,
     this.sheetBorderRadius,
     this.routeCanPop = true,
     this.animateBackground = true,
     this.transitionDurationOverride = const Duration(milliseconds: 500),
-  }) : assert(
-         topGap == null || (topGap >= 0.0 && topGap <= 0.9),
-         'topGap must be between 0.0 and 0.9',
-       ),
-       assert(
-         builder != null || scrollableBuilder != null,
-         'Either scrollableBuilder or builder must not be null',
-       ),
-       _topGap = topGap;
-
-  /// Builds the primary contents of the sheet route.
-  @Deprecated(
-    'Use scrollableBuilder instead. '
-    'This feature was deprecated after v3.40.0-0.2.pre.',
-  )
-  final WidgetBuilder? builder;
-
-  /// Builds the primary contents of the sheet route with a provided [ScrollController].
-  final ScrollableWidgetBuilder? scrollableBuilder;
-
-  ScrollableWidgetBuilder get _effectiveBuilder {
-    return scrollableBuilder ??
-        (BuildContext context, ScrollController controller) =>
-            builder!(context);
-  }
-
-  @override
-  final bool enableDrag;
+  }) : _topGap = topGap,
+       super(
+         builder: builder,
+         scrollableBuilder: scrollableBuilder,
+         enableDrag: enableDrag,
+         showDragHandle: showDragHandle,
+         topGap: topGap,
+       );
 
   /// Corner radius value.
-  @override
   final double? sheetRadius;
 
   /// Border radius geometry.
-  @override
   final BorderRadius? sheetBorderRadius;
 
   /// Whether the route can be popped.
   final bool routeCanPop;
 
   /// Whether to animate the previous page when this sheet is pushed on top.
-  @override
   final bool animateBackground;
 
   /// Customized duration of transitions.
@@ -690,17 +668,83 @@ class SwiftSheetRoute<T> extends PageRoute<T>
   @override
   double get topGap => _topGap ?? SwiftPageTransitions.sheetTopGapRatio;
 
-  @override
-  bool get _hasCustomTopGap => _topGap != null;
-
-  /// Shows a drag handle at the top of the sheet.
-  ///
-  /// Defaults to false.
-  final bool showDragHandle;
-
   Route? _nextRoute;
   Route? get nextRoute => _nextRoute;
   Route? previousRoute;
+
+  @override
+  Widget buildContent(BuildContext context) {
+    final Widget superWidget = super.buildContent(context);
+    return _SwiftSheetScope(
+      radius: sheetRadius,
+      borderRadius: sheetBorderRadius,
+      child: _replaceClipRadius(superWidget, context),
+    );
+  }
+
+  @override
+  DelegatedTransitionBuilder? get delegatedTransition {
+    if (_topGap != null) {
+      return null;
+    }
+    if (!animateBackground) {
+      return null;
+    }
+    return (context, animation, secondaryAnimation, allowSnapshotting, child) {
+      return SwiftSheetTransition.delegateTransition(
+        context,
+        animation,
+        secondaryAnimation,
+        allowSnapshotting,
+        child,
+        sheetRadius: sheetRadius,
+        sheetBorderRadius: sheetBorderRadius,
+      );
+    };
+  }
+
+  Widget _replaceClipRadius(Widget widget, BuildContext context) {
+    final borderRadius = _resolveSheetBorderRadius(context);
+    
+    if (widget is MediaQuery) {
+      return MediaQuery(
+        data: widget.data,
+        child: _replaceClipRadius(widget.child, context),
+      );
+    }
+    if (widget is ClipRSuperellipse) {
+      return ClipRSuperellipse(
+        borderRadius: borderRadius,
+        clipBehavior: Clip.antiAliasWithSaveLayer,
+        child: widget.child,
+      );
+    }
+    return widget;
+  }
+
+  @override
+  Widget buildTransitions(
+    BuildContext context,
+    Animation<double> animation,
+    Animation<double> secondaryAnimation,
+    Widget child,
+  ) {
+    return _SwiftSheetRouteTransitionMixin.buildPageTransitions<T>(
+      this,
+      context,
+      animation,
+      secondaryAnimation,
+      child,
+      enableDrag,
+      topGap,
+    );
+  }
+
+  @override
+  Duration get transitionDuration => transitionDurationOverride;
+
+  @override
+  Duration get reverseTransitionDuration => transitionDurationOverride;
 
   @override
   void didChangeNext(Route? nextRoute) {
@@ -727,77 +771,7 @@ class SwiftSheetRoute<T> extends PageRoute<T>
     previousRoute?.changedInternalState();
   }
 
-  Widget _sheetWithDragHandle(
-    BuildContext context,
-    ScrollController controller,
-  ) {
-    if (!showDragHandle) {
-      return _effectiveBuilder(context, controller);
-    }
 
-    // Values derived from Apple's Figma files and a simulator running iOS 18.2.
-    const dragHandleTopPadding = 5.0;
-    const dragHandleHeight = 5.0;
-    const dragHandleWidth = 36.0;
-    const dragHandlePadding = 15.0;
-
-    return Stack(
-      fit: StackFit.expand,
-      children: <Widget>[
-        MediaQuery(
-          data: MediaQuery.of(
-            context,
-          ).copyWith(padding: const EdgeInsets.only(top: dragHandlePadding)),
-          child: _effectiveBuilder(context, controller),
-        ),
-        const Align(
-          alignment: Alignment.topCenter,
-          child: Padding(
-            padding: EdgeInsetsGeometry.only(top: dragHandleTopPadding),
-            child: DecoratedBox(
-              decoration: ShapeDecoration(
-                shape: RoundedSuperellipseBorder(
-                  borderRadius: BorderRadiusGeometry.all(
-                    Radius.circular(dragHandleWidth / 2),
-                  ),
-                ),
-                color: CupertinoColors.tertiaryLabel,
-              ),
-              child: SizedBox(height: dragHandleHeight, width: dragHandleWidth),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  @override
-  Widget buildContent(BuildContext context) {
-    final borderRadius = _resolveSheetBorderRadius(context);
-    return MediaQuery.removePadding(
-      context: context,
-      removeTop: true,
-      child: ClipRSuperellipse(
-        borderRadius: borderRadius,
-        child: CupertinoUserInterfaceLevel(
-          data: CupertinoUserInterfaceLevelData.elevated,
-          child: _SwiftSheetScope(
-            radius: sheetRadius,
-            borderRadius: sheetBorderRadius,
-            child: _SwiftDraggableScrollableSheet<T>(
-              enabledCallback: () => enableDrag,
-              onStartPopGesture: () =>
-                  _SwiftSheetRouteTransitionMixin._startPopGesture<T>(
-                    this,
-                    topGap,
-                  ),
-              builder: _sheetWithDragHandle,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
 
   BorderRadius _resolveSheetBorderRadius(BuildContext context) {
     return SwiftPageTransitions.resolveSheetBorderRadius(
@@ -840,12 +814,6 @@ class SwiftSheetRoute<T> extends PageRoute<T>
     if (!routeCanPop) return RoutePopDisposition.doNotPop;
     return super.popDisposition;
   }
-
-  @override
-  Duration get transitionDuration => transitionDurationOverride;
-
-  @override
-  Duration get reverseTransitionDuration => transitionDurationOverride;
 }
 
 // Internally used to see if another sheet is in the tree already.
