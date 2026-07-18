@@ -10,10 +10,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  auto_route:
-  screen_corner_radius:
-    git:
-      url: https://github.com/exeshka/screen_corner_radius
+  auto_route: ^11.1.0
+  screen_corner_radius: ^3.0.0
   equatable: ^2.0.7
   meta: ^1.15.0
 

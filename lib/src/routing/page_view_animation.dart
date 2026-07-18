@@ -3,8 +3,6 @@ import 'package:meta/meta.dart';
 
 import 'package:swiftuikit/src/services/screen_radius_service.dart';
 
-const double _pagePositionTolerance = 0.0001;
-
 /// **Not stable** — API may change.
 @experimental
 class SwiftPageViewAnimation extends StatefulWidget {
