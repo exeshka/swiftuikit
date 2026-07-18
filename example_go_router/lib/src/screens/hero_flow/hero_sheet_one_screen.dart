@@ -1,21 +1,21 @@
-import 'package:auto_route/auto_route.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:example/src/core/router/router.gr.dart';
+import 'package:go_router/go_router.dart';
 
-@RoutePage()
-class HeroPageOneScreen extends StatelessWidget {
-  const HeroPageOneScreen({super.key});
+class HeroSheetOneScreen extends StatelessWidget {
+  const HeroSheetOneScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: CupertinoNavigationBar(
-        middle: const Text('Page One'),
-        previousPageTitle: 'Home',
-        backgroundColor: CupertinoColors.systemBlue.withValues(alpha: 0.1),
-
-        enableBackgroundFilterBlur: false,
+        middle: const Text('Sheet One'),
+        backgroundColor: CupertinoColors.systemOrange.withValues(alpha: 0.9),
+        leading: CupertinoButton(
+          padding: EdgeInsets.zero,
+          onPressed: () => context.pop(),
+          child: const Text('Close'),
+        ),
       ),
       body: SafeArea(
         child: Center(
@@ -32,22 +32,20 @@ class HeroPageOneScreen extends StatelessWidget {
               ),
               const SizedBox(height: 24),
               Text(
-                'SwiftPage #1',
-                style: CupertinoTheme.of(
-                  context,
-                ).textTheme.navLargeTitleTextStyle,
+                'SwiftSheet #1',
+                style: CupertinoTheme.of(context).textTheme.navLargeTitleTextStyle,
               ),
               const SizedBox(height: 8),
               Text(
-                'Swipe right to gesture back',
+                'Hero continues through sheet transitions',
                 style: CupertinoTheme.of(context).textTheme.textStyle.copyWith(
                   color: CupertinoColors.secondaryLabel,
                 ),
               ),
               const SizedBox(height: 32),
               CupertinoButton.filled(
-                onPressed: () => context.router.push(const HeroRouteTwoRoute()),
-                child: const Text('Open Page Two'),
+                onPressed: () => context.push('/hero/sheet-two'),
+                child: const Text('Open Sheet Two'),
               ),
             ],
           ),

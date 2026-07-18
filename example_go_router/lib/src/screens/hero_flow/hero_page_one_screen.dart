@@ -1,9 +1,7 @@
-import 'package:auto_route/auto_route.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:example/src/core/router/router.gr.dart';
+import 'package:go_router/go_router.dart';
 
-@RoutePage()
 class HeroPageOneScreen extends StatelessWidget {
   const HeroPageOneScreen({super.key});
 
@@ -12,10 +10,7 @@ class HeroPageOneScreen extends StatelessWidget {
     return Scaffold(
       appBar: CupertinoNavigationBar(
         middle: const Text('Page One'),
-        previousPageTitle: 'Home',
         backgroundColor: CupertinoColors.systemBlue.withValues(alpha: 0.1),
-
-        enableBackgroundFilterBlur: false,
       ),
       body: SafeArea(
         child: Center(
@@ -33,9 +28,7 @@ class HeroPageOneScreen extends StatelessWidget {
               const SizedBox(height: 24),
               Text(
                 'SwiftPage #1',
-                style: CupertinoTheme.of(
-                  context,
-                ).textTheme.navLargeTitleTextStyle,
+                style: CupertinoTheme.of(context).textTheme.navLargeTitleTextStyle,
               ),
               const SizedBox(height: 8),
               Text(
@@ -46,7 +39,7 @@ class HeroPageOneScreen extends StatelessWidget {
               ),
               const SizedBox(height: 32),
               CupertinoButton.filled(
-                onPressed: () => context.router.push(const HeroRouteTwoRoute()),
+                onPressed: () => context.push('/hero/page-two'),
                 child: const Text('Open Page Two'),
               ),
             ],

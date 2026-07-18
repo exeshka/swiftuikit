@@ -1,8 +1,7 @@
 name: swiftuikit
-description: "A new Flutter package project."
-version: 0.1.2
-publish_to: none
-homepage:
+description: "iOS-style page transitions, sheet routes, scroll sheets, and modal routes for Flutter."
+version: 0.1.3
+homepage: https://github.com/exeshka/swiftuikit
 
 environment:
   sdk: ^3.12.1

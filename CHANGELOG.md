@@ -1,3 +1,12 @@
+## 0.1.3
+
+### Fixes
+- Fixed `SwiftSheetRoute` stacking animation in go_router: previous sheet now correctly animates UP (not DOWN) when a new sheet is pushed on top
+- `delegateTransition` now checks both `SwiftSheetScope` and `CupertinoSheetScope` for parent sheet detection
+
+### Example
+- Added full go_router example (`example_go_router/`) mirroring the auto_route demo: SwiftPage, SwiftSheet variants, and Hero Flow with nested sheet stacking
+
 ## 0.1.2
 
 ### Fixes

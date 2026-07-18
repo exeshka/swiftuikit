@@ -239,7 +239,9 @@ class SwiftSheetTransition extends StatefulWidget {
   }) {
     final route = ModalRoute.of(context);
     final isSheet = route is SwiftSheetRoute || route is CupertinoSheetRoute;
-    if (isSheet || SwiftSheetRoute.hasParentSheet(context)) {
+    if (isSheet ||
+        SwiftSheetRoute.hasParentSheet(context) ||
+        CupertinoSheetRoute.hasParentSheet(context)) {
       return _delegatedCoverSheetSecondaryTransition(context, secondaryAnimation, child);
     }
     final bool linear = Navigator.of(context).userGestureInProgress;
