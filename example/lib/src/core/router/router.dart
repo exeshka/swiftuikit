@@ -17,17 +17,15 @@ class AppRouter extends RootStackRouter {
       canOnlySwipeFromEdge: true,
     ),
     SwiftSheetAutoRoute(page: SheetRoute.page),
-    SwiftSheetAutoRoute(
-      page: SheetNoBgRoute.page,
-      animateBackground: false,
-    ),
-    SwiftSheetAutoRoute(
-      page: SheetNoSwipeRoute.page,
-      enableDrag: false,
-    ),
-    SwiftSheetAutoRoute(
-      page: SheetCustomRadiusRoute.page,
-      sheetRadius: 16,
-    ),
+    SwiftSheetAutoRoute(page: SheetNoBgRoute.page, animateBackground: false),
+    SwiftSheetAutoRoute(page: SheetNoSwipeRoute.page, enableDrag: false),
+    SwiftSheetAutoRoute(page: SheetCustomRadiusRoute.page, sheetRadius: 16),
+    SwiftPageAutoRoute(page: HeroRouteOneRoute.page),
+    SwiftPageAutoRoute(page: HeroRouteTwoRoute.page),
+    SwiftSheetAutoRoute(page: HeroSheetOneRoute.page),
+    SwiftSheetAutoRoute(page: HeroSheetTwoRoute.page),
+    SwiftSheetAutoRoute(page: HeroSheetThreeRoute.page),
+    SwiftSheetAutoRoute(page: HeroSheetFourRoute.page),
+    SwiftSheetAutoRoute(page: HeroSheetFiveRoute.page),
   ];
 }

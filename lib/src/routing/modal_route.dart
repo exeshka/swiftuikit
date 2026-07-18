@@ -24,12 +24,11 @@ class SwiftModalRoute<T> extends PageRoute<T>
     this.sheetRadius,
     this.sheetBorderRadius,
     this.routeCanPop = true,
-    bool barrierDismissible = true,
+    this._barrierDismissible = true,
     this.barrierOpacity = 0.3,
     this.transitionDurationOverride = const Duration(milliseconds: 400),
     this.dismissThreshold = 0.3,
-  })  : _barrierDismissible = barrierDismissible,
-        super(settings: settings);
+  })  : super(settings: settings);
 
   final Widget child;
   final double? sheetRadius;

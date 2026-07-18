@@ -1,17 +1,14 @@
-import 'package:auto_route/auto_route.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
-import 'package:example/src/core/router/router.gr.dart';
-
-@RoutePage()
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('swiftuikit demos')),
+      appBar: AppBar(title: const Text('swiftuikit demos (go_router)')),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
@@ -19,12 +16,12 @@ class HomeScreen extends StatelessWidget {
           _DemoTile(
             label: 'SwiftPage',
             subtitle: 'Default iOS transition + swipe back',
-            onTap: () => context.router.push(DetailRoute(heroId: '')),
+            onTap: () => context.push('/detail'),
           ),
           _DemoTile(
             label: 'SwiftPage (no swipe)',
             subtitle: 'canSwipe: false, canOnlySwipeFromEdge: true',
-            onTap: () => context.router.push(const DetailNoSwipeRoute()),
+            onTap: () => context.push('/detail-no-swipe'),
           ),
           const SizedBox(height: 24),
           _SectionHeader('SwiftSheet'),
@@ -32,25 +29,25 @@ class HomeScreen extends StatelessWidget {
             label: 'SwiftSheet',
             subtitle: 'Default sheet with drag-to-dismiss',
             color: Colors.green.shade600,
-            onTap: () => context.router.push(const SheetRoute()),
+            onTap: () => context.push('/sheet'),
           ),
           _DemoTile(
             label: 'SwiftSheet (no bg animation)',
             subtitle: 'animateBackground: false',
             color: Colors.green.shade600,
-            onTap: () => context.router.push(const SheetNoBgRoute()),
+            onTap: () => context.push('/sheet-no-bg'),
           ),
           _DemoTile(
             label: 'SwiftSheet (no swipe)',
             subtitle: 'enableDrag: false',
             color: Colors.green.shade600,
-            onTap: () => context.router.push(const SheetNoSwipeRoute()),
+            onTap: () => context.push('/sheet-no-swipe'),
           ),
           _DemoTile(
             label: 'SwiftSheet (radius 16)',
             subtitle: 'sheetRadius: 16',
             color: Colors.green.shade600,
-            onTap: () => context.router.push(const SheetCustomRadiusRoute()),
+            onTap: () => context.push('/sheet-custom-radius'),
           ),
           const SizedBox(height: 24),
           _SectionHeader('Hero Flow'),
@@ -58,7 +55,7 @@ class HomeScreen extends StatelessWidget {
             label: 'Hero Test Flow',
             subtitle: 'Page → Page → Sheet → Sheet with CupertinoNavBar',
             color: Colors.deepPurple,
-            onTap: () => context.router.push(const HeroRouteOneRoute()),
+            onTap: () => context.push('/hero/page-one'),
           ),
         ],
       ),

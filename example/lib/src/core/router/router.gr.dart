@@ -9,23 +9,35 @@
 // coverage:ignore-file
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'package:auto_route/auto_route.dart' as _i6;
+import 'package:auto_route/auto_route.dart' as _i13;
 import 'package:example/src/screens/detail_no_swipe_screen.dart' as _i1;
 import 'package:example/src/screens/detail_screen.dart' as _i2;
-import 'package:example/src/screens/home_screen.dart' as _i3;
-import 'package:example/src/screens/sheet_screen.dart' as _i4;
-import 'package:example/src/screens/splash_screen.dart' as _i5;
-import 'package:flutter/material.dart' as _i7;
+import 'package:example/src/screens/hero_flow/hero_page_one_screen.dart' as _i3;
+import 'package:example/src/screens/hero_flow/hero_page_two_screen.dart' as _i4;
+import 'package:example/src/screens/hero_flow/hero_sheet_five_screen.dart'
+    as _i5;
+import 'package:example/src/screens/hero_flow/hero_sheet_four_screen.dart'
+    as _i6;
+import 'package:example/src/screens/hero_flow/hero_sheet_one_screen.dart'
+    as _i7;
+import 'package:example/src/screens/hero_flow/hero_sheet_three_screen.dart'
+    as _i8;
+import 'package:example/src/screens/hero_flow/hero_sheet_two_screen.dart'
+    as _i9;
+import 'package:example/src/screens/home_screen.dart' as _i10;
+import 'package:example/src/screens/sheet_screen.dart' as _i11;
+import 'package:example/src/screens/splash_screen.dart' as _i12;
+import 'package:flutter/material.dart' as _i14;
 
 /// generated route for
 /// [_i1.DetailNoSwipeScreen]
-class DetailNoSwipeRoute extends _i6.PageRouteInfo<void> {
-  const DetailNoSwipeRoute({List<_i6.PageRouteInfo>? children})
+class DetailNoSwipeRoute extends _i13.PageRouteInfo<void> {
+  const DetailNoSwipeRoute({List<_i13.PageRouteInfo>? children})
     : super(DetailNoSwipeRoute.name, initialChildren: children);
 
   static const String name = 'DetailNoSwipeRoute';
 
-  static _i6.PageInfo page = _i6.PageInfo(
+  static _i13.PageInfo page = _i13.PageInfo(
     name,
     builder: (data) {
       return const _i1.DetailNoSwipeScreen();
@@ -35,11 +47,11 @@ class DetailNoSwipeRoute extends _i6.PageRouteInfo<void> {
 
 /// generated route for
 /// [_i2.DetailScreen]
-class DetailRoute extends _i6.PageRouteInfo<DetailRouteArgs> {
+class DetailRoute extends _i13.PageRouteInfo<DetailRouteArgs> {
   DetailRoute({
-    _i7.Key? key,
+    _i14.Key? key,
     required String heroId,
-    List<_i6.PageRouteInfo>? children,
+    List<_i13.PageRouteInfo>? children,
   }) : super(
          DetailRoute.name,
          args: DetailRouteArgs(key: key, heroId: heroId),
@@ -48,7 +60,7 @@ class DetailRoute extends _i6.PageRouteInfo<DetailRouteArgs> {
 
   static const String name = 'DetailRoute';
 
-  static _i6.PageInfo page = _i6.PageInfo(
+  static _i13.PageInfo page = _i13.PageInfo(
     name,
     builder: (data) {
       final args = data.argsAs<DetailRouteArgs>();
@@ -60,7 +72,7 @@ class DetailRoute extends _i6.PageRouteInfo<DetailRouteArgs> {
 class DetailRouteArgs {
   const DetailRouteArgs({this.key, required this.heroId});
 
-  final _i7.Key? key;
+  final _i14.Key? key;
 
   final String heroId;
 
@@ -81,97 +93,209 @@ class DetailRouteArgs {
 }
 
 /// generated route for
-/// [_i3.HomeScreen]
-class HomeRoute extends _i6.PageRouteInfo<void> {
-  const HomeRoute({List<_i6.PageRouteInfo>? children})
+/// [_i3.HeroPageOneScreen]
+class HeroRouteOneRoute extends _i13.PageRouteInfo<void> {
+  const HeroRouteOneRoute({List<_i13.PageRouteInfo>? children})
+    : super(HeroRouteOneRoute.name, initialChildren: children);
+
+  static const String name = 'HeroRouteOneRoute';
+
+  static _i13.PageInfo page = _i13.PageInfo(
+    name,
+    builder: (data) {
+      return const _i3.HeroPageOneScreen();
+    },
+  );
+}
+
+/// generated route for
+/// [_i4.HeroPageTwoScreen]
+class HeroRouteTwoRoute extends _i13.PageRouteInfo<void> {
+  const HeroRouteTwoRoute({List<_i13.PageRouteInfo>? children})
+    : super(HeroRouteTwoRoute.name, initialChildren: children);
+
+  static const String name = 'HeroRouteTwoRoute';
+
+  static _i13.PageInfo page = _i13.PageInfo(
+    name,
+    builder: (data) {
+      return const _i4.HeroPageTwoScreen();
+    },
+  );
+}
+
+/// generated route for
+/// [_i5.HeroSheetFiveScreen]
+class HeroSheetFiveRoute extends _i13.PageRouteInfo<void> {
+  const HeroSheetFiveRoute({List<_i13.PageRouteInfo>? children})
+    : super(HeroSheetFiveRoute.name, initialChildren: children);
+
+  static const String name = 'HeroSheetFiveRoute';
+
+  static _i13.PageInfo page = _i13.PageInfo(
+    name,
+    builder: (data) {
+      return const _i5.HeroSheetFiveScreen();
+    },
+  );
+}
+
+/// generated route for
+/// [_i6.HeroSheetFourScreen]
+class HeroSheetFourRoute extends _i13.PageRouteInfo<void> {
+  const HeroSheetFourRoute({List<_i13.PageRouteInfo>? children})
+    : super(HeroSheetFourRoute.name, initialChildren: children);
+
+  static const String name = 'HeroSheetFourRoute';
+
+  static _i13.PageInfo page = _i13.PageInfo(
+    name,
+    builder: (data) {
+      return const _i6.HeroSheetFourScreen();
+    },
+  );
+}
+
+/// generated route for
+/// [_i7.HeroSheetOneScreen]
+class HeroSheetOneRoute extends _i13.PageRouteInfo<void> {
+  const HeroSheetOneRoute({List<_i13.PageRouteInfo>? children})
+    : super(HeroSheetOneRoute.name, initialChildren: children);
+
+  static const String name = 'HeroSheetOneRoute';
+
+  static _i13.PageInfo page = _i13.PageInfo(
+    name,
+    builder: (data) {
+      return const _i7.HeroSheetOneScreen();
+    },
+  );
+}
+
+/// generated route for
+/// [_i8.HeroSheetThreeScreen]
+class HeroSheetThreeRoute extends _i13.PageRouteInfo<void> {
+  const HeroSheetThreeRoute({List<_i13.PageRouteInfo>? children})
+    : super(HeroSheetThreeRoute.name, initialChildren: children);
+
+  static const String name = 'HeroSheetThreeRoute';
+
+  static _i13.PageInfo page = _i13.PageInfo(
+    name,
+    builder: (data) {
+      return const _i8.HeroSheetThreeScreen();
+    },
+  );
+}
+
+/// generated route for
+/// [_i9.HeroSheetTwoScreen]
+class HeroSheetTwoRoute extends _i13.PageRouteInfo<void> {
+  const HeroSheetTwoRoute({List<_i13.PageRouteInfo>? children})
+    : super(HeroSheetTwoRoute.name, initialChildren: children);
+
+  static const String name = 'HeroSheetTwoRoute';
+
+  static _i13.PageInfo page = _i13.PageInfo(
+    name,
+    builder: (data) {
+      return const _i9.HeroSheetTwoScreen();
+    },
+  );
+}
+
+/// generated route for
+/// [_i10.HomeScreen]
+class HomeRoute extends _i13.PageRouteInfo<void> {
+  const HomeRoute({List<_i13.PageRouteInfo>? children})
     : super(HomeRoute.name, initialChildren: children);
 
   static const String name = 'HomeRoute';
 
-  static _i6.PageInfo page = _i6.PageInfo(
+  static _i13.PageInfo page = _i13.PageInfo(
     name,
     builder: (data) {
-      return const _i3.HomeScreen();
+      return const _i10.HomeScreen();
     },
   );
 }
 
 /// generated route for
-/// [_i4.SheetCustomRadiusScreen]
-class SheetCustomRadiusRoute extends _i6.PageRouteInfo<void> {
-  const SheetCustomRadiusRoute({List<_i6.PageRouteInfo>? children})
+/// [_i11.SheetCustomRadiusScreen]
+class SheetCustomRadiusRoute extends _i13.PageRouteInfo<void> {
+  const SheetCustomRadiusRoute({List<_i13.PageRouteInfo>? children})
     : super(SheetCustomRadiusRoute.name, initialChildren: children);
 
   static const String name = 'SheetCustomRadiusRoute';
 
-  static _i6.PageInfo page = _i6.PageInfo(
+  static _i13.PageInfo page = _i13.PageInfo(
     name,
     builder: (data) {
-      return const _i4.SheetCustomRadiusScreen();
+      return const _i11.SheetCustomRadiusScreen();
     },
   );
 }
 
 /// generated route for
-/// [_i4.SheetNoBgScreen]
-class SheetNoBgRoute extends _i6.PageRouteInfo<void> {
-  const SheetNoBgRoute({List<_i6.PageRouteInfo>? children})
+/// [_i11.SheetNoBgScreen]
+class SheetNoBgRoute extends _i13.PageRouteInfo<void> {
+  const SheetNoBgRoute({List<_i13.PageRouteInfo>? children})
     : super(SheetNoBgRoute.name, initialChildren: children);
 
   static const String name = 'SheetNoBgRoute';
 
-  static _i6.PageInfo page = _i6.PageInfo(
+  static _i13.PageInfo page = _i13.PageInfo(
     name,
     builder: (data) {
-      return const _i4.SheetNoBgScreen();
+      return const _i11.SheetNoBgScreen();
     },
   );
 }
 
 /// generated route for
-/// [_i4.SheetNoSwipeScreen]
-class SheetNoSwipeRoute extends _i6.PageRouteInfo<void> {
-  const SheetNoSwipeRoute({List<_i6.PageRouteInfo>? children})
+/// [_i11.SheetNoSwipeScreen]
+class SheetNoSwipeRoute extends _i13.PageRouteInfo<void> {
+  const SheetNoSwipeRoute({List<_i13.PageRouteInfo>? children})
     : super(SheetNoSwipeRoute.name, initialChildren: children);
 
   static const String name = 'SheetNoSwipeRoute';
 
-  static _i6.PageInfo page = _i6.PageInfo(
+  static _i13.PageInfo page = _i13.PageInfo(
     name,
     builder: (data) {
-      return const _i4.SheetNoSwipeScreen();
+      return const _i11.SheetNoSwipeScreen();
     },
   );
 }
 
 /// generated route for
-/// [_i4.SheetScreen]
-class SheetRoute extends _i6.PageRouteInfo<void> {
-  const SheetRoute({List<_i6.PageRouteInfo>? children})
+/// [_i11.SheetScreen]
+class SheetRoute extends _i13.PageRouteInfo<void> {
+  const SheetRoute({List<_i13.PageRouteInfo>? children})
     : super(SheetRoute.name, initialChildren: children);
 
   static const String name = 'SheetRoute';
 
-  static _i6.PageInfo page = _i6.PageInfo(
+  static _i13.PageInfo page = _i13.PageInfo(
     name,
     builder: (data) {
-      return const _i4.SheetScreen();
+      return const _i11.SheetScreen();
     },
   );
 }
 
 /// generated route for
-/// [_i5.SplashScreen]
-class SplashRoute extends _i6.PageRouteInfo<void> {
-  const SplashRoute({List<_i6.PageRouteInfo>? children})
+/// [_i12.SplashScreen]
+class SplashRoute extends _i13.PageRouteInfo<void> {
+  const SplashRoute({List<_i13.PageRouteInfo>? children})
     : super(SplashRoute.name, initialChildren: children);
 
   static const String name = 'SplashRoute';
 
-  static _i6.PageInfo page = _i6.PageInfo(
+  static _i13.PageInfo page = _i13.PageInfo(
     name,
     builder: (data) {
-      return const _i5.SplashScreen();
+      return const _i12.SplashScreen();
     },
   );
 }
