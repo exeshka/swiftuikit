@@ -23,18 +23,26 @@ class App extends StatelessWidget {
     routes: [
       GoRoute(
         path: '/',
-        pageBuilder: (context, state) =>
-            SwiftPage(child: const SplashScreen()),
+        pageBuilder: (context, state) => SwiftPage(child: const SplashScreen()),
       ),
       GoRoute(
         path: '/home',
-        pageBuilder: (context, state) =>
-            SwiftPage(child: const HomeScreen()),
+        pageBuilder: (context, state) => SwiftPage(child: const HomeScreen()),
       ),
       GoRoute(
         path: '/detail',
-        pageBuilder: (context, state) =>
-            SwiftPage(child: const DetailScreen()),
+        pageBuilder: (context, state) => SwiftPage(child: const DetailScreen()),
+      ),
+      GoRoute(
+        path: '/product/:productId',
+        pageBuilder: (context, state) {
+          final productId = state.pathParameters['productId']!;
+          return SwiftInteractiveZoomPage(
+            key: state.pageKey,
+            sourceId: productId,
+            child: DetailScreen(productId: productId),
+          );
+        },
       ),
       GoRoute(
         path: '/detail-no-swipe',
@@ -110,8 +118,6 @@ class App extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp.router(
-      routerConfig: _router,
-    );
+    return MaterialApp.router(routerConfig: _router);
   }
 }

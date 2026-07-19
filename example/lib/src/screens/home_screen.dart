@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import 'package:example/src/core/router/router.gr.dart';
+import 'package:swiftuikit/swiftuikit.dart';
 
 @RoutePage()
 class HomeScreen extends StatelessWidget {
@@ -10,57 +11,77 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('swiftuikit demos')),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          _SectionHeader('SwiftPage'),
-          _DemoTile(
-            label: 'SwiftPage',
-            subtitle: 'Default iOS transition + swipe back',
-            onTap: () => context.router.push(DetailRoute(heroId: '')),
-          ),
-          _DemoTile(
-            label: 'SwiftPage (no swipe)',
-            subtitle: 'canSwipe: false, canOnlySwipeFromEdge: true',
-            onTap: () => context.router.push(const DetailNoSwipeRoute()),
-          ),
-          const SizedBox(height: 24),
-          _SectionHeader('SwiftSheet'),
-          _DemoTile(
-            label: 'SwiftSheet',
-            subtitle: 'Default sheet with drag-to-dismiss',
-            color: Colors.green.shade600,
-            onTap: () => context.router.push(const SheetRoute()),
-          ),
-          _DemoTile(
-            label: 'SwiftSheet (no bg animation)',
-            subtitle: 'animateBackground: false',
-            color: Colors.green.shade600,
-            onTap: () => context.router.push(const SheetNoBgRoute()),
-          ),
-          _DemoTile(
-            label: 'SwiftSheet (no swipe)',
-            subtitle: 'enableDrag: false',
-            color: Colors.green.shade600,
-            onTap: () => context.router.push(const SheetNoSwipeRoute()),
-          ),
-          _DemoTile(
-            label: 'SwiftSheet (radius 16)',
-            subtitle: 'sheetRadius: 16',
-            color: Colors.green.shade600,
-            onTap: () => context.router.push(const SheetCustomRadiusRoute()),
-          ),
-          const SizedBox(height: 24),
-          _SectionHeader('Hero Flow'),
-          _DemoTile(
-            label: 'Hero Test Flow',
-            subtitle: 'Page → Page → Sheet → Sheet with CupertinoNavBar',
-            color: Colors.deepPurple,
-            onTap: () => context.router.push(const HeroRouteOneRoute()),
-          ),
-        ],
+    return SwiftInteractiveZoomBackground(
+      child: Scaffold(
+        appBar: AppBar(title: const Text('swiftuikit demos')),
+        body: ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
+            _SectionHeader('SwiftZoom'),
+            SwiftInteractiveZoomSource(
+              id: 'detail-page',
+              borderRadius: BorderRadius.circular(32),
+
+              child: _DemoTile(
+                label: 'Interactive Zoom',
+                subtitle: 'Dedicated card-to-page transition with swipe back',
+                bottomPadding: 0,
+                onTap: () =>
+                    context.router.push(DetailRoute(heroId: 'detail-page')),
+              ),
+            ),
+            const SizedBox(height: 8),
+            const SizedBox(height: 24),
+            _SectionHeader('Interactive Zoom + auto_route'),
+            _DemoTile(
+              label: 'Product Grid',
+              subtitle: 'Each product ID becomes the interactive Hero tag',
+              color: Colors.deepPurple,
+              onTap: () => context.router.push(const ProductGridRoute()),
+            ),
+            const SizedBox(height: 16),
+            _SectionHeader('SwiftPage'),
+            _DemoTile(
+              label: 'SwiftPage (no swipe)',
+              subtitle: 'canSwipe: false, canOnlySwipeFromEdge: true',
+              onTap: () => context.router.push(const DetailNoSwipeRoute()),
+            ),
+            const SizedBox(height: 24),
+            _SectionHeader('SwiftSheet'),
+            _DemoTile(
+              label: 'SwiftSheet',
+              subtitle: 'Default sheet with drag-to-dismiss',
+              color: Colors.green.shade600,
+              onTap: () => context.router.push(const SheetRoute()),
+            ),
+            _DemoTile(
+              label: 'SwiftSheet (no bg animation)',
+              subtitle: 'animateBackground: false',
+              color: Colors.green.shade600,
+              onTap: () => context.router.push(const SheetNoBgRoute()),
+            ),
+            _DemoTile(
+              label: 'SwiftSheet (no swipe)',
+              subtitle: 'enableDrag: false',
+              color: Colors.green.shade600,
+              onTap: () => context.router.push(const SheetNoSwipeRoute()),
+            ),
+            _DemoTile(
+              label: 'SwiftSheet (radius 16)',
+              subtitle: 'sheetRadius: 16',
+              color: Colors.green.shade600,
+              onTap: () => context.router.push(const SheetCustomRadiusRoute()),
+            ),
+            const SizedBox(height: 24),
+            _SectionHeader('Hero Flow'),
+            _DemoTile(
+              label: 'Hero Test Flow',
+              subtitle: 'Page → Page → Sheet → Sheet with CupertinoNavBar',
+              color: Colors.deepPurple,
+              onTap: () => context.router.push(const HeroRouteOneRoute()),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -91,26 +112,39 @@ class _DemoTile extends StatelessWidget {
     required this.subtitle,
     required this.onTap,
     this.color,
+    this.bottomPadding = 8,
   });
 
   final String label;
   final String subtitle;
   final VoidCallback onTap;
   final Color? color;
+  final double bottomPadding;
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: ListTile(
-        tileColor: color ?? CupertinoColors.systemBlue,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        title: Text(label, style: const TextStyle(color: Colors.white)),
-        subtitle: Text(
-          subtitle,
-          style: TextStyle(color: Colors.white.withValues(alpha: 0.7)),
+    return GestureDetector(
+      onTap: () {
+        onTap();
+      },
+      child: Padding(
+        padding: EdgeInsets.only(bottom: bottomPadding),
+        child: Container(
+          height: 100,
+
+          width: double.infinity,
+          decoration: BoxDecoration(
+            color: color ?? CupertinoColors.systemBlue,
+
+            borderRadius: BorderRadius.circular(32),
+          ),
+
+          child: Column(
+            crossAxisAlignment: .start,
+
+            children: [Text(label), Text(subtitle)],
+          ),
         ),
-        onTap: onTap,
       ),
     );
   }

@@ -45,6 +45,7 @@ void main() async {
 | Route | Description |
 |-------|-------------|
 | `SwiftPage` / `SwiftPageAutoRoute` | Full-screen page with iOS swipe-back gesture and parallax/scale transition |
+| `SwiftInteractiveZoomPage` / `SwiftInteractiveZoomAutoRoute` | Gesture-driven card-to-page zoom transition with runtime source IDs |
 | `SwiftSheetPage` / `SwiftSheetAutoRoute` | Modal bottom sheet with drag-to-dismiss |
 
 ## Usage with go_router
@@ -124,6 +125,79 @@ SwiftPage<void>(
 | `radius` | `double?` | — | Custom corner radius |
 | `borderRadius` | `BorderRadius?` | — | Custom border radius geometry |
 | `transitionDuration` | `Duration` | `500ms` | Transition animation duration |
+
+## SwiftInteractiveZoom
+
+`SwiftInteractiveZoomRoute` is a standalone transition. It owns both the zoom
+animation and interactive swipe-back, so it does not affect `SwiftPage` or any
+other route type. Mark the opening card or image with
+`SwiftInteractiveZoomSource` and pass its stable ID to the route. Wrap the
+source page in `SwiftInteractiveZoomBackground` to make that page scale and
+use the device corner radius while the zoom route is active.
+
+```dart
+SwiftInteractiveZoomBackground(
+  child: Scaffold(
+    body: SwiftInteractiveZoomSource(
+      id: product.id,
+      child: ProductCard(
+        product: product,
+        onTap: () => Navigator.of(context).push(
+          SwiftInteractiveZoomRoute<void>(
+            sourceId: product.id,
+            builder: (_) => ProductScreen(product: product),
+          ),
+        ),
+      ),
+    ),
+  ),
+)
+```
+
+The source is resolved again when the route closes, so use model IDs rather
+than a stored `BuildContext` or list index. The route supports pan-to-dismiss
+in any direction; set `canOnlySwipeFromEdge: true` to restrict its start to the
+leading screen edge.
+
+With `go_router`, read the same ID that was used to build the destination
+screen and pass it to `SwiftInteractiveZoomPage`:
+
+```dart
+GoRoute(
+  path: '/products/:productId',
+  pageBuilder: (context, state) {
+    final productId = state.pathParameters['productId']!;
+    return SwiftInteractiveZoomPage<void>(
+      key: state.pageKey,
+      sourceId: productId,
+      child: ProductScreen(productId: productId),
+    );
+  },
+)
+```
+
+With `auto_route`, resolve the ID from the generated runtime arguments. The
+route declaration remains static while every pushed product gets its own Hero
+tag:
+
+```dart
+SwiftInteractiveZoomAutoRoute(
+  page: ProductRoute.page,
+  sourceIdResolver: (data) =>
+      data.argsAs<ProductRouteArgs>().productId,
+)
+
+context.router.push(ProductRoute(productId: product.id));
+```
+
+In both cases the source uses that same value:
+
+```dart
+SwiftInteractiveZoomSource(
+  id: product.id,
+  child: ProductCard(product: product),
+)
+```
 
 ## SwiftSheetPage / SwiftSheetAutoRoute
 

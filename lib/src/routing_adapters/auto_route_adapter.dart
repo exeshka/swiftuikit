@@ -2,10 +2,45 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:meta/meta.dart';
 
+import 'package:swiftuikit/src/routing/interactive_zoom_route.dart';
 import 'package:swiftuikit/src/routing/page_transitions.dart';
 import 'package:swiftuikit/src/routing/scroll_sheet_route.dart';
 import 'package:swiftuikit/src/routing/sheet_route.dart' as sheet_route;
 import 'package:swiftuikit/src/routing/modal_route.dart' as modal_route;
+
+/// Resolves a zoom source ID from the runtime data of an auto_route page.
+typedef SwiftInteractiveZoomSourceIdResolver = Object Function(RouteData data);
+
+Route<T> swiftInteractiveZoomRouteBuilder<T>(
+  BuildContext context,
+  Widget child,
+  AutoRoutePage<T> page, {
+  required Object sourceId,
+  Object? namespace,
+  BorderRadius? sourceBorderRadius,
+  BorderRadius? destinationBorderRadius,
+  bool canSwipe = true,
+  bool canOnlySwipeFromEdge = false,
+  double? backGestureWidth,
+  double verticalDragSensitivity = 1.6,
+  double minInteractiveHeroProgress = 0.15,
+  Duration transitionDuration = const Duration(milliseconds: 420),
+}) {
+  return SwiftInteractiveZoomRoute<T>(
+    sourceId: sourceId,
+    namespace: namespace,
+    settings: page,
+    sourceBorderRadius: sourceBorderRadius,
+    destinationBorderRadius: destinationBorderRadius,
+    canSwipe: canSwipe,
+    canOnlySwipeFromEdge: canOnlySwipeFromEdge,
+    backGestureWidth: backGestureWidth,
+    verticalDragSensitivity: verticalDragSensitivity,
+    minInteractiveHeroProgress: minInteractiveHeroProgress,
+    customTransitionDuration: transitionDuration,
+    builder: (_) => child,
+  );
+}
 
 Route<T> swiftPageRouteBuilder<T>(
   BuildContext context,
@@ -60,11 +95,9 @@ Route<T> swiftSheetRouteBuilder<T>(
     showDragHandle: showDragHandle,
     enableDrag: enableDrag,
     animateBackground: animateBackground,
-    scrollableBuilder: (BuildContext context, ScrollController scrollController) =>
-        PrimaryScrollController(
-          controller: scrollController,
-          child: child,
-        ),
+    scrollableBuilder:
+        (BuildContext context, ScrollController scrollController) =>
+            PrimaryScrollController(controller: scrollController, child: child),
   );
 }
 
@@ -128,6 +161,85 @@ Route<T> swiftModalRouteBuilder<T>(
     transitionDurationOverride: transitionDuration,
     dismissThreshold: dismissThreshold,
   );
+}
+
+/// An auto_route adapter for [SwiftInteractiveZoomRoute].
+///
+/// Use [sourceIdResolver] when the ID comes from generated route arguments:
+///
+/// ```dart
+/// SwiftInteractiveZoomAutoRoute(
+///   page: ProductRoute.page,
+///   sourceIdResolver: (data) =>
+///       data.argsAs<ProductRouteArgs>().productId,
+/// )
+/// ```
+class SwiftInteractiveZoomAutoRoute<R> extends CustomRoute<R> {
+  SwiftInteractiveZoomAutoRoute({
+    required super.page,
+    super.fullscreenDialog,
+    super.maintainState,
+    super.fullMatch,
+    super.guards,
+    super.usesPathAsKey,
+    super.children,
+    super.meta,
+    super.title,
+    super.path,
+    super.keepHistory,
+    super.initial,
+    super.allowSnapshotting,
+    super.restorationId,
+    this.sourceId,
+    this.sourceIdResolver,
+    this.namespace,
+    this.sourceBorderRadius,
+    this.destinationBorderRadius,
+    this.canSwipe = true,
+    this.canOnlySwipeFromEdge = false,
+    this.backGestureWidth,
+    this.verticalDragSensitivity = 1.6,
+    this.minInteractiveHeroProgress = 0.15,
+    this.transitionDuration = const Duration(milliseconds: 420),
+  }) : assert(
+         (sourceId == null) != (sourceIdResolver == null),
+         'Provide exactly one of sourceId or sourceIdResolver.',
+       ),
+       super(
+         opaque: false,
+         customRouteBuilder:
+             <T>(BuildContext context, Widget child, AutoRoutePage<T> page) {
+               final resolvedSourceId =
+                   sourceIdResolver?.call(page.routeData) ?? sourceId!;
+               return swiftInteractiveZoomRouteBuilder<T>(
+                 context,
+                 child,
+                 page,
+                 sourceId: resolvedSourceId,
+                 namespace: namespace,
+                 sourceBorderRadius: sourceBorderRadius,
+                 destinationBorderRadius: destinationBorderRadius,
+                 canSwipe: canSwipe,
+                 canOnlySwipeFromEdge: canOnlySwipeFromEdge,
+                 backGestureWidth: backGestureWidth,
+                 verticalDragSensitivity: verticalDragSensitivity,
+                 minInteractiveHeroProgress: minInteractiveHeroProgress,
+                 transitionDuration: transitionDuration,
+               );
+             },
+       );
+
+  final Object? sourceId;
+  final SwiftInteractiveZoomSourceIdResolver? sourceIdResolver;
+  final Object? namespace;
+  final BorderRadius? sourceBorderRadius;
+  final BorderRadius? destinationBorderRadius;
+  final bool canSwipe;
+  final bool canOnlySwipeFromEdge;
+  final double? backGestureWidth;
+  final double verticalDragSensitivity;
+  final double minInteractiveHeroProgress;
+  final Duration transitionDuration;
 }
 
 class SwiftPageAutoRoute<R> extends CustomRoute<R> {

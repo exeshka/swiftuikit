@@ -10,7 +10,11 @@ class AppRouter extends RootStackRouter {
   List<AutoRoute> get routes => [
     SwiftPageAutoRoute(page: SplashRoute.page, initial: true),
     SwiftPageAutoRoute(page: HomeRoute.page),
-    SwiftPageAutoRoute(page: DetailRoute.page),
+    SwiftPageAutoRoute(page: ProductGridRoute.page),
+    SwiftInteractiveZoomAutoRoute(
+      page: DetailRoute.page,
+      sourceIdResolver: (data) => data.argsAs<DetailRouteArgs>().heroId,
+    ),
     SwiftPageAutoRoute(
       page: DetailNoSwipeRoute.page,
       canSwipe: false,

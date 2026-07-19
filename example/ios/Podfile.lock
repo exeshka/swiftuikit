@@ -15,7 +15,7 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   Flutter: cabc95a1d2626b1b06e7179b784ebcf0c0cde467
-  screen_corner_radius: c67d066ed77a11edfc1bebd22903e892a602d5ab
+  screen_corner_radius: 64e0abb3920228a5f91c0680fa890222970025bd
 
 PODFILE CHECKSUM: c8c89d61a58b26a768d69fc7a714595a44baa134
 

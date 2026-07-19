@@ -1,10 +1,69 @@
 import 'package:flutter/material.dart';
 import 'package:meta/meta.dart';
 
+import 'package:swiftuikit/src/routing/interactive_zoom_route.dart';
 import 'package:swiftuikit/src/routing/page_transitions.dart';
 import 'package:swiftuikit/src/routing/scroll_sheet_route.dart';
 import 'package:swiftuikit/src/routing/sheet_route.dart' as sheet_route;
 import 'package:swiftuikit/src/routing/modal_route.dart' as modal_route;
+
+/// A [Page] adapter for go_router and Navigator 2.0 that transitions between
+/// a [SwiftInteractiveZoomSource] and a full-screen page.
+///
+/// Pass the same runtime value to [sourceId] and the source widget. For
+/// example, a product ID can identify both the tapped product card and its
+/// details page.
+class SwiftInteractiveZoomPage<T> extends Page<T> {
+  const SwiftInteractiveZoomPage({
+    required this.sourceId,
+    required this.child,
+    super.key,
+    super.name,
+    super.arguments,
+    super.restorationId,
+    super.canPop,
+    super.onPopInvoked,
+    this.namespace,
+    this.sourceBorderRadius,
+    this.destinationBorderRadius,
+    this.canSwipe = true,
+    this.canOnlySwipeFromEdge = false,
+    this.backGestureWidth,
+    this.verticalDragSensitivity = 1.6,
+    this.minInteractiveHeroProgress = 0.15,
+    this.transitionDuration = const Duration(milliseconds: 420),
+  });
+
+  final Object sourceId;
+  final Widget child;
+  final Object? namespace;
+  final BorderRadius? sourceBorderRadius;
+  final BorderRadius? destinationBorderRadius;
+  final bool canSwipe;
+  final bool canOnlySwipeFromEdge;
+  final double? backGestureWidth;
+  final double verticalDragSensitivity;
+  final double minInteractiveHeroProgress;
+  final Duration transitionDuration;
+
+  @override
+  Route<T> createRoute(BuildContext context) {
+    return SwiftInteractiveZoomRoute<T>(
+      sourceId: sourceId,
+      namespace: namespace,
+      settings: this,
+      sourceBorderRadius: sourceBorderRadius,
+      destinationBorderRadius: destinationBorderRadius,
+      canSwipe: canSwipe,
+      canOnlySwipeFromEdge: canOnlySwipeFromEdge,
+      backGestureWidth: backGestureWidth,
+      verticalDragSensitivity: verticalDragSensitivity,
+      minInteractiveHeroProgress: minInteractiveHeroProgress,
+      customTransitionDuration: transitionDuration,
+      builder: (_) => child,
+    );
+  }
+}
 
 /// A [Page] adapter for go_router and Navigator 2.0 that uses
 /// [SwiftPageRoute].
@@ -97,11 +156,12 @@ class SwiftSheetPage<T> extends Page<T> {
       showDragHandle: showDragHandle,
       enableDrag: enableDrag,
       animateBackground: animateBackground,
-      scrollableBuilder: (BuildContext context, ScrollController scrollController) =>
-          PrimaryScrollController(
-            controller: scrollController,
-            child: child,
-          ),
+      scrollableBuilder:
+          (BuildContext context, ScrollController scrollController) =>
+              PrimaryScrollController(
+                controller: scrollController,
+                child: child,
+              ),
     );
   }
 }
