@@ -6,10 +6,11 @@ import 'package:flutter/material.dart';
 import 'package:swiftuikit/src/services/screen_radius_service.dart';
 
 const _interactiveZoomBackgroundScaleReduction = 0.085;
-const _interactiveZoomHorizontalScaleReduction = 0.08;
-const _interactiveZoomVerticalScaleReduction = 0.66;
-const _interactiveZoomSourceCrossfadeStart = 0.24;
-const _interactiveZoomFlightCurve = Curves.easeOutCubic;
+const _interactiveZoomFallbackTargetScale = 0.44;
+const _interactiveZoomSourceCrossfadeEnd = 0.58;
+const _interactiveZoomBottomRevealStart = 0.3;
+const _interactiveZoomFlightCurve = Curves.easeInOutCubic;
+const _interactiveZoomDragCurve = Curves.easeInOut;
 
 /// Registers the visual origin for [SwiftInteractiveZoomRoute].
 ///
@@ -154,8 +155,36 @@ Tween<Rect?> _createInteractiveZoomRectTween(
     return _LiveSourceRectTween(begin: begin, end: end, route: route!);
   }
   final correctedEnd = route?.correctSourceRect(end) ?? end;
-  return RectTween(begin: begin, end: correctedEnd);
+  return _InteractiveZoomRectTween(begin: begin, end: correctedEnd);
 }
+
+class _InteractiveZoomRectTween extends RectTween {
+  _InteractiveZoomRectTween({required super.begin, required super.end});
+
+  @override
+  Rect? lerp(double t) {
+    final beginRect = begin;
+    final endRect = end;
+    if (beginRect == null || endRect == null) {
+      return Rect.lerp(beginRect, endRect, t);
+    }
+    final bottomProgress = Curves.easeInOut.transform(
+      ((t - _interactiveZoomBottomRevealStart) /
+              (1.0 - _interactiveZoomBottomRevealStart))
+          .clamp(0.0, 1.0)
+          .toDouble(),
+    );
+    return Rect.fromLTRB(
+      _lerpDouble(beginRect.left, endRect.left, t),
+      _lerpDouble(beginRect.top, endRect.top, t),
+      _lerpDouble(beginRect.right, endRect.right, t),
+      _lerpDouble(beginRect.bottom, endRect.bottom, bottomProgress),
+    );
+  }
+}
+
+double _lerpDouble(double begin, double end, double t) =>
+    begin + (end - begin) * t;
 
 class _LiveSourceRectTween extends RectTween {
   _LiveSourceRectTween({
@@ -167,7 +196,11 @@ class _LiveSourceRectTween extends RectTween {
   final SwiftInteractiveZoomRoute<dynamic> route;
 
   @override
-  Rect? lerp(double t) => Rect.lerp(begin, route.sourceFinalRect ?? end, t);
+  Rect? lerp(double t) => Rect.lerp(
+    route.interactiveHandoffRect(begin) ?? begin,
+    route.sourceFinalRect ?? end,
+    t,
+  );
 }
 
 Widget _buildInteractiveZoomHeroFlight(
@@ -182,11 +215,13 @@ Widget _buildInteractiveZoomHeroFlight(
   final tag = fromHero.tag as _SwiftInteractiveZoomTag;
   final source = _SwiftInteractiveZoomRegistry.instance.lookupSource(tag);
   final route = _SwiftInteractiveZoomRegistry.instance.lookupRoute(tag);
-  final frozenSource = _FrozenHeroChild(
-    size: source?.size,
-    child: flightDirection == HeroFlightDirection.push
-        ? fromHero.child
-        : toHero.child,
+  final frozenFromHero = _FrozenHeroChild(
+    size: _renderBoxSize(fromHeroContext),
+    child: fromHero.child,
+  );
+  final frozenToHero = _FrozenHeroChild(
+    size: _renderBoxSize(toHeroContext) ?? source?.size,
+    child: toHero.child,
   );
   final popStart = flightDirection == HeroFlightDirection.pop
       ? animation.value
@@ -207,38 +242,28 @@ Widget _buildInteractiveZoomHeroFlight(
       final destinationBorderRadius =
           route?.resolvedDestinationBorderRadius ??
           ScreenRadiusService.instance.radius;
-      final borderRadius = BorderRadius.lerp(
-        sourceBorderRadius,
-        destinationBorderRadius,
-        animation.value,
-      )!;
       final handoffProgress = flightDirection == HeroFlightDirection.pop
           ? (animation.value / popStart).clamp(0.0, 1.0).toDouble()
           : 0.0;
-      final handoffOffset = route?.heroHandoffOffset ?? Offset.zero;
-      final handoffScaleProgress =
-          (route?.heroHandoffProgress ?? 0.0) * handoffProgress;
+      final handoffBorderRadius = BorderRadius.lerp(
+        destinationBorderRadius,
+        sourceBorderRadius,
+        route?.heroHandoffProgress ?? 0.0,
+      )!;
+      final borderRadius = flightDirection == HeroFlightDirection.push
+          ? BorderRadius.lerp(
+              sourceBorderRadius,
+              destinationBorderRadius,
+              animation.value,
+            )!
+          : BorderRadius.lerp(
+              sourceBorderRadius,
+              handoffBorderRadius,
+              handoffProgress,
+            )!;
       final fromChild = flightDirection == HeroFlightDirection.push
-          ? frozenSource
-          : Transform.translate(
-              offset: handoffOffset * handoffProgress,
-              child: Transform.scale(
-                alignment: Alignment.center,
-                scaleX:
-                    1.0 -
-                    (_interactiveZoomHorizontalScaleReduction *
-                        handoffScaleProgress),
-                scaleY:
-                    1.0 -
-                    (_interactiveZoomVerticalScaleReduction *
-                        handoffScaleProgress),
-                child: ClipRRect(
-                  borderRadius: destinationBorderRadius,
-                  clipBehavior: Clip.antiAlias,
-                  child: fromHero.child,
-                ),
-              ),
-            );
+          ? frozenFromHero
+          : frozenFromHero;
       return ClipRRect(
         borderRadius: borderRadius,
         clipBehavior: Clip.antiAlias,
@@ -256,9 +281,7 @@ Widget _buildInteractiveZoomHeroFlight(
               opacity: toHeroOpacity,
               child: Material(
                 type: MaterialType.transparency,
-                child: flightDirection == HeroFlightDirection.push
-                    ? toHero.child
-                    : frozenSource,
+                child: frozenToHero,
               ),
             ),
           ],
@@ -266,6 +289,13 @@ Widget _buildInteractiveZoomHeroFlight(
       );
     },
   );
+}
+
+Size? _renderBoxSize(BuildContext context) {
+  final renderObject = context.findRenderObject();
+  if (renderObject is! RenderBox || !renderObject.hasSize) return null;
+  final size = renderObject.size;
+  return size.isFinite && !size.isEmpty ? size : null;
 }
 
 class _FrozenHeroChild extends StatelessWidget {
@@ -278,13 +308,29 @@ class _FrozenHeroChild extends StatelessWidget {
   Widget build(BuildContext context) {
     final frozenSize = size;
     if (frozenSize == null || frozenSize.isEmpty) return child;
-    return Align(
-      alignment: Alignment.center,
-      child: SizedBox(
-        width: frozenSize.width,
-        height: frozenSize.height,
-        child: child,
-      ),
+    return LayoutBuilder(
+      builder: (BuildContext context, BoxConstraints constraints) {
+        final scale = math.max(
+          constraints.maxWidth / frozenSize.width,
+          constraints.maxHeight / frozenSize.height,
+        );
+        return OverflowBox(
+          alignment: Alignment.topCenter,
+          minWidth: 0.0,
+          minHeight: 0.0,
+          maxWidth: double.infinity,
+          maxHeight: double.infinity,
+          child: Transform.scale(
+            alignment: Alignment.topCenter,
+            scale: scale,
+            child: SizedBox(
+              width: frozenSize.width,
+              height: frozenSize.height,
+              child: child,
+            ),
+          ),
+        );
+      },
     );
   }
 }
@@ -466,8 +512,8 @@ class SwiftInteractiveZoomRoute<T> extends PageRoute<T> {
         progress,
       );
       final backgroundPhase =
-          ((curvedProgress - _interactiveZoomSourceCrossfadeStart) /
-                  (1.0 - _interactiveZoomSourceCrossfadeStart))
+          ((curvedProgress - _interactiveZoomSourceCrossfadeEnd) /
+                  (1.0 - _interactiveZoomSourceCrossfadeEnd))
               .clamp(0.0, 1.0)
               .toDouble();
       return (1.0 - (_heroHandoffProgress ?? 0.0)) * backgroundPhase;
@@ -476,9 +522,34 @@ class SwiftInteractiveZoomRoute<T> extends PageRoute<T> {
     return _interactiveZoomFlightCurve.transform(progress);
   }
 
-  Offset? get heroHandoffOffset => _heroHandoffOffset;
-
   double? get heroHandoffProgress => _heroHandoffProgress;
+
+  Rect? interactiveHandoffRect(Rect? fullRect) {
+    final handoffProgress = _heroHandoffProgress;
+    final handoffOffset = _heroHandoffOffset;
+    final viewport = _lastViewport;
+    if (fullRect == null ||
+        handoffProgress == null ||
+        handoffOffset == null ||
+        viewport == null ||
+        viewport.isEmpty) {
+      return fullRect;
+    }
+    final scale = _interactiveScale(handoffProgress, viewport);
+    final heightFactor = _interactiveClipHeightFactor(
+      handoffProgress,
+      viewport,
+    );
+    final center = fullRect.center;
+    final left = center.dx + (fullRect.left - center.dx) * scale;
+    final top = center.dy + (fullRect.top - center.dy) * scale;
+    return Rect.fromLTWH(
+      left + handoffOffset.dx,
+      top + handoffOffset.dy,
+      fullRect.width * scale,
+      fullRect.height * scale * heightFactor,
+    );
+  }
 
   double get progress => controller?.value ?? 1.0;
 
@@ -525,7 +596,7 @@ class SwiftInteractiveZoomRoute<T> extends PageRoute<T> {
   }
 
   static double contentOpacity(double progress) => Curves.easeInOut.transform(
-    ((progress - 0.04) / (_interactiveZoomSourceCrossfadeStart - 0.04)).clamp(
+    ((progress - 0.04) / (_interactiveZoomSourceCrossfadeEnd - 0.04)).clamp(
       0.0,
       1.0,
     ),
@@ -663,7 +734,18 @@ class SwiftInteractiveZoomRoute<T> extends PageRoute<T> {
         _lastViewport,
       );
       _heroHandoffProgress = panProgress.value;
-      _interactivePopDuration = customTransitionDuration;
+      final remainingDistance = 1.0 - panProgress.value;
+      final velocityFactor =
+          1.0 - (velocity.distance / 3000.0).clamp(0.0, 0.45);
+      _interactivePopDuration = Duration(
+        milliseconds: math.max(
+          160,
+          (customTransitionDuration.inMilliseconds *
+                  remainingDistance *
+                  velocityFactor)
+              .round(),
+        ),
+      );
       controller!.reverseDuration = _interactivePopDuration;
       navigator?.pop();
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -733,19 +815,106 @@ class SwiftInteractiveZoomRoute<T> extends PageRoute<T> {
     return value.isNegative ? -resisted : resisted;
   }
 
+  double _interactiveTargetScale(Size? viewport) {
+    final sourceSize = _source?.size;
+    if (viewport == null ||
+        viewport.isEmpty ||
+        sourceSize == null ||
+        sourceSize.isEmpty) {
+      return _interactiveZoomFallbackTargetScale;
+    }
+    return (sourceSize.width / viewport.width).clamp(0.25, 0.92).toDouble();
+  }
+
+  double _interactiveScale(double progress, Size? viewport) {
+    final curvedProgress = _interactiveZoomDragCurve.transform(
+      progress.clamp(0.0, 1.0),
+    );
+    return _lerpDouble(1.0, _interactiveTargetScale(viewport), curvedProgress);
+  }
+
+  double _interactiveClipHeightFactor(double progress, Size viewport) {
+    final sourceSize = _source?.size;
+    if (sourceSize == null || sourceSize.isEmpty || viewport.isEmpty) {
+      return _lerpDouble(1.0, 0.62, progress.clamp(0.0, 1.0));
+    }
+    final targetScale = _interactiveTargetScale(viewport);
+    final targetHeightFactor =
+        sourceSize.height / (viewport.height * targetScale);
+    return _lerpDouble(
+      1.0,
+      targetHeightFactor.clamp(0.3, 1.0).toDouble(),
+      _interactiveZoomDragCurve.transform(progress.clamp(0.0, 1.0)),
+    );
+  }
+
   Offset _boundedTranslation(Offset drag, double progress, Size? viewport) {
     if (viewport == null || viewport.isEmpty) return Offset.zero;
-    final horizontalScale =
-        1.0 - (_interactiveZoomHorizontalScaleReduction * progress);
-    final verticalScale =
-        1.0 - (_interactiveZoomVerticalScaleReduction * progress);
-    final horizontalLimit = viewport.width * (1.0 - horizontalScale) / 2.0;
-    final verticalLimit = viewport.height * (1.0 - verticalScale) / 2.0;
+    final scale = _interactiveScale(progress, viewport);
+    final horizontalLimit = viewport.width * (1.0 - scale) / 2.0;
+    final verticalLimit = viewport.height * (1.0 - scale) / 2.0;
     return Offset(
       (drag.dx * 0.65).clamp(-horizontalLimit, horizontalLimit).toDouble(),
       (drag.dy * 0.65).clamp(-verticalLimit, verticalLimit).toDouble(),
     );
   }
+}
+
+class _InteractiveDragClip extends StatelessWidget {
+  const _InteractiveDragClip({
+    required this.route,
+    required this.progress,
+    required this.viewport,
+    required this.child,
+  });
+
+  final SwiftInteractiveZoomRoute<dynamic> route;
+  final double progress;
+  final Size viewport;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final borderRadius = BorderRadius.lerp(
+      route.resolvedDestinationBorderRadius,
+      route.resolvedSourceBorderRadius,
+      progress,
+    )!;
+    return ClipPath(
+      clipper: _InteractiveDragClipper(
+        heightFactor: route._interactiveClipHeightFactor(progress, viewport),
+        borderRadius: borderRadius,
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: child,
+    );
+  }
+}
+
+class _InteractiveDragClipper extends CustomClipper<Path> {
+  const _InteractiveDragClipper({
+    required this.heightFactor,
+    required this.borderRadius,
+  });
+
+  final double heightFactor;
+  final BorderRadius borderRadius;
+
+  @override
+  Path getClip(Size size) {
+    final rect = Rect.fromLTWH(
+      0.0,
+      0.0,
+      size.width,
+      size.height * heightFactor,
+    );
+    return Path()..addRRect(borderRadius.toRRect(rect));
+  }
+
+  @override
+  bool shouldReclip(covariant _InteractiveDragClipper oldClipper) =>
+      oldClipper.heightFactor != heightFactor ||
+      oldClipper.borderRadius != borderRadius;
 }
 
 class _SwiftInteractiveZoomTransition<T> extends StatefulWidget {
@@ -847,17 +1016,16 @@ class _SwiftInteractiveZoomTransitionState<T>
 
             final drag = route.dragOffset.value;
             final progress = route.panProgress.value;
+            final scale = route._interactiveScale(progress, viewport);
             return Transform.translate(
               offset: route._boundedTranslation(drag, progress, viewport),
               child: Transform.scale(
                 alignment: Alignment.center,
-                scaleX:
-                    1.0 - (_interactiveZoomHorizontalScaleReduction * progress),
-                scaleY:
-                    1.0 - (_interactiveZoomVerticalScaleReduction * progress),
-                child: ClipRRect(
-                  borderRadius: ScreenRadiusService.instance.radius,
-                  clipBehavior: Clip.antiAlias,
+                scale: scale,
+                child: _InteractiveDragClip(
+                  route: route,
+                  progress: progress,
+                  viewport: viewport,
                   child: IgnorePointer(ignoring: progress < 0.02, child: child),
                 ),
               ),
