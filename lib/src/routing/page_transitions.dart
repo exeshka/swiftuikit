@@ -224,6 +224,8 @@ class SwiftPageRoute<T> extends PageRoute<T>
   Route? _nextRoute;
   bool _transitionGestureInProgress = false;
   bool _navigatorGestureActive = false;
+  int _navigatorGestureGeneration = 0;
+  final ValueNotifier<bool> _heroModeEnabled = ValueNotifier<bool>(true);
 
   /// Returns the next route in the navigator stack.
   Route? get nextRoute => _nextRoute;
@@ -232,13 +234,24 @@ class SwiftPageRoute<T> extends PageRoute<T>
   Route? previousRoute;
 
   void _startUserGesture() {
+    if (_transitionGestureInProgress) return;
     _transitionGestureInProgress = true;
-    if (_navigatorGestureActive) return;
-    _navigatorGestureActive = true;
-    navigator?.didStartUserGesture();
+    _heroModeEnabled.value = false;
+    final int generation = ++_navigatorGestureGeneration;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (generation != _navigatorGestureGeneration ||
+          !_transitionGestureInProgress ||
+          _navigatorGestureActive ||
+          navigator == null) {
+        return;
+      }
+      _navigatorGestureActive = true;
+      navigator!.didStartUserGesture();
+    });
   }
 
   void _releaseInputLock() {
+    _navigatorGestureGeneration += 1;
     if (!_navigatorGestureActive) return;
     _navigatorGestureActive = false;
     navigator?.didStopUserGesture();
@@ -247,6 +260,9 @@ class SwiftPageRoute<T> extends PageRoute<T>
   void _settleUserGesture() {
     _transitionGestureInProgress = false;
     _releaseInputLock();
+    if (isActive) {
+      _heroModeEnabled.value = true;
+    }
   }
 
   void _finishDismissTransition() {
@@ -280,7 +296,20 @@ class SwiftPageRoute<T> extends PageRoute<T>
   }
 
   @override
-  Widget buildContent(BuildContext context) => child;
+  Widget buildContent(BuildContext context) {
+    return ValueListenableBuilder<bool>(
+      valueListenable: _heroModeEnabled,
+      builder: (context, enabled, child) =>
+          HeroMode(enabled: enabled, child: child!),
+      child: child,
+    );
+  }
+
+  @override
+  void dispose() {
+    _heroModeEnabled.dispose();
+    super.dispose();
+  }
 
   @override
   String? get title => null;

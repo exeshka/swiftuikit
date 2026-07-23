@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:swiftuikit/swiftuikit.dart';
@@ -46,6 +47,7 @@ void main() {
       await tester.pump();
 
       expect(homeTaps, 1);
+      expect(navigatorKey.currentState!.userGestureInProgress, isFalse);
       expect(route.animation!.value, greaterThan(0.0));
 
       await tester.pump(const Duration(milliseconds: 80));
@@ -97,6 +99,96 @@ void main() {
       await tester.pump();
       expect(homeTaps.value, 1);
       await tester.pumpAndSettle();
+    },
+  );
+
+  testWidgets(
+    'interactive pop does not start hero flight before previous page tap',
+    (tester) async {
+      final navigatorKey = GlobalKey<NavigatorState>();
+      var homeTaps = 0;
+      var heroFlights = 0;
+
+      Widget trackedHero(Color color) {
+        return Hero(
+          tag: 'page-hero',
+          flightShuttleBuilder:
+              (
+                flightContext,
+                animation,
+                direction,
+                fromHeroContext,
+                toHeroContext,
+              ) {
+                heroFlights += 1;
+                return const SizedBox.square(dimension: 80);
+              },
+          child: ColoredBox(
+            color: color,
+            child: const SizedBox.square(dimension: 80),
+          ),
+        );
+      }
+
+      await tester.pumpWidget(
+        MaterialApp(navigatorKey: navigatorKey, home: const SizedBox.expand()),
+      );
+
+      final homeRoute = SwiftPageRoute<void>(
+        settings: const RouteSettings(name: 'hero-home'),
+        child: GestureDetector(
+          key: const ValueKey('hero-home-page'),
+          behavior: HitTestBehavior.opaque,
+          onTap: () => homeTaps += 1,
+          child: CupertinoPageScaffold(
+            navigationBar: const CupertinoNavigationBar(
+              middle: Text('Hero home'),
+            ),
+            child: Center(child: trackedHero(Colors.red)),
+          ),
+        ),
+      );
+      navigatorKey.currentState!.push(homeRoute);
+      await tester.pumpAndSettle();
+
+      final detailRoute = SwiftPageRoute<void>(
+        settings: const RouteSettings(name: 'hero-detail'),
+        child: CupertinoPageScaffold(
+          navigationBar: const CupertinoNavigationBar(
+            middle: Text('Hero detail'),
+          ),
+          child: Center(child: trackedHero(Colors.purple)),
+        ),
+      );
+      navigatorKey.currentState!.push(detailRoute);
+      await tester.pumpAndSettle();
+      expect(heroFlights, greaterThan(0));
+      heroFlights = 0;
+
+      final gesture = await tester.startGesture(const Offset(20, 400));
+      await gesture.moveBy(const Offset(400, 0));
+      await tester.pump();
+      await gesture.up();
+      await tester.pump();
+
+      final detailNavigationBar = find.widgetWithText(
+        CupertinoNavigationBar,
+        'Hero detail',
+      );
+      final heroModes = tester.widgetList<HeroMode>(
+        find.ancestor(of: detailNavigationBar, matching: find.byType(HeroMode)),
+      );
+      expect(heroModes.any((mode) => !mode.enabled), isTrue);
+
+      await tester.tap(find.byKey(const ValueKey('hero-home-page')));
+      await tester.pump();
+
+      expect(homeTaps, 1);
+      expect(heroFlights, 0);
+      expect(find.text('Hero home'), findsOneWidget);
+
+      await tester.pumpAndSettle();
+      expect(heroFlights, 0);
     },
   );
 }
