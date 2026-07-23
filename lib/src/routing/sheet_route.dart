@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
@@ -10,6 +11,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/physics.dart';
 
 import 'package:swiftuikit/src/routing/page_transitions.dart';
+import 'package:swiftuikit/src/services/screen_radius_service.dart';
 
 // Tween for animating a Cupertino sheet onto the screen.
 //
@@ -74,6 +76,14 @@ typedef _GetSheetDragged = bool Function();
 /// means the sheet takes up only the bottom 10% of the screen. If not provided, defaults
 /// to [SwiftPageTransitions.sheetTopGapRatio].
 ///
+/// When `preserveTopSafeArea` is `true`, the system top padding remains
+/// available to the sheet content and the sheet opens at the top of the screen.
+/// A non-zero `topGap` cannot be combined with this mode.
+///
+/// `dismissThreshold` controls how far the sheet must be dragged before it
+/// closes. `minFlingVelocity` allows a shorter, faster downward swipe to close
+/// it without reaching that distance.
+///
 /// When `showDragHandle` is set to `true`, then a drag handle will be placed at
 /// the top of the sheet. This flag will default to false.
 Future<T?> showSwiftSheet<T>({
@@ -93,6 +103,9 @@ Future<T?> showSwiftSheet<T>({
   bool enableDrag = true,
   RouteSettings? settings,
   double? topGap,
+  bool preserveTopSafeArea = false,
+  double dismissThreshold = 0.32,
+  double minFlingVelocity = 1.0,
   bool showDragHandle = false,
   double? sheetRadius,
   BorderRadius? sheetBorderRadius,
@@ -102,6 +115,18 @@ Future<T?> showSwiftSheet<T>({
   assert(
     topGap == null || (topGap >= 0.0 && topGap <= 0.9),
     'topGap must be between 0.0 and 0.9',
+  );
+  assert(
+    !preserveTopSafeArea || topGap == null || topGap == 0.0,
+    'topGap must be null or 0.0 when preserveTopSafeArea is true',
+  );
+  assert(
+    dismissThreshold > 0.0 && dismissThreshold < 1.0,
+    'dismissThreshold must be between 0.0 and 1.0',
+  );
+  assert(
+    minFlingVelocity >= 0.0,
+    'minFlingVelocity must be greater than or equal to 0.0',
   );
   assert(pageBuilder != null || builder != null || scrollableBuilder != null);
   assert(
@@ -119,6 +144,9 @@ Future<T?> showSwiftSheet<T>({
       enableDrag: enableDrag,
       showDragHandle: showDragHandle,
       topGap: topGap,
+      preserveTopSafeArea: preserveTopSafeArea,
+      dismissThreshold: dismissThreshold,
+      minFlingVelocity: minFlingVelocity,
       sheetRadius: sheetRadius,
       sheetBorderRadius: sheetBorderRadius,
       routeCanPop: routeCanPop,
@@ -173,6 +201,9 @@ Future<T?> showSwiftSheet<T>({
       enableDrag: enableDrag,
       showDragHandle: showDragHandle,
       topGap: topGap,
+      preserveTopSafeArea: preserveTopSafeArea,
+      dismissThreshold: dismissThreshold,
+      minFlingVelocity: minFlingVelocity,
       sheetRadius: sheetRadius,
       sheetBorderRadius: sheetBorderRadius,
       routeCanPop: routeCanPop,
@@ -236,15 +267,34 @@ class SwiftSheetTransition extends StatefulWidget {
     Widget? child, {
     double? sheetRadius,
     BorderRadius? sheetBorderRadius,
+    bool? linearTransition,
   }) {
+    final bool linear =
+        linearTransition ?? Navigator.of(context).userGestureInProgress;
     final route = ModalRoute.of(context);
     final isSheet = route is SwiftSheetRoute || route is CupertinoSheetRoute;
+    final scope = _SwiftSheetScope.maybeOf(context);
+    final double? customRadius = sheetRadius ?? scope?.radius;
+    final BorderRadius? customBorderRadius =
+        sheetBorderRadius ?? scope?.borderRadius;
+    final BorderRadiusGeometry stackedSheetRadius =
+        customBorderRadius ??
+        BorderRadius.all(
+          Radius.circular(
+            customRadius ?? SwiftPageTransitions.sheetCornerRadius,
+          ),
+        );
     if (isSheet ||
         SwiftSheetRoute.hasParentSheet(context) ||
         CupertinoSheetRoute.hasParentSheet(context)) {
-      return _delegatedCoverSheetSecondaryTransition(context, secondaryAnimation, child);
+      return _delegatedCoverSheetSecondaryTransition(
+        context,
+        secondaryAnimation,
+        child,
+        borderRadius: stackedSheetRadius,
+        linearTransition: linear,
+      );
     }
-    final bool linear = Navigator.of(context).userGestureInProgress;
 
     final Curve curve = linear ? Curves.linear : Curves.linearToEaseOut;
     final Curve reverseCurve = linear ? Curves.linear : Curves.easeInToLinear;
@@ -260,10 +310,6 @@ class SwiftSheetTransition extends StatefulWidget {
     final bool roundedDeviceCorners =
         deviceCornerRadius >
         SwiftPageTransitions.sheetRoundedDeviceCornersThreshold;
-
-    final scope = _SwiftSheetScope.maybeOf(context);
-    final double? customRadius = sheetRadius ?? scope?.radius;
-    final BorderRadius? customBorderRadius = sheetBorderRadius ?? scope?.borderRadius;
 
     final BorderRadiusGeometry targetRadius;
     if (customBorderRadius != null) {
@@ -325,11 +371,14 @@ class SwiftSheetTransition extends StatefulWidget {
         ? Stack(
             children: <Widget>[
               child,
-              FadeTransition(
-                opacity: opacityAnimation,
-                child: ColoredBox(
-                  color: overlayColor,
-                  child: const SizedBox.expand(),
+              IgnorePointer(
+                child: FadeTransition(
+                  key: const ValueKey('swift-sheet-background-dimming'),
+                  opacity: opacityAnimation,
+                  child: ColoredBox(
+                    color: overlayColor,
+                    child: const SizedBox.expand(),
+                  ),
                 ),
               ),
             ],
@@ -376,11 +425,16 @@ class SwiftSheetTransition extends StatefulWidget {
   static Widget _delegatedCoverSheetSecondaryTransition(
     BuildContext context,
     Animation<double> secondaryAnimation,
-    Widget? child,
-  ) {
-    final bool linear = Navigator.of(context).userGestureInProgress;
-    final Curve curve = linear ? Curves.linear : Curves.linearToEaseOut;
-    final Curve reverseCurve = linear ? Curves.linear : Curves.easeInToLinear;
+    Widget? child, {
+    required BorderRadiusGeometry borderRadius,
+    required bool linearTransition,
+  }) {
+    final Curve curve = linearTransition
+        ? Curves.linear
+        : Curves.linearToEaseOut;
+    final Curve reverseCurve = linearTransition
+        ? Curves.linear
+        : Curves.easeInToLinear;
     final curvedAnimation = CurvedAnimation(
       curve: curve,
       reverseCurve: reverseCurve,
@@ -406,12 +460,7 @@ class SwiftSheetTransition extends StatefulWidget {
         scale: scaleAnimation,
         filterQuality: FilterQuality.medium,
         alignment: Alignment.topCenter,
-        child: ClipRSuperellipse(
-          borderRadius: BorderRadius.vertical(
-            top: Radius.circular(SwiftPageTransitions.sheetCornerRadius),
-          ),
-          child: child,
-        ),
+        child: ClipRSuperellipse(borderRadius: borderRadius, child: child),
       ),
     );
   }
@@ -483,9 +532,11 @@ class _SwiftSheetTransitionState extends State<SwiftSheetTransition>
       parent: widget.secondaryRouteAnimation,
     );
     // Maintain the same stretch distance regardless of custom topGap.
-    final double stretchDistance =
-        SwiftPageTransitions.sheetTopGapRatio -
-        SwiftPageTransitions.sheetStretchedTopGapRatio;
+    final double stretchDistance = math.min(
+      widget.topGap,
+      SwiftPageTransitions.sheetTopGapRatio -
+          SwiftPageTransitions.sheetStretchedTopGapRatio,
+    );
     final double stretchedTopGap = widget.topGap - stretchDistance;
     _stretchDragAnimation = _stretchDragController.drive(
       Tween<double>(begin: widget.topGap, end: stretchedTopGap),
@@ -635,12 +686,29 @@ class SwiftSheetRoute<T> extends CupertinoSheetRoute<T> {
     bool enableDrag = true,
     bool showDragHandle = false,
     double? topGap,
+    this.preserveTopSafeArea = false,
+    this.dismissThreshold = 0.32,
+    this.minFlingVelocity = 1.0,
     this.sheetRadius,
     this.sheetBorderRadius,
     this.routeCanPop = true,
     this.animateBackground = true,
     this.transitionDurationOverride = const Duration(milliseconds: 500),
-  }) : _topGap = topGap,
+  }) : assert(
+         !preserveTopSafeArea || topGap == null || topGap == 0.0,
+         'topGap must be null or 0.0 when preserveTopSafeArea is true',
+       ),
+       assert(
+         dismissThreshold > 0.0 && dismissThreshold < 1.0,
+         'dismissThreshold must be between 0.0 and 1.0',
+       ),
+       assert(
+         minFlingVelocity >= 0.0,
+         'minFlingVelocity must be greater than or equal to 0.0',
+       ),
+       _builder = builder,
+       _scrollableBuilder = scrollableBuilder,
+       _topGap = topGap,
        super(
          builder: builder,
          scrollableBuilder: scrollableBuilder,
@@ -661,26 +729,143 @@ class SwiftSheetRoute<T> extends CupertinoSheetRoute<T> {
   /// Whether to animate the previous page when this sheet is pushed on top.
   final bool animateBackground;
 
+  /// Whether the sheet content retains the system top safe-area padding.
+  ///
+  /// When enabled, the sheet itself opens at the top of the screen.
+  final bool preserveTopSafeArea;
+
+  /// Fraction of the sheet height that must be dragged to dismiss it.
+  final double dismissThreshold;
+
+  /// Minimum downward fling velocity, measured in sheet heights per second.
+  final double minFlingVelocity;
+
   /// Customized duration of transitions.
   final Duration transitionDurationOverride;
+
+  final WidgetBuilder? _builder;
+  final ScrollableWidgetBuilder? _scrollableBuilder;
 
   // The gap between the top of the screen and the top of the sheet.
   final double? _topGap;
 
   @override
-  double get topGap => _topGap ?? SwiftPageTransitions.sheetTopGapRatio;
+  double get topGap => preserveTopSafeArea
+      ? 0.0
+      : _topGap ?? SwiftPageTransitions.sheetTopGapRatio;
 
   Route? _nextRoute;
   Route? get nextRoute => _nextRoute;
   Route? previousRoute;
+  bool _transitionGestureInProgress = false;
+  bool _navigatorGestureActive = false;
+
+  void _startUserGesture() {
+    _transitionGestureInProgress = true;
+    if (_navigatorGestureActive) return;
+    _navigatorGestureActive = true;
+    navigator?.didStartUserGesture();
+  }
+
+  void _releaseInputLock() {
+    if (!_navigatorGestureActive) return;
+    _navigatorGestureActive = false;
+    navigator?.didStopUserGesture();
+  }
+
+  void _settleUserGesture() {
+    _transitionGestureInProgress = false;
+    _releaseInputLock();
+  }
+
+  void _finishDismissTransition() {
+    _transitionGestureInProgress = false;
+  }
+
+  @override
+  Widget buildPage(
+    BuildContext context,
+    Animation<double> animation,
+    Animation<double> secondaryAnimation,
+  ) {
+    return HeroMode(enabled: false, child: buildContent(context));
+  }
 
   @override
   Widget buildContent(BuildContext context) {
-    final Widget superWidget = super.buildContent(context);
-    return _SwiftSheetScope(
-      radius: sheetRadius,
-      borderRadius: sheetBorderRadius,
-      child: _replaceClipRadius(superWidget, context),
+    if (_usesDefaultScreenRadius) {
+      return AnimatedBuilder(
+        animation: ScreenRadiusService.instance,
+        builder: (context, child) => _buildSheetContent(context),
+      );
+    }
+    return _buildSheetContent(context);
+  }
+
+  ScrollableWidgetBuilder get _effectiveBuilder =>
+      _scrollableBuilder ??
+      (BuildContext context, ScrollController controller) => _builder!(context);
+
+  Widget _sheetWithDragHandle(
+    BuildContext context,
+    ScrollController controller,
+  ) {
+    if (!showDragHandle) {
+      return _effectiveBuilder(context, controller);
+    }
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        MediaQuery(
+          data: MediaQuery.of(
+            context,
+          ).copyWith(padding: const EdgeInsets.only(top: 15)),
+          child: _effectiveBuilder(context, controller),
+        ),
+        const Align(
+          alignment: Alignment.topCenter,
+          child: Padding(
+            padding: EdgeInsets.only(top: 5),
+            child: DecoratedBox(
+              decoration: ShapeDecoration(
+                shape: StadiumBorder(),
+                color: CupertinoColors.tertiaryLabel,
+              ),
+              child: SizedBox(height: 5, width: 36),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSheetContent(BuildContext context) {
+    return MediaQuery.removePadding(
+      context: context,
+      removeTop: !preserveTopSafeArea,
+      child: ClipRSuperellipse(
+        borderRadius: _resolveSheetBorderRadius(context),
+        clipBehavior: Clip.antiAliasWithSaveLayer,
+        child: CupertinoUserInterfaceLevel(
+          data: CupertinoUserInterfaceLevelData.elevated,
+          child: _SwiftSheetScope(
+            radius: sheetRadius,
+            borderRadius: _effectiveSheetBorderRadius,
+            child: _SwiftDraggableScrollableSheet<T>(
+              enabledCallback: () => enableDrag,
+              topGap: topGap,
+              onStartPopGesture: () =>
+                  _SwiftSheetRouteTransitionMixin._startPopGesture<T>(
+                    this,
+                    topGap,
+                    dismissThreshold,
+                    minFlingVelocity,
+                  ),
+              builder: _sheetWithDragHandle,
+            ),
+          ),
+        ),
+      ),
     );
   }
 
@@ -693,36 +878,32 @@ class SwiftSheetRoute<T> extends CupertinoSheetRoute<T> {
       return null;
     }
     return (context, animation, secondaryAnimation, allowSnapshotting, child) {
-      return SwiftSheetTransition.delegateTransition(
+      Widget buildTransition() => SwiftSheetTransition.delegateTransition(
         context,
         animation,
         secondaryAnimation,
         allowSnapshotting,
         child,
         sheetRadius: sheetRadius,
-        sheetBorderRadius: sheetBorderRadius,
+        sheetBorderRadius: _effectiveSheetBorderRadius,
+        linearTransition: _transitionGestureInProgress,
       );
+      if (_usesDefaultScreenRadius) {
+        return AnimatedBuilder(
+          animation: ScreenRadiusService.instance,
+          builder: (context, child) => buildTransition(),
+        );
+      }
+      return buildTransition();
     };
   }
 
-  Widget _replaceClipRadius(Widget widget, BuildContext context) {
-    final borderRadius = _resolveSheetBorderRadius(context);
-    
-    if (widget is MediaQuery) {
-      return MediaQuery(
-        data: widget.data,
-        child: _replaceClipRadius(widget.child, context),
-      );
-    }
-    if (widget is ClipRSuperellipse) {
-      return ClipRSuperellipse(
-        borderRadius: borderRadius,
-        clipBehavior: Clip.antiAliasWithSaveLayer,
-        child: widget.child,
-      );
-    }
-    return widget;
-  }
+  bool get _usesDefaultScreenRadius =>
+      preserveTopSafeArea && sheetRadius == null && sheetBorderRadius == null;
+
+  BorderRadius? get _effectiveSheetBorderRadius => _usesDefaultScreenRadius
+      ? ScreenRadiusService.instance.radius
+      : sheetBorderRadius;
 
   @override
   Widget buildTransitions(
@@ -739,6 +920,8 @@ class SwiftSheetRoute<T> extends CupertinoSheetRoute<T> {
       child,
       enableDrag,
       topGap,
+      dismissThreshold,
+      minFlingVelocity,
     );
   }
 
@@ -773,9 +956,15 @@ class SwiftSheetRoute<T> extends CupertinoSheetRoute<T> {
     previousRoute?.changedInternalState();
   }
 
-
-
   BorderRadius _resolveSheetBorderRadius(BuildContext context) {
+    if (_usesDefaultScreenRadius) {
+      return ScreenRadiusService.instance.radius;
+    }
+    if (preserveTopSafeArea &&
+        sheetBorderRadius == null &&
+        sheetRadius != null) {
+      return BorderRadius.all(Radius.circular(sheetRadius!));
+    }
     return SwiftPageTransitions.resolveSheetBorderRadius(
       context,
       radius: sheetRadius,
@@ -901,13 +1090,27 @@ mixin _SwiftSheetRouteTransitionMixin<T> on PageRoute<T> {
   static _SwiftDragGestureController<T> _startPopGesture<T>(
     ModalRoute<T> route,
     double topGap,
+    double dismissThreshold,
+    double minFlingVelocity,
   ) {
+    final SwiftSheetRoute<dynamic>? swiftRoute = route is SwiftSheetRoute
+        ? route as SwiftSheetRoute<dynamic>
+        : null;
     return _SwiftDragGestureController<T>(
       topGap: topGap,
+      dismissThreshold: dismissThreshold,
+      minFlingVelocity: minFlingVelocity,
       navigator: route.navigator!,
       getIsCurrent: () => route.isCurrent,
       getIsActive: () => route.isActive,
       popDragController: route.controller!,
+      startUserGesture:
+          swiftRoute?._startUserGesture ?? route.navigator!.didStartUserGesture,
+      releaseInputLock:
+          swiftRoute?._releaseInputLock ?? route.navigator!.didStopUserGesture,
+      settleUserGesture:
+          swiftRoute?._settleUserGesture ?? route.navigator!.didStopUserGesture,
+      finishDismissTransition: swiftRoute?._finishDismissTransition ?? () {},
     );
   }
 
@@ -920,18 +1123,37 @@ mixin _SwiftSheetRouteTransitionMixin<T> on PageRoute<T> {
     Widget child,
     bool enableDrag,
     double topGap,
+    double dismissThreshold,
+    double minFlingVelocity,
   ) {
-    final bool linearTransition = route.popGestureInProgress;
-    return SwiftSheetTransition(
-      primaryRouteAnimation: animation,
-      secondaryRouteAnimation: secondaryAnimation,
-      linearTransition: linearTransition,
-      topGap: topGap,
-      transitionDuration: route.transitionDuration,
-      child: _SwiftDragGestureDetector<T>(
-        enabledCallback: () => enableDrag,
-        onStartPopGesture: () => _startPopGesture<T>(route, topGap),
+    final SwiftSheetRoute<dynamic>? swiftRoute = route is SwiftSheetRoute
+        ? route as SwiftSheetRoute<dynamic>
+        : null;
+    final bool linearTransition =
+        swiftRoute?._transitionGestureInProgress ?? route.popGestureInProgress;
+    return AnimatedBuilder(
+      animation: animation,
+      builder: (context, child) => IgnorePointer(
+        ignoring:
+            !route.isCurrent && animation.status == AnimationStatus.reverse,
         child: child,
+      ),
+      child: SwiftSheetTransition(
+        primaryRouteAnimation: animation,
+        secondaryRouteAnimation: secondaryAnimation,
+        linearTransition: linearTransition,
+        topGap: topGap,
+        transitionDuration: route.transitionDuration,
+        child: _SwiftDragGestureDetector<T>(
+          enabledCallback: () => enableDrag,
+          onStartPopGesture: () => _startPopGesture<T>(
+            route,
+            topGap,
+            dismissThreshold,
+            minFlingVelocity,
+          ),
+          child: child,
+        ),
       ),
     );
   }
@@ -964,6 +1186,8 @@ mixin _SwiftSheetRouteTransitionMixin<T> on PageRoute<T> {
       child,
       enableDrag,
       topGap,
+      0.32,
+      1.0,
     );
   }
 }
@@ -1025,7 +1249,7 @@ class _SwiftDragGestureDetectorState<T>
     if (_dragGestureController != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (_dragGestureController?.navigator.mounted ?? false) {
-          _dragGestureController?.navigator.didStopUserGesture();
+          _dragGestureController?.settleUserGesture();
         }
         _dragGestureController = null;
       });
@@ -1124,6 +1348,12 @@ class _SwiftDragGestureController<T> {
     required this.getIsActive,
     required this.getIsCurrent,
     required this.topGap,
+    required this.dismissThreshold,
+    required this.minFlingVelocity,
+    required this.startUserGesture,
+    required this.releaseInputLock,
+    required this.settleUserGesture,
+    required this.finishDismissTransition,
   }) {
     debugPrint(
       '[SwiftSheetRoute] _SwiftDragGestureController constructor: isAnimating=${popDragController.isAnimating}, value=${popDragController.value}',
@@ -1144,7 +1374,7 @@ class _SwiftDragGestureController<T> {
       popDragController.stop();
       popDragController.value = visualProgress;
     }
-    navigator.didStartUserGesture();
+    startUserGesture();
   }
 
   final AnimationController popDragController;
@@ -1152,6 +1382,12 @@ class _SwiftDragGestureController<T> {
   final ValueGetter<bool> getIsActive;
   final ValueGetter<bool> getIsCurrent;
   final double topGap;
+  final double dismissThreshold;
+  final double minFlingVelocity;
+  final VoidCallback startUserGesture;
+  final VoidCallback releaseInputLock;
+  final VoidCallback settleUserGesture;
+  final VoidCallback finishDismissTransition;
 
   /// The drag gesture has changed by [delta]. The total range of the drag
   /// should be 0.0 to 1.0.
@@ -1160,9 +1396,14 @@ class _SwiftDragGestureController<T> {
         popDragController.value == 1.0 &&
         (upController.value > 0 || delta < 0)) {
       // Divide by stretchable range (when dragging upward at max extent).
-      final double stretchDistance =
-          SwiftPageTransitions.sheetTopGapRatio -
-          SwiftPageTransitions.sheetStretchedTopGapRatio;
+      final double stretchDistance = math.min(
+        topGap,
+        SwiftPageTransitions.sheetTopGapRatio -
+            SwiftPageTransitions.sheetStretchedTopGapRatio,
+      );
+      if (stretchDistance == 0.0) {
+        return;
+      }
 
       // Apply progressive resistance when stretching upward (delta < 0).
       // When pulling back down (delta > 0), no resistance is applied.
@@ -1219,7 +1460,7 @@ class _SwiftDragGestureController<T> {
       );
 
       upController.animateWith(simulation);
-      navigator.didStopUserGesture();
+      settleUserGesture();
       return;
     }
 
@@ -1229,10 +1470,10 @@ class _SwiftDragGestureController<T> {
 
     if (!isCurrent) {
       animateForward = getIsActive();
-    } else if (velocity.abs() >= 2.0) {
+    } else if (velocity.abs() >= minFlingVelocity) {
       animateForward = velocity <= 0;
     } else {
-      animateForward = popDragController.value > 0.52;
+      animateForward = popDragController.value > (1.0 - dismissThreshold);
     }
 
     late TickerFuture ticker;
@@ -1248,17 +1489,20 @@ class _SwiftDragGestureController<T> {
         navigator.pop();
       }
 
-      ticker = popDragController.animateBack(
+      final ticker = popDragController.animateBack(
         0.0,
         duration: const Duration(milliseconds: 300),
         curve: animationCurve,
       );
+      releaseInputLock();
+      ticker.whenCompleteOrCancel(finishDismissTransition);
+      return;
     }
 
     if (popDragController.isAnimating) {
-      ticker.whenCompleteOrCancel(navigator.didStopUserGesture);
+      ticker.whenCompleteOrCancel(settleUserGesture);
     } else {
-      navigator.didStopUserGesture();
+      settleUserGesture();
     }
   }
 }
@@ -1405,6 +1649,7 @@ class _SwiftDraggableScrollableSheet<T> extends StatefulWidget {
   const _SwiftDraggableScrollableSheet({
     super.key,
     required this.enabledCallback,
+    required this.topGap,
     required this.onStartPopGesture,
     required this.builder,
   });
@@ -1412,6 +1657,8 @@ class _SwiftDraggableScrollableSheet<T> extends StatefulWidget {
   final ScrollableWidgetBuilder builder;
 
   final ValueGetter<bool> enabledCallback;
+
+  final double topGap;
 
   final ValueGetter<_SwiftDragGestureController<T>> onStartPopGesture;
 
@@ -1443,7 +1690,7 @@ class _SwiftDraggableScrollableSheetState<T>
     if (_dragGestureController != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (_dragGestureController?.navigator.mounted ?? false) {
-          _dragGestureController?.navigator.didStopUserGesture();
+          _dragGestureController?.settleUserGesture();
         }
         _dragGestureController = null;
       });
@@ -1461,9 +1708,7 @@ class _SwiftDraggableScrollableSheetState<T>
     assert(mounted);
     if (_dragGestureController != null) {
       _dragGestureController!.dragUpdate(
-        delta /
-            (context.size!.height -
-                (context.size!.height * SwiftPageTransitions.sheetTopGapRatio)),
+        delta / (context.size!.height * (1.0 - widget.topGap)),
         null,
       );
     }

@@ -48,6 +48,54 @@ class SheetCustomRadiusScreen extends StatelessWidget {
   }
 }
 
+class SheetFullHeightScreen extends StatelessWidget {
+  const SheetFullHeightScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final topPadding = MediaQuery.paddingOf(context).top;
+    return Material(
+      color: Colors.indigo,
+      child: SafeArea(
+        child: ListView(
+          padding: const EdgeInsets.all(24),
+          children: [
+            const Icon(Icons.fullscreen_rounded, size: 72, color: Colors.white),
+            const SizedBox(height: 20),
+            const Text(
+              'Full-height SwiftSheet',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 26,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'MediaQuery.padding.top = ${topPadding.toStringAsFixed(1)}',
+              textAlign: TextAlign.center,
+              style: const TextStyle(color: Colors.white),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'Sheet занимает 100% высоты, а контент остаётся ниже '
+              'системной области благодаря SafeArea.',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.white70),
+            ),
+            const SizedBox(height: 28),
+            FilledButton.tonal(
+              onPressed: () => Navigator.of(context).maybePop(),
+              child: const Text('Закрыть'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class _SheetContent extends StatelessWidget {
   const _SheetContent({required this.title, required this.subtitle});
 

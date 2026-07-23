@@ -85,6 +85,9 @@ Route<T> swiftSheetRouteBuilder<T>(
   bool showDragHandle = false,
   bool enableDrag = true,
   bool animateBackground = true,
+  bool preserveTopSafeArea = false,
+  double dismissThreshold = 0.32,
+  double minFlingVelocity = 1.0,
 }) {
   return sheet_route.SwiftSheetRoute<T>(
     settings: page,
@@ -95,6 +98,9 @@ Route<T> swiftSheetRouteBuilder<T>(
     showDragHandle: showDragHandle,
     enableDrag: enableDrag,
     animateBackground: animateBackground,
+    preserveTopSafeArea: preserveTopSafeArea,
+    dismissThreshold: dismissThreshold,
+    minFlingVelocity: minFlingVelocity,
     scrollableBuilder:
         (BuildContext context, ScrollController scrollController) =>
             PrimaryScrollController(controller: scrollController, child: child),
@@ -324,6 +330,9 @@ class SwiftSheetAutoRoute<R> extends CustomRoute<R> {
     this.showDragHandle = false,
     this.enableDrag = true,
     this.animateBackground = true,
+    this.preserveTopSafeArea = false,
+    this.dismissThreshold = 0.32,
+    this.minFlingVelocity = 1.0,
   }) : super(
          opaque: false,
          barrierDismissible: true,
@@ -341,6 +350,9 @@ class SwiftSheetAutoRoute<R> extends CustomRoute<R> {
                  showDragHandle: showDragHandle,
                  enableDrag: enableDrag,
                  animateBackground: animateBackground,
+                 preserveTopSafeArea: preserveTopSafeArea,
+                 dismissThreshold: dismissThreshold,
+                 minFlingVelocity: minFlingVelocity,
                );
              },
        );
@@ -352,6 +364,9 @@ class SwiftSheetAutoRoute<R> extends CustomRoute<R> {
   final bool showDragHandle;
   final bool enableDrag;
   final bool animateBackground;
+  final bool preserveTopSafeArea;
+  final double dismissThreshold;
+  final double minFlingVelocity;
 }
 
 /// **Not stable** — API may change.

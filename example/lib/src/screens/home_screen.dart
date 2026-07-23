@@ -17,6 +17,14 @@ class HomeScreen extends StatelessWidget {
         body: ListView(
           padding: const EdgeInsets.all(16),
           children: [
+            _SectionHeader('Navigation'),
+            _DemoTile(
+              label: 'Navigation Lab',
+              subtitle: 'push, replace, Back, result и проверка стека',
+              color: Colors.indigo,
+              onTap: () => context.router.push(const NavigationLabRoute()),
+            ),
+            const SizedBox(height: 24),
             _SectionHeader('SwiftZoom'),
             SwiftInteractiveZoomSource(
               id: 'detail-page',
@@ -49,10 +57,22 @@ class HomeScreen extends StatelessWidget {
             const SizedBox(height: 24),
             _SectionHeader('SwiftSheet'),
             _DemoTile(
+              label: 'SwiftSheet Navigation Lab',
+              subtitle: 'Sheet → Sheet/Page, replace, Back, result и drag',
+              color: Colors.teal.shade700,
+              onTap: () => context.router.push(const SheetNavigationLabRoute()),
+            ),
+            _DemoTile(
               label: 'SwiftSheet',
               subtitle: 'Default sheet with drag-to-dismiss',
               color: Colors.green.shade600,
               onTap: () => context.router.push(const SheetRoute()),
+            ),
+            _DemoTile(
+              label: 'SwiftSheet (full height + safe area)',
+              subtitle: 'preserveTopSafeArea: true, topGap: 0',
+              color: Colors.indigo,
+              onTap: () => context.router.push(const SheetFullHeightRoute()),
             ),
             _DemoTile(
               label: 'SwiftSheet (no bg animation)',

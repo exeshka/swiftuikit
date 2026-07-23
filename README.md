@@ -208,7 +208,10 @@ SwiftSheetPage<void>(
   child: ComposeScreen(),
   showDragHandle: true,     // show drag indicator at the top (default: false)
   enableDrag: true,         // allow drag-to-dismiss (default: true)
+  dismissThreshold: 0.32,   // dismiss after dragging 32% of the sheet
+  minFlingVelocity: 1.0,    // sheet heights per second
   animateBackground: true,  // animate the previous page (default: true)
+  preserveTopSafeArea: true, // keep system top inset and open at full height
   sheetRadius: 38.0,        // corner radius
 )
 ```
@@ -217,10 +220,18 @@ SwiftSheetPage<void>(
 |----------|------|---------|-------------|
 | `showDragHandle` | `bool` | `false` | Show a drag handle indicator at the top of the sheet |
 | `enableDrag` | `bool` | `true` | Allow drag-to-dismiss gesture |
+| `dismissThreshold` | `double` | `0.32` | Fraction of sheet height required to dismiss |
+| `minFlingVelocity` | `double` | `1.0` | Downward fling velocity required to dismiss, in sheet heights per second |
 | `animateBackground` | `bool` | `true` | Animate (scale, slide, round corners of) the previous page when the sheet appears |
+| `preserveTopSafeArea` | `bool` | `false` | Keep the system top inset and open the sheet at 100% screen height |
 | `sheetRadius` | `double?` | — | Corner radius of the sheet |
-| `sheetB orderRadius` | `BorderRadius?` | — | Custom border radius geometry for the sheet |
+| `sheetBorderRadius` | `BorderRadius?` | — | Custom border radius geometry for the sheet |
 | `transitionDuration` | `Duration` | `500ms` | Transition animation duration |
+
+When `preserveTopSafeArea` is enabled, the current sheet and the route behind
+it use the physical screen radius from `ScreenRadiusService` by default.
+An explicit `sheetBorderRadius` or `sheetRadius` takes priority and is applied
+to both routes.
 
 ## Roadmap
 

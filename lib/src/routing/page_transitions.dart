@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'dart:math' as math;
 import 'dart:ui' show lerpDouble;
 import 'package:flutter/cupertino.dart';
@@ -119,7 +118,8 @@ class SwiftPageTransitions {
     bool useScreenRadius = true,
   }) {
     if (borderRadius != null) return borderRadius;
-    final double effectiveRadius = radius ?? SwiftPageTransitions.sheetCornerRadius;
+    final double effectiveRadius =
+        radius ?? SwiftPageTransitions.sheetCornerRadius;
     return BorderRadius.vertical(top: Radius.circular(effectiveRadius));
   }
 
@@ -222,12 +222,36 @@ class SwiftPageRoute<T> extends PageRoute<T>
   final Duration? customTransitionDuration;
 
   Route? _nextRoute;
+  bool _transitionGestureInProgress = false;
+  bool _navigatorGestureActive = false;
 
   /// Returns the next route in the navigator stack.
   Route? get nextRoute => _nextRoute;
 
   /// The previous route in the navigator stack.
   Route? previousRoute;
+
+  void _startUserGesture() {
+    _transitionGestureInProgress = true;
+    if (_navigatorGestureActive) return;
+    _navigatorGestureActive = true;
+    navigator?.didStartUserGesture();
+  }
+
+  void _releaseInputLock() {
+    if (!_navigatorGestureActive) return;
+    _navigatorGestureActive = false;
+    navigator?.didStopUserGesture();
+  }
+
+  void _settleUserGesture() {
+    _transitionGestureInProgress = false;
+    _releaseInputLock();
+  }
+
+  void _finishDismissTransition() {
+    _transitionGestureInProgress = false;
+  }
 
   @override
   void didChangeNext(Route? nextRoute) {
@@ -333,6 +357,7 @@ class _SwiftPageRouteTransitionState extends State<_SwiftPageRouteTransition> {
   late CurvedAnimation _secondaryCurve;
   bool _wasNextRouteSheet = false;
   bool _wasNextRouteModal = false;
+  bool _wasNextRoutePopGesture = false;
   double _lastSheetBackgroundProgress = 1.0;
   BorderRadius? _lastSheetBackgroundBorderRadius;
   bool _lastAnimateBackground = true;
@@ -414,8 +439,30 @@ class _SwiftPageRouteTransitionState extends State<_SwiftPageRouteTransition> {
   @override
   Widget build(BuildContext context) {
     final route = ModalRoute.of(context);
-    final bool linearTransition =
+    final SwiftPageRoute<dynamic>? swiftRoute = route is SwiftPageRoute
+        ? route
+        : null;
+    final SwiftPageRoute<dynamic>? nextSwiftRoute =
+        swiftRoute?.nextRoute is SwiftPageRoute
+        ? swiftRoute!.nextRoute as SwiftPageRoute<dynamic>
+        : null;
+    final bool currentRoutePopGesture =
+        swiftRoute?._transitionGestureInProgress == true;
+    final bool nextRoutePopGesture =
+        nextSwiftRoute?._transitionGestureInProgress == true;
+    final bool navigatorPopGesture =
         route is PageRoute && route.popGestureInProgress;
+    if (nextRoutePopGesture) {
+      _wasNextRoutePopGesture = true;
+    } else if (nextSwiftRoute != null ||
+        widget.secondaryAnimation.isDismissed) {
+      _wasNextRoutePopGesture = false;
+    }
+    final bool linearTransition =
+        currentRoutePopGesture ||
+        nextRoutePopGesture ||
+        _wasNextRoutePopGesture ||
+        navigatorPopGesture;
 
     final Animation<double> currentPrimary = linearTransition
         ? widget.animation
@@ -573,8 +620,9 @@ class _SwiftPageRouteTransitionState extends State<_SwiftPageRouteTransition> {
             final bool skipSecondary =
                 isNextRouteModal ||
                 (_wasNextRouteModal && currentSecondary.value > 0.0);
-            final double secondaryValue =
-                skipSecondary ? 0.0 : currentSecondary.value;
+            final double secondaryValue = skipSecondary
+                ? 0.0
+                : currentSecondary.value;
 
             final double translationX =
                 (1.0 - currentPrimary.value) * width -
@@ -615,7 +663,9 @@ class _SwiftPageRouteTransitionState extends State<_SwiftPageRouteTransition> {
                 borderRadius: borderRadius,
                 boxShadow: [
                   BoxShadow(
-                    color: CupertinoColors.black.withValues(alpha: shadowOpacity),
+                    color: CupertinoColors.black.withValues(
+                      alpha: shadowOpacity,
+                    ),
                     offset: const Offset(0, 10),
                     blurRadius: 100,
                     spreadRadius: 0,
@@ -715,7 +765,7 @@ class _SwiftBackGestureDetectorState<T>
     if (_backGestureController != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (_backGestureController?.navigator.mounted ?? false) {
-          _backGestureController?.navigator.didStopUserGesture();
+          _backGestureController?.settleUserGesture();
         }
         _backGestureController = null;
       });
@@ -726,26 +776,27 @@ class _SwiftBackGestureDetectorState<T>
   _DirectionDependentDragGestureRecognizer _createRecognizer() {
     final directionality = Directionality.of(context);
     return _DirectionDependentDragGestureRecognizer(
-      debugOwner: this,
-      directionality: directionality,
-      checkStartedCallback: () => _backGestureController != null,
-      enabledCallback: () {
-        if (!widget.canSwipe) return false;
-        final route = widget.route;
-        if (route.isFirst) return false;
-        if (route.willHandlePopInternally) return false;
-        if (route.fullscreenDialog) return false;
-        if (!route.isActive || !route.isCurrent) return false;
-        return true;
-      },
-      detectionArea: () => widget.canOnlySwipeFromEdge
-          ? (
-              startOffset: 0.0,
-              width: widget.backGestureWidth ??
-                  MediaQuery.sizeOf(context).width * 0.2,
-            )
-          : null,
-    )
+        debugOwner: this,
+        directionality: directionality,
+        checkStartedCallback: () => _backGestureController != null,
+        enabledCallback: () {
+          if (!widget.canSwipe) return false;
+          final route = widget.route;
+          if (route.isFirst) return false;
+          if (route.willHandlePopInternally) return false;
+          if (route.fullscreenDialog) return false;
+          if (!route.isActive || !route.isCurrent) return false;
+          return true;
+        },
+        detectionArea: () => widget.canOnlySwipeFromEdge
+            ? (
+                startOffset: 0.0,
+                width:
+                    widget.backGestureWidth ??
+                    MediaQuery.sizeOf(context).width * 0.2,
+              )
+            : null,
+      )
       ..onStart = _handleDragStart
       ..onUpdate = _handleDragUpdate
       ..onEnd = _handleDragEnd
@@ -761,6 +812,10 @@ class _SwiftBackGestureDetectorState<T>
       controller: widget.route.controller!,
       getIsActive: () => widget.route.isActive,
       getIsCurrent: () => widget.route.isCurrent,
+      startUserGesture: widget.route._startUserGesture,
+      releaseInputLock: widget.route._releaseInputLock,
+      settleUserGesture: widget.route._settleUserGesture,
+      finishDismissTransition: widget.route._finishDismissTransition,
     );
   }
 
@@ -810,12 +865,21 @@ class _SwiftBackGestureDetectorState<T>
       },
     );
 
-    return Stack(
-      fit: StackFit.passthrough,
-      children: [
-        widget.child,
-        Positioned.fill(child: gestureDetector),
-      ],
+    return AnimatedBuilder(
+      animation: widget.route.animation!,
+      builder: (context, child) => IgnorePointer(
+        ignoring:
+            !widget.route.isCurrent &&
+            widget.route.animation!.status == AnimationStatus.reverse,
+        child: child,
+      ),
+      child: Stack(
+        fit: StackFit.passthrough,
+        children: [
+          widget.child,
+          Positioned.fill(child: gestureDetector),
+        ],
+      ),
     );
   }
 }
@@ -826,14 +890,22 @@ class _SwiftBackGestureController<T> {
     required this.controller,
     required this.getIsActive,
     required this.getIsCurrent,
+    required this.startUserGesture,
+    required this.releaseInputLock,
+    required this.settleUserGesture,
+    required this.finishDismissTransition,
   }) {
-    navigator.didStartUserGesture();
+    startUserGesture();
   }
 
   final AnimationController controller;
   final NavigatorState navigator;
   final ValueGetter<bool> getIsActive;
   final ValueGetter<bool> getIsCurrent;
+  final VoidCallback startUserGesture;
+  final VoidCallback releaseInputLock;
+  final VoidCallback settleUserGesture;
+  final VoidCallback finishDismissTransition;
 
   void dragUpdate(double delta) {
     controller.value -= delta;
@@ -855,6 +927,7 @@ class _SwiftBackGestureController<T> {
       animateForward = controller.value > 0.5;
     }
 
+    TickerFuture? ticker;
     if (animateForward) {
       final droppedForwardTime = math.min(
         lerpDouble(
@@ -864,12 +937,10 @@ class _SwiftBackGestureController<T> {
         )!.floor(),
         maxPageBackAnimationTime,
       );
-      unawaited(
-        controller.animateTo(
-          1.0,
-          duration: Duration(milliseconds: droppedForwardTime),
-          curve: animationCurve,
-        ),
+      ticker = controller.animateTo(
+        1.0,
+        duration: Duration(milliseconds: droppedForwardTime),
+        curve: animationCurve,
       );
     } else {
       if (isCurrent) {
@@ -885,25 +956,25 @@ class _SwiftBackGestureController<T> {
           )!.floor(),
           250,
         );
-        unawaited(
-          controller.animateBack(
-            0.0,
-            duration: Duration(milliseconds: droppedBackTime),
-            curve: animationCurve,
-          ),
+        ticker = controller.animateBack(
+          0.0,
+          duration: Duration(milliseconds: droppedBackTime),
+          curve: animationCurve,
         );
       }
+      releaseInputLock();
+      if (ticker != null) {
+        ticker.whenCompleteOrCancel(finishDismissTransition);
+      } else {
+        finishDismissTransition();
+      }
+      return;
     }
 
     if (controller.isAnimating) {
-      late AnimationStatusListener animationStatusCallback;
-      animationStatusCallback = (AnimationStatus status) {
-        navigator.didStopUserGesture();
-        controller.removeStatusListener(animationStatusCallback);
-      };
-      controller.addStatusListener(animationStatusCallback);
+      ticker.whenCompleteOrCancel(settleUserGesture);
     } else {
-      navigator.didStopUserGesture();
+      settleUserGesture();
     }
   }
 }

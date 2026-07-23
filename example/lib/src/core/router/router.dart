@@ -10,6 +10,8 @@ class AppRouter extends RootStackRouter {
   List<AutoRoute> get routes => [
     SwiftPageAutoRoute(page: SplashRoute.page, initial: true),
     SwiftPageAutoRoute(page: HomeRoute.page),
+    SwiftPageAutoRoute(page: NavigationLabRoute.page),
+    SwiftPageAutoRoute(page: NavigationResultRoute.page),
     SwiftPageAutoRoute(page: ProductGridRoute.page),
     SwiftInteractiveZoomAutoRoute(
       page: DetailRoute.page,
@@ -21,6 +23,12 @@ class AppRouter extends RootStackRouter {
       canOnlySwipeFromEdge: true,
     ),
     SwiftSheetAutoRoute(page: SheetRoute.page),
+    SwiftSheetAutoRoute(page: SheetNavigationLabRoute.page),
+    SwiftSheetAutoRoute(page: SheetNavigationResultRoute.page),
+    SwiftSheetAutoRoute(
+      page: SheetFullHeightRoute.page,
+      preserveTopSafeArea: true,
+    ),
     SwiftSheetAutoRoute(page: SheetNoBgRoute.page, animateBackground: false),
     SwiftSheetAutoRoute(page: SheetNoSwipeRoute.page, enableDrag: false),
     SwiftSheetAutoRoute(page: SheetCustomRadiusRoute.page, sheetRadius: 16),

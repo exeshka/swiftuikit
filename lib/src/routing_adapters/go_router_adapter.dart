@@ -135,6 +135,9 @@ class SwiftSheetPage<T> extends Page<T> {
     this.showDragHandle = false,
     this.enableDrag = true,
     this.animateBackground = true,
+    this.preserveTopSafeArea = false,
+    this.dismissThreshold = 0.32,
+    this.minFlingVelocity = 1.0,
   });
 
   final Widget child;
@@ -144,6 +147,9 @@ class SwiftSheetPage<T> extends Page<T> {
   final bool showDragHandle;
   final bool enableDrag;
   final bool animateBackground;
+  final bool preserveTopSafeArea;
+  final double dismissThreshold;
+  final double minFlingVelocity;
 
   @override
   Route<T> createRoute(BuildContext context) {
@@ -156,6 +162,9 @@ class SwiftSheetPage<T> extends Page<T> {
       showDragHandle: showDragHandle,
       enableDrag: enableDrag,
       animateBackground: animateBackground,
+      preserveTopSafeArea: preserveTopSafeArea,
+      dismissThreshold: dismissThreshold,
+      minFlingVelocity: minFlingVelocity,
       scrollableBuilder:
           (BuildContext context, ScrollController scrollController) =>
               PrimaryScrollController(
