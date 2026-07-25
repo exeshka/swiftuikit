@@ -35,13 +35,23 @@ class _ScrollValueListenerState extends State<ScrollValueListener> {
   }
 
   void _syncImmediately() {
-    if (widget.controller.hasClients) {
+    if (widget.controller.hasClients &&
+        widget.controller.positions.length == 1) {
       _offset.value = widget.controller.offset;
+      return;
     }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      if (widget.controller.hasClients &&
+          widget.controller.positions.length == 1) {
+        _offset.value = widget.controller.offset;
+      }
+    });
   }
 
   void _onScroll() {
-    if (!widget.controller.hasClients) return;
+    if (!widget.controller.hasClients ||
+        widget.controller.positions.length != 1) return;
     _offset.value = widget.controller.offset;
   }
 

@@ -1,4 +1,5 @@
 import 'package:auto_route/annotations.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class ProductEntity {
@@ -17,10 +18,20 @@ class ProductDetailScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBodyBehindAppBar: true,
+      appBar: CupertinoNavigationBar(
+        enableBackgroundFilterBlur: false,
+        transitionBetweenRoutes: false,
+        backgroundColor: Colors.transparent,
+      ),
       body: SizedBox(
         height: .infinity,
 
-        child: Image.asset(product.image, fit: .cover),
+        child: Image.asset(
+          product.image,
+          fit: .cover,
+          // color: Colors.red.withValues(alpha: 0.5),
+        ),
       ),
     );
   }

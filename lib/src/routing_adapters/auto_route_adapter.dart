@@ -17,27 +17,15 @@ Route<T> swiftInteractiveZoomRouteBuilder<T>(
   AutoRoutePage<T> page, {
   required Object sourceId,
   Object? namespace,
-  BorderRadius? sourceBorderRadius,
-  BorderRadius? destinationBorderRadius,
-  bool canSwipe = true,
-  bool canOnlySwipeFromEdge = false,
-  double? backGestureWidth,
-  double verticalDragSensitivity = 1.6,
-  double minInteractiveHeroProgress = 0.15,
+  bool enableDrag = true,
   Duration transitionDuration = const Duration(milliseconds: 420),
 }) {
   return SwiftInteractiveZoomRoute<T>(
     sourceId: sourceId,
     namespace: namespace,
+    enableDrag: enableDrag,
     settings: page,
-    sourceBorderRadius: sourceBorderRadius,
-    destinationBorderRadius: destinationBorderRadius,
-    canSwipe: canSwipe,
-    canOnlySwipeFromEdge: canOnlySwipeFromEdge,
-    backGestureWidth: backGestureWidth,
-    verticalDragSensitivity: verticalDragSensitivity,
-    minInteractiveHeroProgress: minInteractiveHeroProgress,
-    customTransitionDuration: transitionDuration,
+    transitionDuration: transitionDuration,
     builder: (_) => child,
   );
 }
@@ -199,13 +187,7 @@ class SwiftInteractiveZoomAutoRoute<R> extends CustomRoute<R> {
     this.sourceId,
     this.sourceIdResolver,
     this.namespace,
-    this.sourceBorderRadius,
-    this.destinationBorderRadius,
-    this.canSwipe = true,
-    this.canOnlySwipeFromEdge = false,
-    this.backGestureWidth,
-    this.verticalDragSensitivity = 1.6,
-    this.minInteractiveHeroProgress = 0.15,
+    this.enableDrag = true,
     this.transitionDuration = const Duration(milliseconds: 420),
   }) : assert(
          (sourceId == null) != (sourceIdResolver == null),
@@ -223,13 +205,7 @@ class SwiftInteractiveZoomAutoRoute<R> extends CustomRoute<R> {
                  page,
                  sourceId: resolvedSourceId,
                  namespace: namespace,
-                 sourceBorderRadius: sourceBorderRadius,
-                 destinationBorderRadius: destinationBorderRadius,
-                 canSwipe: canSwipe,
-                 canOnlySwipeFromEdge: canOnlySwipeFromEdge,
-                 backGestureWidth: backGestureWidth,
-                 verticalDragSensitivity: verticalDragSensitivity,
-                 minInteractiveHeroProgress: minInteractiveHeroProgress,
+                 enableDrag: enableDrag,
                  transitionDuration: transitionDuration,
                );
              },
@@ -238,13 +214,7 @@ class SwiftInteractiveZoomAutoRoute<R> extends CustomRoute<R> {
   final Object? sourceId;
   final SwiftInteractiveZoomSourceIdResolver? sourceIdResolver;
   final Object? namespace;
-  final BorderRadius? sourceBorderRadius;
-  final BorderRadius? destinationBorderRadius;
-  final bool canSwipe;
-  final bool canOnlySwipeFromEdge;
-  final double? backGestureWidth;
-  final double verticalDragSensitivity;
-  final double minInteractiveHeroProgress;
+  final bool enableDrag;
   final Duration transitionDuration;
 }
 

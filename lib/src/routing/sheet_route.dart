@@ -273,7 +273,7 @@ class SwiftSheetTransition extends StatefulWidget {
         linearTransition ?? Navigator.of(context).userGestureInProgress;
     final route = ModalRoute.of(context);
     final isSheet = route is SwiftSheetRoute || route is CupertinoSheetRoute;
-    final scope = _SwiftSheetScope.maybeOf(context);
+    final scope = SwiftSheetScope.maybeOf(context);
     final double? customRadius = sheetRadius ?? scope?.radius;
     final BorderRadius? customBorderRadius =
         sheetBorderRadius ?? scope?.borderRadius;
@@ -408,11 +408,15 @@ class SwiftSheetTransition extends StatefulWidget {
               animation: radiusAnimation,
               child: contrastedChild,
               builder: (BuildContext context, Widget? child) {
+                final br = !secondaryAnimation.isDismissed
+                    ? radiusAnimation.value
+                    : BorderRadius.zero;
                 return ClipRSuperellipse(
-                  borderRadius: !secondaryAnimation.isDismissed
-                      ? radiusAnimation.value
-                      : BorderRadius.zero,
-                  child: child,
+                  borderRadius: br,
+                  child: ClipRRect(
+                    borderRadius: br,
+                    child: child,
+                  ),
                 );
               },
             ),
@@ -460,7 +464,10 @@ class SwiftSheetTransition extends StatefulWidget {
         scale: scaleAnimation,
         filterQuality: FilterQuality.medium,
         alignment: Alignment.topCenter,
-        child: ClipRSuperellipse(borderRadius: borderRadius, child: child),
+        child: ClipRSuperellipse(
+          borderRadius: borderRadius,
+          child: ClipRRect(borderRadius: borderRadius, child: child),
+        ),
       ),
     );
   }
@@ -845,13 +852,17 @@ class SwiftSheetRoute<T> extends CupertinoSheetRoute<T> {
       removeTop: !preserveTopSafeArea,
       child: ClipRSuperellipse(
         borderRadius: _resolveSheetBorderRadius(context),
-        clipBehavior: Clip.antiAliasWithSaveLayer,
-        child: CupertinoUserInterfaceLevel(
-          data: CupertinoUserInterfaceLevelData.elevated,
-          child: _SwiftSheetScope(
-            radius: sheetRadius,
-            borderRadius: _effectiveSheetBorderRadius,
-            child: _SwiftDraggableScrollableSheet<T>(
+        clipBehavior: Clip.antiAlias,
+        child: ClipRRect(
+          borderRadius: _resolveSheetBorderRadius(context),
+          clipBehavior: Clip.antiAlias,
+          child: CupertinoUserInterfaceLevel(
+            data: CupertinoUserInterfaceLevelData.elevated,
+            child: SwiftSheetScope(
+              radius: sheetRadius,
+              borderRadius: _effectiveSheetBorderRadius,
+              resolvedBorderRadius: _resolveSheetBorderRadius(context),
+              child: _SwiftDraggableScrollableSheet<T>(
               enabledCallback: () => enableDrag,
               topGap: topGap,
               onStartPopGesture: () =>
@@ -864,6 +875,7 @@ class SwiftSheetRoute<T> extends CupertinoSheetRoute<T> {
               builder: _sheetWithDragHandle,
             ),
           ),
+        ),
         ),
       ),
     );
@@ -975,7 +987,7 @@ class SwiftSheetRoute<T> extends CupertinoSheetRoute<T> {
   /// Checks if a Cupertino/Swift sheet view exists in the widget tree above the current
   /// context.
   static bool hasParentSheet(BuildContext context) {
-    return _SwiftSheetScope.maybeOf(context) != null;
+    return SwiftSheetScope.maybeOf(context) != null;
   }
 
   /// Pops the entire [SwiftSheetRoute], if a sheet route exists in the stack.
@@ -1007,24 +1019,31 @@ class SwiftSheetRoute<T> extends CupertinoSheetRoute<T> {
   }
 }
 
-// Internally used to see if another sheet is in the tree already.
-class _SwiftSheetScope extends InheritedWidget {
-  const _SwiftSheetScope({
+/// An [InheritedWidget] that propagates the sheet's resolved border radius
+/// down the widget tree. Used by [SwiftPageRoute] to automatically adapt
+/// its clipping radius when nested inside a sheet.
+class SwiftSheetScope extends InheritedWidget {
+  const SwiftSheetScope({
+    super.key,
     required this.radius,
     required this.borderRadius,
+    required this.resolvedBorderRadius,
     required super.child,
   });
 
   final double? radius;
   final BorderRadius? borderRadius;
+  final BorderRadius resolvedBorderRadius;
 
-  static _SwiftSheetScope? maybeOf(BuildContext context) {
-    return context.getInheritedWidgetOfExactType<_SwiftSheetScope>();
+  static SwiftSheetScope? maybeOf(BuildContext context) {
+    return context.getInheritedWidgetOfExactType<SwiftSheetScope>();
   }
 
   @override
-  bool updateShouldNotify(_SwiftSheetScope oldWidget) {
-    return radius != oldWidget.radius || borderRadius != oldWidget.borderRadius;
+  bool updateShouldNotify(SwiftSheetScope oldWidget) {
+    return radius != oldWidget.radius ||
+        borderRadius != oldWidget.borderRadius ||
+        resolvedBorderRadius != oldWidget.resolvedBorderRadius;
   }
 }
 

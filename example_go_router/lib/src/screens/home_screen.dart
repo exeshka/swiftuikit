@@ -9,8 +9,7 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const productId = 'product-42';
-    return SwiftInteractiveZoomBackground(
-      child: Scaffold(
+    return Scaffold(
         appBar: AppBar(title: const Text('swiftuikit demos (go_router)')),
         body: ListView(
           padding: const EdgeInsets.all(16),
@@ -26,7 +25,6 @@ class HomeScreen extends StatelessWidget {
             _SectionHeader('SwiftZoom'),
             SwiftInteractiveZoomSource(
               id: productId,
-              borderRadius: BorderRadius.circular(12),
               child: _DemoTile(
                 label: 'Product #42',
                 subtitle: 'The product ID is also the Hero tag',
@@ -94,7 +92,6 @@ class HomeScreen extends StatelessWidget {
             ),
           ],
         ),
-      ),
     );
   }
 }

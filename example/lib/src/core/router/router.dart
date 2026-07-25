@@ -3,6 +3,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:example/src/core/router/router.gr.dart';
 import 'package:example/src/screens/product_detail_screen.dart';
+import 'package:example/src/screens/profile/profile_screen.dart';
 import 'package:swiftuikit/swiftuikit.dart';
 
 @AutoRouterConfig(replaceInRouteName: 'Screen|Page,Route')
@@ -21,6 +22,14 @@ class AppRouter extends RootStackRouter {
       page: ProductDetailSheetRoute.page,
 
       preserveTopSafeArea: true,
+    ),
+
+    SwiftSheetAutoRoute(
+      page: ProfileWrapperRoute.page,
+      children: [
+        SwiftPageAutoRoute(page: ProfileRoute.page),
+        SwiftPageAutoRoute(page: ProfileEditRoute.page),
+      ],
     ),
   ];
 }

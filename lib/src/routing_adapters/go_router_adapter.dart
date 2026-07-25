@@ -24,26 +24,14 @@ class SwiftInteractiveZoomPage<T> extends Page<T> {
     super.canPop,
     super.onPopInvoked,
     this.namespace,
-    this.sourceBorderRadius,
-    this.destinationBorderRadius,
-    this.canSwipe = true,
-    this.canOnlySwipeFromEdge = false,
-    this.backGestureWidth,
-    this.verticalDragSensitivity = 1.6,
-    this.minInteractiveHeroProgress = 0.15,
+    this.enableDrag = true,
     this.transitionDuration = const Duration(milliseconds: 420),
   });
 
   final Object sourceId;
   final Widget child;
   final Object? namespace;
-  final BorderRadius? sourceBorderRadius;
-  final BorderRadius? destinationBorderRadius;
-  final bool canSwipe;
-  final bool canOnlySwipeFromEdge;
-  final double? backGestureWidth;
-  final double verticalDragSensitivity;
-  final double minInteractiveHeroProgress;
+  final bool enableDrag;
   final Duration transitionDuration;
 
   @override
@@ -51,15 +39,9 @@ class SwiftInteractiveZoomPage<T> extends Page<T> {
     return SwiftInteractiveZoomRoute<T>(
       sourceId: sourceId,
       namespace: namespace,
+      enableDrag: enableDrag,
       settings: this,
-      sourceBorderRadius: sourceBorderRadius,
-      destinationBorderRadius: destinationBorderRadius,
-      canSwipe: canSwipe,
-      canOnlySwipeFromEdge: canOnlySwipeFromEdge,
-      backGestureWidth: backGestureWidth,
-      verticalDragSensitivity: verticalDragSensitivity,
-      minInteractiveHeroProgress: minInteractiveHeroProgress,
-      customTransitionDuration: transitionDuration,
+      transitionDuration: transitionDuration,
       builder: (_) => child,
     );
   }

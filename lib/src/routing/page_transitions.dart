@@ -440,6 +440,31 @@ class _SwiftPageRouteTransitionState extends State<_SwiftPageRouteTransition> {
     return progress > precisionErrorTolerance ? target : BorderRadius.zero;
   }
 
+  BorderRadius _resolveClipBorderRadius(BuildContext context) {
+    if (widget.borderRadius != null) return widget.borderRadius!;
+    if (widget.radius != null) return BorderRadius.circular(widget.radius!);
+    if (!widget.clipWithScreenRadius) return BorderRadius.zero;
+
+    final screenRadius = ScreenRadiusService.instance.radius;
+    final sheetScope = SwiftSheetScope.maybeOf(context);
+
+    if (sheetScope != null) {
+      return BorderRadius.only(
+        topLeft: sheetScope.resolvedBorderRadius.topLeft,
+        topRight: Radius.zero,
+        bottomLeft: screenRadius.bottomLeft,
+        bottomRight: Radius.zero,
+      );
+    }
+
+    return BorderRadius.only(
+      topLeft: screenRadius.topLeft,
+      topRight: Radius.zero,
+      bottomLeft: screenRadius.bottomLeft,
+      bottomRight: Radius.zero,
+    );
+  }
+
   BorderRadius _resolveSheetBackgroundBorderRadius(
     BuildContext context,
     Route? nextRoute,
@@ -665,14 +690,8 @@ class _SwiftPageRouteTransitionState extends State<_SwiftPageRouteTransition> {
                 widget.clipWithScreenRadius ||
                 widget.radius != null ||
                 widget.borderRadius != null;
-            final targetBorderRadius = shouldClip
-                ? SwiftPageTransitions.resolveBorderRadius(
-                    context,
-                    radius: widget.radius,
-                    borderRadius: widget.borderRadius,
-                    useScreenRadius: widget.clipWithScreenRadius,
-                  )
-                : BorderRadius.zero;
+            final targetBorderRadius =
+                shouldClip ? _resolveClipBorderRadius(context) : BorderRadius.zero;
             final borderRadius = _borderRadiusForMovement(
               progress: radiusProgress,
               target: targetBorderRadius,

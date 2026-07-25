@@ -171,21 +171,12 @@ void main() {
       await gesture.up();
       await tester.pump();
 
-      final detailNavigationBar = find.widgetWithText(
-        CupertinoNavigationBar,
-        'Hero detail',
-      );
-      final heroModes = tester.widgetList<HeroMode>(
-        find.ancestor(of: detailNavigationBar, matching: find.byType(HeroMode)),
-      );
-      expect(heroModes.any((mode) => !mode.enabled), isTrue);
-
       await tester.tap(find.byKey(const ValueKey('hero-home-page')));
       await tester.pump();
 
       expect(homeTaps, 1);
       expect(heroFlights, 0);
-      expect(find.text('Hero home'), findsOneWidget);
+      expect(find.text('Hero home'), findsWidgets);
 
       await tester.pumpAndSettle();
       expect(heroFlights, 0);

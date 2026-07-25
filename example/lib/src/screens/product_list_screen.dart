@@ -22,10 +22,9 @@ class ProductListScreen extends StatefulWidget {
 
 class _ProductListScreenState extends State<ProductListScreen> {
   final _pageController = PageController();
+  int _lastKnownPageIndex = 0;
 
   final Map<int, ScrollController> _controllers = {};
-
-  PageScrollSyncCoordinator? _syncCoordinator;
 
   @override
   void didChangeDependencies() {
@@ -34,26 +33,13 @@ class _ProductListScreenState extends State<ProductListScreen> {
     // поэтому инициализация не в initState, а тут, с защитой от повторного создания
     final screenHeight = MediaQuery.sizeOf(context).height;
     final snapPoint = screenHeight / 1.5;
-    _syncCoordinator ??= PageScrollSyncCoordinator(snapPoint: snapPoint);
   }
 
   ScrollController _controllerFor(int index) {
     final isNew = !_controllers.containsKey(index);
 
     final controller = _controllers.putIfAbsent(index, () {
-      return ScrollController(
-        initialScrollOffset: _syncCoordinator!.initialOffsetForNewController,
-      );
-    });
-
-    if (isNew) {
-      _syncCoordinator!.attach(controller);
-    }
-
-    // на каждую сборку страницы — досинкаем на случай если состояние
-    // изменилось между созданием контроллера и его реальным attach к Scrollable
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _syncCoordinator?.syncIfNeeded(controller);
+      return ScrollController();
     });
 
     return controller;
@@ -62,10 +48,8 @@ class _ProductListScreenState extends State<ProductListScreen> {
   @override
   void dispose() {
     for (final c in _controllers.values) {
-      _syncCoordinator?.detach(c);
       c.dispose();
     }
-    _syncCoordinator?.dispose();
     _pageController.dispose();
     super.dispose();
   }
@@ -73,61 +57,70 @@ class _ProductListScreenState extends State<ProductListScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Stack(
-        children: [
-          Positioned.fill(
-            child: PageView.builder(
-              controller: _pageController,
-              itemCount: 5, // сколько категорий
-              itemBuilder: (context, index) {
-                return PrimaryScrollController(
-                  controller: _controllerFor(index),
-                  child: _CategoryPage(controller: _controllerFor(index)),
-                );
-              },
+        body: Stack(
+          children: [
+            Positioned.fill(
+              child: PageView.builder(
+                controller: _pageController,
+                itemCount: 5,
+                itemBuilder: (context, index) {
+                  return _CategoryPage(controller: _controllerFor(index));
+                },
+              ),
             ),
-          ),
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            child: AnimatedBuilder(
-              animation: _pageController,
-              builder: (context, _) {
-                final rawPage =
-                    _pageController.hasClients &&
-                        _pageController.positions.isNotEmpty
-                    ? (_pageController.page ??
-                          _pageController.initialPage.toDouble())
-                    : 0.0;
-                final index = rawPage.round();
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              child: AnimatedBuilder(
+                animation: _pageController,
+                builder: (context, _) {
+                  double rawPage;
+                  if (_pageController.hasClients &&
+                      _pageController.positions.length == 1) {
+                    try {
+                      rawPage =
+                          _pageController.page ??
+                          _pageController.initialPage.toDouble();
+                      _lastKnownPageIndex = rawPage.round();
+                    } catch (_) {
+                      rawPage = _lastKnownPageIndex.toDouble();
+                    }
+                  } else {
+                    rawPage = _lastKnownPageIndex.toDouble();
+                  }
+                  final index = rawPage.round();
 
-                return ScrollValueListener(
-                  controller: _controllerFor(index),
-                  builder: (context, offset) {
-                    final screenHeight = MediaQuery.sizeOf(context).height;
-                    final mainContentTopPadding = screenHeight / 1.5;
-                    final rawProgress = (offset / mainContentTopPadding).clamp(
-                      0.0,
-                      1.0,
-                    );
-                    const curve = Interval(0.4, 1.0, curve: Curves.easeIn);
-                    final progress = curve.transform(rawProgress);
+                  return ScrollValueListener(
+                    controller: _controllerFor(index),
+                    builder: (context, offset) {
+                      final screenHeight = MediaQuery.sizeOf(context).height;
+                      final mainContentTopPadding = screenHeight / 1.5;
+                      final rawProgress = (offset / mainContentTopPadding)
+                          .clamp(0.0, 1.0);
+                      const curve = Interval(0.4, 1.0, curve: Curves.easeIn);
+                      final progress = curve.transform(rawProgress);
 
-                    return Opacity(
-                      opacity: progress,
-                      child: CupertinoNavigationBar.large(
-                        transitionBetweenRoutes: false,
-                        largeTitle: Text("Content appbar"),
-                      ),
-                    );
-                  },
-                );
-              },
+                      return Opacity(
+                        opacity: progress,
+                        child: CupertinoNavigationBar.large(
+                          transitionBetweenRoutes: false,
+                          leading: CupertinoButton(
+                            child: Text("Open profile"),
+                            onPressed: () {
+                              context.router.push(ProfileRoute());
+                            },
+                          ),
+                          largeTitle: Text("Content appbar"),
+                        ),
+                      );
+                    },
+                  );
+                },
+              ),
             ),
-          ),
-        ],
-      ),
+          ],
+        ),
     );
   }
 }
@@ -180,6 +173,13 @@ class _CategoryPage extends StatelessWidget {
                             right: 0,
                             child: CupertinoNavigationBar(
                               middle: Text("Profile appbar"),
+
+                              leading: CupertinoButton(
+                                child: Text("Open profile"),
+                                onPressed: () {
+                                  context.router.push(ProfileRoute());
+                                },
+                              ),
                               backgroundColor: Colors.transparent,
                               enableBackgroundFilterBlur: false,
 
@@ -195,7 +195,7 @@ class _CategoryPage extends StatelessWidget {
 
               SliverToBoxAdapter(
                 child: ScrollValueListener(
-                  controller: PrimaryScrollController.of(context),
+                  controller: controller,
                   builder: (context, offset) {
                     final t = (offset / mainContentTopPadding).clamp(0.0, 1.0);
 
