@@ -1,5 +1,9 @@
 export 'src/widgets/swift_step_sheet.dart';
 export 'src/widgets/swift_modal_scaffold.dart';
+export 'src/widgets/scroll/swift_sheet_scroll_provider.dart';
+export 'src/widgets/scroll/scroll_overlap_listener.dart';
+export 'src/widgets/scroll/scroll_value_listener.dart';
+export 'src/widgets/scroll/snapping_scroll_physics.dart';
 
 export 'src/routing/page_transitions.dart';
 export 'src/routing/sheet_route.dart';

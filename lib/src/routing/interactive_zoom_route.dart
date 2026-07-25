@@ -4,12 +4,12 @@ import 'package:flutter_physics/flutter_physics.dart';
 
 import 'package:swiftuikit/src/services/screen_radius_service.dart';
 
-const _interactiveZoomBackgroundScaleReduction = 0.085;
+const _interactiveZoomBackgroundScaleReduction = 0.14;
 const _interactiveZoomSourceCrossfadeEnd = 0.65;
 const _interactiveZoomFlightCurve = Curves.easeInOutCubic;
 final _interactiveZoomForwardSpring = Spring.withDamping(dampingFraction: 0.85);
 final _interactiveZoomReverseSpring = Spring.withDamping(dampingFraction: 0.65);
-const _interactiveZoomDismissThreshold = 0.3;
+const _interactiveZoomDismissThreshold = 0.5;
 const _interactiveZoomMinFlingVelocity = 500.0;
 const _interactiveZoomMaxScaleReduction = 0.15;
 const _interactiveZoomFallbackRadius = 38.0;

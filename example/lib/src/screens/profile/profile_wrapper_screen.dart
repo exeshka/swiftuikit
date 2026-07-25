@@ -1,7 +1,6 @@
-import 'package:auto_route/annotations.dart';
 import 'package:auto_route/auto_route.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:swiftuikit/swiftuikit.dart';
 
 @RoutePage()
 class ProfileWrapperScreen extends StatelessWidget {
@@ -9,6 +8,11 @@ class ProfileWrapperScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(body: AutoRouter());
+    return SwiftSheetScrollBinding(
+      child: Scaffold(
+        backgroundColor: Colors.black,
+        body: AutoRouter(),
+      ),
+    );
   }
 }

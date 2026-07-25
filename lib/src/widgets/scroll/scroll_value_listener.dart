@@ -30,7 +30,7 @@ class _ScrollValueListenerState extends State<ScrollValueListener> {
     if (oldWidget.controller != widget.controller) {
       oldWidget.controller.removeListener(_onScroll);
       widget.controller.addListener(_onScroll);
-      _syncImmediately(); // подхватываем актуальный offset нового контроллера сразу, не дожидаясь его скролла
+      _syncImmediately();
     }
   }
 
@@ -51,7 +51,9 @@ class _ScrollValueListenerState extends State<ScrollValueListener> {
 
   void _onScroll() {
     if (!widget.controller.hasClients ||
-        widget.controller.positions.length != 1) return;
+        widget.controller.positions.length != 1) {
+      return;
+    }
     _offset.value = widget.controller.offset;
   }
 

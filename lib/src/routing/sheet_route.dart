@@ -413,10 +413,7 @@ class SwiftSheetTransition extends StatefulWidget {
                     : BorderRadius.zero;
                 return ClipRSuperellipse(
                   borderRadius: br,
-                  child: ClipRRect(
-                    borderRadius: br,
-                    child: child,
-                  ),
+                  child: ClipRRect(borderRadius: br, child: child),
                 );
               },
             ),
@@ -863,19 +860,19 @@ class SwiftSheetRoute<T> extends CupertinoSheetRoute<T> {
               borderRadius: _effectiveSheetBorderRadius,
               resolvedBorderRadius: _resolveSheetBorderRadius(context),
               child: _SwiftDraggableScrollableSheet<T>(
-              enabledCallback: () => enableDrag,
-              topGap: topGap,
-              onStartPopGesture: () =>
-                  _SwiftSheetRouteTransitionMixin._startPopGesture<T>(
-                    this,
-                    topGap,
-                    dismissThreshold,
-                    minFlingVelocity,
-                  ),
-              builder: _sheetWithDragHandle,
+                enabledCallback: () => enableDrag,
+                topGap: topGap,
+                onStartPopGesture: () =>
+                    _SwiftSheetRouteTransitionMixin._startPopGesture<T>(
+                      this,
+                      topGap,
+                      dismissThreshold,
+                      minFlingVelocity,
+                    ),
+                builder: _sheetWithDragHandle,
+              ),
             ),
           ),
-        ),
         ),
       ),
     );

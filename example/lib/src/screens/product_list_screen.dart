@@ -1,11 +1,6 @@
-import 'package:auto_route/annotations.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:example/gen/assets.gen.dart';
 import 'package:example/src/core/router/router.gr.dart';
-import 'package:example/src/core/widgets/page_scroll_sync_coordinator.dart';
-import 'package:example/src/core/widgets/scroll_overlap_listener.dart';
-import 'package:example/src/core/widgets/scroll_value_listener.dart';
-import 'package:example/src/core/widgets/snapping_scroll_physics.dart';
 import 'package:example/src/screens/product_detail_screen.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -22,27 +17,13 @@ class ProductListScreen extends StatefulWidget {
 
 class _ProductListScreenState extends State<ProductListScreen> {
   final _pageController = PageController();
-  int _lastKnownPageIndex = 0;
-
+  int _currentPage = 0;
   final Map<int, ScrollController> _controllers = {};
 
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    // snapPoint зависит от screenHeight, MediaQuery доступен только тут,
-    // поэтому инициализация не в initState, а тут, с защитой от повторного создания
-    final screenHeight = MediaQuery.sizeOf(context).height;
-    final snapPoint = screenHeight / 1.5;
-  }
+  static const _categories = ['Popular', 'New', 'Coffee', 'Dessert', 'Special'];
 
   ScrollController _controllerFor(int index) {
-    final isNew = !_controllers.containsKey(index);
-
-    final controller = _controllers.putIfAbsent(index, () {
-      return ScrollController();
-    });
-
-    return controller;
+    return _controllers.putIfAbsent(index, () => ScrollController());
   }
 
   @override
@@ -57,70 +38,123 @@ class _ProductListScreenState extends State<ProductListScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        body: Stack(
-          children: [
-            Positioned.fill(
-              child: PageView.builder(
-                controller: _pageController,
-                itemCount: 5,
-                itemBuilder: (context, index) {
-                  return _CategoryPage(controller: _controllerFor(index));
-                },
-              ),
+      body: Stack(
+        children: [
+          Positioned.fill(
+            child: SwiftPageViewAnimation.pageView(
+              controller: _pageController,
+              itemCount: 5,
+
+              // parallaxIndexes: [],
+              onPageChanged: (page) => setState(() => _currentPage = page),
+              itemBuilder: (context, index) {
+                return _CategoryPage(controller: _controllerFor(index));
+              },
             ),
-            Positioned(
-              top: 0,
-              left: 0,
-              right: 0,
-              child: AnimatedBuilder(
-                animation: _pageController,
-                builder: (context, _) {
-                  double rawPage;
-                  if (_pageController.hasClients &&
-                      _pageController.positions.length == 1) {
-                    try {
-                      rawPage =
-                          _pageController.page ??
-                          _pageController.initialPage.toDouble();
-                      _lastKnownPageIndex = rawPage.round();
-                    } catch (_) {
-                      rawPage = _lastKnownPageIndex.toDouble();
-                    }
-                  } else {
-                    rawPage = _lastKnownPageIndex.toDouble();
-                  }
-                  final index = rawPage.round();
+          ),
 
-                  return ScrollValueListener(
-                    controller: _controllerFor(index),
-                    builder: (context, offset) {
-                      final screenHeight = MediaQuery.sizeOf(context).height;
-                      final mainContentTopPadding = screenHeight / 1.5;
-                      final rawProgress = (offset / mainContentTopPadding)
-                          .clamp(0.0, 1.0);
-                      const curve = Interval(0.4, 1.0, curve: Curves.easeIn);
-                      final progress = curve.transform(rawProgress);
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: AnimatedBuilder(
+              animation: _pageController,
+              builder: (context, _) {
+                return ScrollValueListener(
+                  controller: _controllerFor(_currentPage),
+                  builder: (context, offset) {
+                    final screenHeight = MediaQuery.sizeOf(context).height;
+                    final mainContentTopPadding = screenHeight / 1.5;
+                    final rawProgress = (offset / mainContentTopPadding).clamp(
+                      0.0,
+                      1.0,
+                    );
+                    const curve = Interval(0.4, 1.0, curve: Curves.easeIn);
+                    final progress = curve.transform(rawProgress);
 
-                      return Opacity(
-                        opacity: progress,
-                        child: CupertinoNavigationBar.large(
-                          transitionBetweenRoutes: false,
-                          leading: CupertinoButton(
-                            child: Text("Open profile"),
-                            onPressed: () {
-                              context.router.push(ProfileRoute());
-                            },
+                    return Column(
+                      children: [
+                        Opacity(
+                          opacity: progress,
+                          child: CupertinoNavigationBar.large(
+                            transitionBetweenRoutes: false,
+                            leading: CupertinoButton(
+                              padding: EdgeInsets.zero,
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  CircleAvatar(
+                                    radius: 16,
+                                    backgroundColor: Colors.grey[800],
+                                    child: Icon(
+                                      CupertinoIcons.person_fill,
+                                      size: 18,
+                                      color: Colors.grey[300],
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    'Profile',
+                                    style: TextStyle(
+                                      color: Colors.grey[300],
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              onPressed: () {
+                                context.router.push(ProfileRoute());
+                              },
+                            ),
+                            largeTitle: Text(
+                              _categories[_currentPage],
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                           ),
-                          largeTitle: Text("Content appbar"),
                         ),
-                      );
-                    },
-                  );
-                },
-              ),
+                        _PageIndicator(currentPage: _currentPage, pageCount: 5),
+                      ],
+                    );
+                  },
+                );
+              },
             ),
-          ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _PageIndicator extends StatelessWidget {
+  final int currentPage;
+  final int pageCount;
+
+  const _PageIndicator({required this.currentPage, required this.pageCount});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: List.generate(
+          pageCount,
+          (i) => Container(
+            width: i == currentPage ? 24 : 8,
+            height: 4,
+            margin: const EdgeInsets.symmetric(horizontal: 3),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(2),
+              color: i == currentPage
+                  ? CupertinoTheme.of(context).primaryColor
+                  : Colors.white.withValues(alpha: 0.3),
+            ),
+          ),
         ),
+      ),
     );
   }
 }
@@ -133,12 +167,12 @@ class _CategoryPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.sizeOf(context).height;
-    final mainContentTopPadding = screenHeight / 1.5;
+    final mainContentTopPadding = screenHeight / 1.3;
     return Scaffold(
       backgroundColor: Colors.black,
       body: CustomScrollView(
         physics: SnappingScrollPhysics(
-          snapPoints: [0, mainContentTopPadding],
+          snapPoints: [0, mainContentTopPadding - 150],
           springConfig: SnapSpringConfig.snappy,
           parent: const BouncingScrollPhysics(),
         ),
@@ -166,23 +200,50 @@ class _CategoryPage extends StatelessWidget {
                               ),
                             ),
                           ),
-
                           Positioned(
                             top: 0,
                             left: 0,
                             right: 0,
                             child: CupertinoNavigationBar(
-                              middle: Text("Profile appbar"),
-
+                              middle: const Text('Discover'),
                               leading: CupertinoButton(
-                                child: Text("Open profile"),
+                                padding: EdgeInsets.zero,
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    CircleAvatar(
+                                      radius: 16,
+                                      backgroundColor: Colors.grey[800],
+                                      child: Icon(
+                                        CupertinoIcons.person_fill,
+                                        size: 18,
+                                        color: Colors.grey[300],
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      'Profile',
+                                      style: TextStyle(
+                                        color: Colors.grey[300],
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ],
+                                ),
                                 onPressed: () {
                                   context.router.push(ProfileRoute());
                                 },
                               ),
+                              trailing: CupertinoButton(
+                                padding: EdgeInsets.zero,
+                                child: Icon(
+                                  CupertinoIcons.search,
+                                  color: Colors.grey[300],
+                                ),
+                                onPressed: () {},
+                              ),
                               backgroundColor: Colors.transparent,
                               enableBackgroundFilterBlur: false,
-
                               transitionBetweenRoutes: false,
                             ),
                           ),
@@ -198,25 +259,16 @@ class _CategoryPage extends StatelessWidget {
                   controller: controller,
                   builder: (context, offset) {
                     final t = (offset / mainContentTopPadding).clamp(0.0, 1.0);
-
                     return Container(
                       height: screenHeight,
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
                           begin: Alignment.topCenter,
                           end: Alignment.bottomCenter,
-                          stops: [
-                            0.3,
-                            1.0 - t / 2,
-                          ], // стоп едет вверх — чёрное "поле" расширяется
+                          stops: [0.3, 1.0 - t / 2],
                           colors: [
-                            Colors.black.withValues(
-                              alpha: t,
-                            ), // верх плавно чернеет
-
-                            Colors.black.withValues(
-                              alpha: 0.9 + t,
-                            ), // низ всегда чёрный
+                            Colors.black.withValues(alpha: t),
+                            Colors.black.withValues(alpha: 0.9 + t),
                           ],
                         ),
                       ),
@@ -233,14 +285,17 @@ class _CategoryPage extends StatelessWidget {
                         context.router.push(
                           ProductDetailSheetRoute(
                             product: ProductEntity(
-                              id: "434",
-                              title: "Banner",
+                              id: 'banner',
+                              title: 'Featured Item',
                               image: Assets.banner.path,
+                              price: 24.99,
+                              rating: 4.8,
+                              description:
+                                  'A premium selection crafted for the perfect experience.',
                             ),
                           ),
                         );
                       },
-
                       child: Container(
                         height: mainContentTopPadding,
                         color: Colors.transparent,
@@ -248,59 +303,32 @@ class _CategoryPage extends StatelessWidget {
                     ),
                   ),
 
-                  SliverToBoxAdapter(child: SizedBox(height: 80)),
                   SliverSafeArea(
                     sliver: SliverPadding(
-                      padding: .symmetric(horizontal: 16),
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
                       sliver: SliverGrid.builder(
                         gridDelegate:
                             const SliverGridDelegateWithFixedCrossAxisCount(
                               crossAxisCount: 2,
-                              crossAxisSpacing: 8,
+                              crossAxisSpacing: 12,
                               mainAxisSpacing: 16,
-
-                              childAspectRatio: 160 / 220,
+                              childAspectRatio: 160 / 260,
                             ),
                         itemBuilder: (context, index) {
-                          final product = ProductEntity(
-                            id: "id$index",
-                            title: "Best coffe $index",
-                            image: Assets.mockPhoto.path,
-                          );
+                          final product = _mockProducts[index];
                           return SwiftInteractiveZoomSource(
-                            id: "id$index",
+                            id: product.id,
                             child: GestureDetector(
                               onTap: () {
                                 context.router.push(
                                   ProductDetailZoomRoute(product: product),
                                 );
                               },
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  color: const Color.fromARGB(255, 26, 26, 26),
-                                  border: Border.all(
-                                    color: const Color.fromARGB(
-                                      31,
-                                      130,
-                                      130,
-                                      130,
-                                    ),
-                                  ),
-                                  borderRadius: BorderRadius.circular(30),
-                                ),
-
-                                child: ClipRRect(
-                                  borderRadius: .circular(30),
-                                  child: Image.asset(
-                                    product.image,
-                                    fit: .cover,
-                                  ),
-                                ),
-                              ),
+                              child: _ProductCard(product: product),
                             ),
                           );
                         },
-                        itemCount: 40,
+                        itemCount: _mockProducts.length,
                       ),
                     ),
                   ),
@@ -314,26 +342,555 @@ class _CategoryPage extends StatelessWidget {
   }
 }
 
-class CategoriesWidget extends StatelessWidget {
-  final ScrollController controller;
+class _ProductCard extends StatelessWidget {
+  final ProductEntity product;
 
-  final PageController pageController;
-
-  const CategoriesWidget({
-    super.key,
-    required this.controller,
-    required this.pageController,
-  });
+  const _ProductCard({required this.product});
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: 40,
-      child: ListView.builder(
-        scrollDirection: .horizontal,
-        itemCount: 5,
-        itemBuilder: (context, index) => Text("Mock category"),
+    return Container(
+      decoration: BoxDecoration(
+        color: const Color(0xFF1A1A1A),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: Stack(
+              children: [
+                Container(
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: product.gradientColors,
+                    ),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withValues(alpha: 0.4),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                CupertinoIcons.star_fill,
+                                size: 10,
+                                color: CupertinoTheme.of(context).primaryColor,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                product.rating.toStringAsFixed(1),
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const Spacer(),
+                        Icon(
+                          product.icon,
+                          size: 48,
+                          color: Colors.white.withValues(alpha: 0.2),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                Positioned(
+                  top: 8,
+                  right: 8,
+                  child: GestureDetector(
+                    onTap: () {},
+                    child: Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.3),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        CupertinoIcons.heart,
+                        size: 16,
+                        color: Colors.white70,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(12, 10, 12, 4),
+            child: Text(
+              product.title,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+            child: Row(
+              children: [
+                Text(
+                  '\$${product.price.toStringAsFixed(2)}',
+                  style: TextStyle(
+                    color: CupertinoTheme.of(context).primaryColor,
+                    fontSize: 15,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const Spacer(),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 6,
+                    vertical: 2,
+                  ),
+                  decoration: BoxDecoration(
+                    color: CupertinoTheme.of(
+                      context,
+                    ).primaryColor.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Text(
+                    product.rating.toStringAsFixed(1),
+                    style: TextStyle(
+                      color: CupertinoTheme.of(context).primaryColor,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
 }
+
+final List<ProductEntity> _mockProducts = [
+  ProductEntity(
+    id: 'p1',
+    title: 'Espresso Shot',
+    price: 4.50,
+    rating: 4.7,
+    description: 'Rich and bold single-origin espresso.',
+    image: Assets.mockPhoto.path,
+    gradientColors: [const Color(0xFF2D1B0E), const Color(0xFF6B3A2A)],
+    icon: CupertinoIcons.flame_fill,
+  ),
+  ProductEntity(
+    id: 'p2',
+    title: 'Cold Brew',
+    price: 5.25,
+    rating: 4.5,
+    description: 'Smooth cold brew steeped for 20 hours.',
+    image: Assets.mockPhoto.path,
+    gradientColors: [const Color(0xFF0D2137), const Color(0xFF1A4A6E)],
+    icon: CupertinoIcons.flame_fill,
+  ),
+  ProductEntity(
+    id: 'p3',
+    title: 'Matcha Latte',
+    price: 5.75,
+    rating: 4.8,
+    description: 'Ceremonial grade matcha with oat milk.',
+    image: Assets.mockPhoto.path,
+    gradientColors: [const Color(0xFF1B3B1A), const Color(0xFF4A7C3F)],
+    icon: CupertinoIcons.flame_fill,
+  ),
+  ProductEntity(
+    id: 'p4',
+    title: 'Croissant',
+    price: 3.50,
+    rating: 4.3,
+    description: 'Flaky butter croissant baked fresh daily.',
+    image: Assets.mockPhoto.path,
+    gradientColors: [const Color(0xFF4A3520), const Color(0xFFC49A6C)],
+    icon: CupertinoIcons.flame_fill,
+  ),
+  ProductEntity(
+    id: 'p5',
+    title: 'Blueberry Muffin',
+    price: 3.25,
+    rating: 4.2,
+    description: 'Fresh blueberry muffin with streusel topping.',
+    image: Assets.mockPhoto.path,
+    gradientColors: [const Color(0xFF2D1B3D), const Color(0xFF6B3A8C)],
+    icon: CupertinoIcons.flame_fill,
+  ),
+  ProductEntity(
+    id: 'p6',
+    title: 'Flat White',
+    price: 4.75,
+    rating: 4.6,
+    description: 'Double ristretto with silky microfoam.',
+    image: Assets.mockPhoto.path,
+    gradientColors: [const Color(0xFF1A1A2E), const Color(0xFF3A3A6E)],
+    icon: CupertinoIcons.flame_fill,
+  ),
+  ProductEntity(
+    id: 'p7',
+    title: 'Iced Latte',
+    price: 4.50,
+    rating: 4.4,
+    description: 'Espresso over ice with your choice of milk.',
+    image: Assets.mockPhoto.path,
+    gradientColors: [const Color(0xFF1E3A3A), const Color(0xFF3A6B6B)],
+    icon: CupertinoIcons.flame_fill,
+  ),
+  ProductEntity(
+    id: 'p8',
+    title: 'Chocolate Cake',
+    price: 6.00,
+    rating: 4.9,
+    description: 'Decadent dark chocolate layer cake.',
+    image: Assets.mockPhoto.path,
+    gradientColors: [const Color(0xFF2D0E0E), const Color(0xFF6B1A1A)],
+    icon: CupertinoIcons.flame_fill,
+  ),
+  ProductEntity(
+    id: 'p9',
+    title: 'Chai Latte',
+    price: 5.00,
+    rating: 4.3,
+    description: 'Spiced chai blended with steamed milk.',
+    image: Assets.mockPhoto.path,
+    gradientColors: [const Color(0xFF3D2D1A), const Color(0xFF8C6B3A)],
+    icon: CupertinoIcons.flame_fill,
+  ),
+  ProductEntity(
+    id: 'p10',
+    title: 'Bagel & Cream Cheese',
+    price: 4.00,
+    rating: 4.1,
+    description: 'Toasted everything bagel with chive cream cheese.',
+    image: Assets.mockPhoto.path,
+    gradientColors: [const Color(0xFF1A1A1A), const Color(0xFF4A4A4A)],
+    icon: CupertinoIcons.flame_fill,
+  ),
+  ProductEntity(
+    id: 'p11',
+    title: 'Mocha',
+    price: 5.25,
+    rating: 4.6,
+    description: 'Espresso with dark chocolate and steamed milk.',
+    image: Assets.mockPhoto.path,
+    gradientColors: [const Color(0xFF1A0E0E), const Color(0xFF4A1A1A)],
+    icon: CupertinoIcons.flame_fill,
+  ),
+  ProductEntity(
+    id: 'p12',
+    title: 'Avocado Toast',
+    price: 7.50,
+    rating: 4.4,
+    description: 'Sourdough with avocado, chili flakes & lime.',
+    image: Assets.mockPhoto.path,
+    gradientColors: [const Color(0xFF1B2D1A), const Color(0xFF4A6B3A)],
+    icon: CupertinoIcons.flame_fill,
+  ),
+  ProductEntity(
+    id: 'p13',
+    title: 'Cortado',
+    price: 4.25,
+    rating: 4.5,
+    description: 'Equal parts espresso and warm milk.',
+    image: Assets.mockPhoto.path,
+    gradientColors: [const Color(0xFF2D1A1A), const Color(0xFF6B3A3A)],
+    icon: CupertinoIcons.flame_fill,
+  ),
+  ProductEntity(
+    id: 'p14',
+    title: 'Banana Bread',
+    price: 3.75,
+    rating: 4.3,
+    description: 'Moist banana bread with walnuts.',
+    image: Assets.mockPhoto.path,
+    gradientColors: [const Color(0xFF3D2D1A), const Color(0xFF8C6B3A)],
+    icon: CupertinoIcons.flame_fill,
+  ),
+  ProductEntity(
+    id: 'p15',
+    title: 'Latte',
+    price: 4.75,
+    rating: 4.5,
+    description: 'Classic espresso with steamed milk and light foam.',
+    image: Assets.mockPhoto.path,
+    gradientColors: [const Color(0xFF1A1A2E), const Color(0xFF3A3A6E)],
+    icon: CupertinoIcons.flame_fill,
+  ),
+  ProductEntity(
+    id: 'p16',
+    title: ' Cappuccino',
+    price: 4.50,
+    rating: 4.4,
+    description: 'Espresso with thick foam and cocoa dusting.',
+    image: Assets.mockPhoto.path,
+    gradientColors: [const Color(0xFF2D1B0E), const Color(0xFF6B3A2A)],
+    icon: CupertinoIcons.flame_fill,
+  ),
+  ProductEntity(
+    id: 'p17',
+    title: 'Iced Matcha',
+    price: 5.50,
+    rating: 4.7,
+    description: 'Shaken matcha over ice with vanilla syrup.',
+    image: Assets.mockPhoto.path,
+    gradientColors: [const Color(0xFF1B3B1A), const Color(0xFF4A7C3F)],
+    icon: CupertinoIcons.flame_fill,
+  ),
+  ProductEntity(
+    id: 'p18',
+    title: 'Scone',
+    price: 3.25,
+    rating: 4.0,
+    description: 'Buttermilk scone with clotted cream & jam.',
+    image: Assets.mockPhoto.path,
+    gradientColors: [const Color(0xFF4A3520), const Color(0xFFC49A6C)],
+    icon: CupertinoIcons.flame_fill,
+  ),
+  ProductEntity(
+    id: 'p19',
+    title: 'Affogato',
+    price: 5.00,
+    rating: 4.8,
+    description: 'Espresso poured over vanilla gelato.',
+    image: Assets.mockPhoto.path,
+    gradientColors: [const Color(0xFF1A1A1A), const Color(0xFF4A3A2A)],
+    icon: CupertinoIcons.flame_fill,
+  ),
+  ProductEntity(
+    id: 'p20',
+    title: 'Turkish Coffee',
+    price: 4.00,
+    rating: 4.2,
+    description: 'Traditionally brewed in cezve with cardamom.',
+    image: Assets.mockPhoto.path,
+    gradientColors: [const Color(0xFF2D1B0E), const Color(0xFF4A2A1A)],
+    icon: CupertinoIcons.flame_fill,
+  ),
+  ProductEntity(
+    id: 'p21',
+    title: 'Sparkling Lemonade',
+    price: 3.50,
+    rating: 4.1,
+    description: 'House-made sparkling lemonade with mint.',
+    image: Assets.mockPhoto.path,
+    gradientColors: [const Color(0xFF1A2D1A), const Color(0xFF3A6B3A)],
+    icon: CupertinoIcons.flame_fill,
+  ),
+  ProductEntity(
+    id: 'p22',
+    title: 'Caramel Macchiato',
+    price: 5.50,
+    rating: 4.6,
+    description: 'Layered vanilla latte with caramel drizzle.',
+    image: Assets.mockPhoto.path,
+    gradientColors: [const Color(0xFF2D1A0E), const Color(0xFF6B4A2A)],
+    icon: CupertinoIcons.flame_fill,
+  ),
+  ProductEntity(
+    id: 'p23',
+    title: 'Cheesecake',
+    price: 6.50,
+    rating: 4.7,
+    description: 'New York style cheesecake with berry compote.',
+    image: Assets.mockPhoto.path,
+    gradientColors: [const Color(0xFF1A1A2E), const Color(0xFF4A4A6B)],
+    icon: CupertinoIcons.flame_fill,
+  ),
+  ProductEntity(
+    id: 'p24',
+    title: 'Americano',
+    price: 3.75,
+    rating: 4.3,
+    description: 'Espresso topped with hot water.',
+    image: Assets.mockPhoto.path,
+    gradientColors: [const Color(0xFF1A1A1A), const Color(0xFF3A3A3A)],
+    icon: CupertinoIcons.flame_fill,
+  ),
+  ProductEntity(
+    id: 'p25',
+    title: 'Hot Chocolate',
+    price: 4.50,
+    rating: 4.5,
+    description: 'Rich Belgian chocolate with whipped cream.',
+    image: Assets.mockPhoto.path,
+    gradientColors: [const Color(0xFF2D0E0E), const Color(0xFF6B1A1A)],
+    icon: CupertinoIcons.flame_fill,
+  ),
+  ProductEntity(
+    id: 'p26',
+    title: 'Panini',
+    price: 7.00,
+    rating: 4.3,
+    description: 'Grilled panini with mozzarella, tomato & pesto.',
+    image: Assets.mockPhoto.path,
+    gradientColors: [const Color(0xFF1B2D1A), const Color(0xFF4A6B3A)],
+    icon: CupertinoIcons.flame_fill,
+  ),
+  ProductEntity(
+    id: 'p27',
+    title: 'Nitro Cold Brew',
+    price: 5.50,
+    rating: 4.6,
+    description: 'Cold brew infused with nitrogen for creamy texture.',
+    image: Assets.mockPhoto.path,
+    gradientColors: [const Color(0xFF0D2137), const Color(0xFF1A4A6E)],
+    icon: CupertinoIcons.flame_fill,
+  ),
+  ProductEntity(
+    id: 'p28',
+    title: 'Cookie',
+    price: 2.50,
+    rating: 4.4,
+    description: 'Warm chocolate chunk cookie with sea salt.',
+    image: Assets.mockPhoto.path,
+    gradientColors: [const Color(0xFF3D2D1A), const Color(0xFF8C6B3A)],
+    icon: CupertinoIcons.flame_fill,
+  ),
+  ProductEntity(
+    id: 'p29',
+    title: 'Ristretto',
+    price: 3.50,
+    rating: 4.2,
+    description: 'Short, concentrated espresso shot.',
+    image: Assets.mockPhoto.path,
+    gradientColors: [const Color(0xFF2D1B0E), const Color(0xFF6B3A2A)],
+    icon: CupertinoIcons.flame_fill,
+  ),
+  ProductEntity(
+    id: 'p30',
+    title: 'Fruit Tart',
+    price: 5.75,
+    rating: 4.5,
+    description: 'Shortcrust tart with fresh seasonal fruits.',
+    image: Assets.mockPhoto.path,
+    gradientColors: [const Color(0xFF2D1B3D), const Color(0xFF6B3A8C)],
+    icon: CupertinoIcons.flame_fill,
+  ),
+  ProductEntity(
+    id: 'p31',
+    title: 'Macchiato',
+    price: 4.00,
+    rating: 4.1,
+    description: 'Espresso marked with a dollop of foam.',
+    image: Assets.mockPhoto.path,
+    gradientColors: [const Color(0xFF1A1A2E), const Color(0xFF3A3A6E)],
+    icon: CupertinoIcons.flame_fill,
+  ),
+  ProductEntity(
+    id: 'p32',
+    title: 'Brownie',
+    price: 3.50,
+    rating: 4.6,
+    description: 'Fudgy dark chocolate brownie with walnuts.',
+    image: Assets.mockPhoto.path,
+    gradientColors: [const Color(0xFF2D0E0E), const Color(0xFF6B1A1A)],
+    icon: CupertinoIcons.flame_fill,
+  ),
+  ProductEntity(
+    id: 'p33',
+    title: 'Pour Over',
+    price: 5.00,
+    rating: 4.7,
+    description: 'Single-origin pour-over, hand-crafted to order.',
+    image: Assets.mockPhoto.path,
+    gradientColors: [const Color(0xFF1A1A1A), const Color(0xFF4A3A2A)],
+    icon: CupertinoIcons.flame_fill,
+  ),
+  ProductEntity(
+    id: 'p34',
+    title: 'Smoothie Bowl',
+    price: 8.00,
+    rating: 4.4,
+    description: 'Açaí smoothie bowl with granola & fresh fruit.',
+    image: Assets.mockPhoto.path,
+    gradientColors: [const Color(0xFF2D1B3D), const Color(0xFF6B3A8C)],
+    icon: CupertinoIcons.flame_fill,
+  ),
+  ProductEntity(
+    id: 'p35',
+    title: 'Irish Coffee',
+    price: 8.00,
+    rating: 4.3,
+    description: 'Coffee with Irish whiskey, sugar & cream.',
+    image: Assets.mockPhoto.path,
+    gradientColors: [const Color(0xFF1A0E0E), const Color(0xFF4A1A1A)],
+    icon: CupertinoIcons.flame_fill,
+  ),
+  ProductEntity(
+    id: 'p36',
+    title: 'Tea (Earl Grey)',
+    price: 3.00,
+    rating: 4.0,
+    description: 'Classic Earl Grey with bergamot.',
+    image: Assets.mockPhoto.path,
+    gradientColors: [const Color(0xFF1E3A3A), const Color(0xFF3A6B6B)],
+    icon: CupertinoIcons.flame_fill,
+  ),
+  ProductEntity(
+    id: 'p37',
+    title: 'Red Velvet Cake',
+    price: 6.50,
+    rating: 4.7,
+    description: 'Red velvet with cream cheese frosting.',
+    image: Assets.mockPhoto.path,
+    gradientColors: [const Color(0xFF3D0E1A), const Color(0xFF8C1A3A)],
+    icon: CupertinoIcons.flame_fill,
+  ),
+  ProductEntity(
+    id: 'p38',
+    title: 'Doppio',
+    price: 3.75,
+    rating: 4.1,
+    description: 'Double espresso, straight up.',
+    image: Assets.mockPhoto.path,
+    gradientColors: [const Color(0xFF1A1A1A), const Color(0xFF3A3A3A)],
+    icon: CupertinoIcons.flame_fill,
+  ),
+  ProductEntity(
+    id: 'p39',
+    title: 'Cinnamon Roll',
+    price: 4.25,
+    rating: 4.8,
+    description: 'Warm cinnamon roll with cream cheese glaze.',
+    image: Assets.mockPhoto.path,
+    gradientColors: [const Color(0xFF4A3520), const Color(0xFFC49A6C)],
+    icon: CupertinoIcons.flame_fill,
+  ),
+  ProductEntity(
+    id: 'p40',
+    title: 'Iced Chai',
+    price: 5.25,
+    rating: 4.3,
+    description: 'Spiced chai concentrate over ice with milk.',
+    image: Assets.mockPhoto.path,
+    gradientColors: [const Color(0xFF3D2D1A), const Color(0xFF8C6B3A)],
+    icon: CupertinoIcons.flame_fill,
+  ),
+];
