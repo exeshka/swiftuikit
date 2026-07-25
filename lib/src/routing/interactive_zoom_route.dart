@@ -1,11 +1,14 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_physics/flutter_physics.dart';
 
 import 'package:swiftuikit/src/services/screen_radius_service.dart';
 
 const _interactiveZoomBackgroundScaleReduction = 0.085;
 const _interactiveZoomSourceCrossfadeEnd = 0.65;
 const _interactiveZoomFlightCurve = Curves.easeInOutCubic;
+final _interactiveZoomForwardSpring = Spring.withDamping(dampingFraction: 0.85);
+final _interactiveZoomReverseSpring = Spring.withDamping(dampingFraction: 0.65);
 const _interactiveZoomDismissThreshold = 0.3;
 const _interactiveZoomMinFlingVelocity = 500.0;
 const _interactiveZoomMaxScaleReduction = 0.15;
@@ -97,8 +100,8 @@ class _SwiftInteractiveZoomSourceState
         flightShuttleBuilder: _buildInteractiveZoomHeroFlight,
         placeholderBuilder: _buildPlaceholder,
         transitionOnUserGestures: true,
-        curve: _interactiveZoomFlightCurve,
-        reverseCurve: _interactiveZoomFlightCurve.flipped,
+        curve: _interactiveZoomForwardSpring,
+        reverseCurve: _interactiveZoomReverseSpring,
         child: widget.child,
       ),
     );
@@ -393,8 +396,8 @@ class SwiftInteractiveZoomRoute<T> extends PageRoute<T> {
               RectTween(begin: begin, end: end),
           flightShuttleBuilder: _buildInteractiveZoomHeroFlight,
           transitionOnUserGestures: true,
-          curve: _interactiveZoomFlightCurve,
-          reverseCurve: _interactiveZoomFlightCurve.flipped,
+          curve: _interactiveZoomForwardSpring,
+          reverseCurve: _interactiveZoomReverseSpring,
           child: builder(context),
         ),
       ),
@@ -446,26 +449,26 @@ class _SwiftInteractiveZoomDraggable extends StatefulWidget {
 class _SwiftInteractiveZoomDraggableState
     extends State<_SwiftInteractiveZoomDraggable>
     with SingleTickerProviderStateMixin {
-  late final AnimationController _snapController;
+  late final PhysicsController2D _snapController;
   final GlobalKey _renderKey = GlobalKey();
   Offset _dragOffset = Offset.zero;
-  Offset _snapStartOffset = Offset.zero;
   bool _isSnapping = false;
   bool _pushComplete = false;
 
   @override
   void initState() {
     super.initState();
-    _snapController = AnimationController(
+    _snapController = PhysicsController2D.unbounded(
       vsync: this,
-      duration: const Duration(milliseconds: 300),
+      defaultPhysics: Simulation2D(
+        _interactiveZoomReverseSpring,
+        _interactiveZoomReverseSpring,
+      ),
     );
     _snapController.addListener(() {
       if (_isSnapping) {
-        final t = _snapController.value;
-        final offset = Offset.lerp(_snapStartOffset, Offset.zero, t)!;
-        _dragOffset = offset;
-        widget.route.panOffset.value = offset;
+        _dragOffset = _snapController.value;
+        widget.route.panOffset.value = _dragOffset;
         setState(() {});
       }
     });
@@ -503,7 +506,14 @@ class _SwiftInteractiveZoomDraggableState
   }
 
   void _onPointerDown(PointerDownEvent event) {
-    if (!_pushComplete || widget.route.isPopping || _isSnapping) return;
+    if (_isSnapping) {
+      _isSnapping = false;
+      _snapController.stop();
+      _dragOffset = _snapController.value;
+    }
+
+    if (!_pushComplete || widget.route.isPopping) return;
+
     final recognizer = PanGestureRecognizer()
       ..onStart = _handleDragStart
       ..onUpdate = _handleDragUpdate
@@ -545,9 +555,12 @@ class _SwiftInteractiveZoomDraggableState
     if (shouldDismiss) {
       widget.route.navigator?.pop();
     } else {
-      _snapStartOffset = _dragOffset;
       _isSnapping = true;
-      _snapController.forward(from: 0.0);
+      _snapController.value = _dragOffset;
+      _snapController.animateTo(
+        Offset.zero,
+        velocityDelta: details.velocity.pixelsPerSecond,
+      );
     }
   }
 
