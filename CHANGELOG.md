@@ -1,3 +1,11 @@
+##  0.1.4
+
+### New features
+- Added `SwiftZoomHero`, `SwiftZoomRoute`, `SwiftZoomPage`, and `SwiftZoomAutoRoute` with dynamic destination IDs and interactive drag-to-dismiss
+
+### Breaking changes
+- Removed the legacy `SwiftInteractiveZoomRoute`, `SwiftInteractiveZoomSource`, `SwiftInteractiveZoomBackground`, `SwiftInteractiveZoomPage`, and `SwiftInteractiveZoomAutoRoute` APIs
+
 ## 0.1.3
 
 ### Fixes

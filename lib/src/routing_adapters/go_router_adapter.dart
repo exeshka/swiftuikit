@@ -1,21 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:meta/meta.dart';
 
-import 'package:swiftuikit/src/routing/interactive_zoom_route.dart';
 import 'package:swiftuikit/src/routing/page_transitions.dart';
 import 'package:swiftuikit/src/routing/scroll_sheet_route.dart';
 import 'package:swiftuikit/src/routing/sheet_route.dart' as sheet_route;
 import 'package:swiftuikit/src/routing/modal_route.dart' as modal_route;
+import 'package:swiftuikit/src/routing/zoom_route.dart';
 
-/// A [Page] adapter for go_router and Navigator 2.0 that transitions between
-/// a [SwiftInteractiveZoomSource] and a full-screen page.
+/// A [Page] adapter for [SwiftZoomRoute].
 ///
-/// Pass the same runtime value to [sourceId] and the source widget. For
-/// example, a product ID can identify both the tapped product card and its
-/// details page.
-class SwiftInteractiveZoomPage<T> extends Page<T> {
-  const SwiftInteractiveZoomPage({
-    required this.sourceId,
+/// The child owns its current [SwiftZoomHero] ID, so the route does not require
+/// source information and can dismiss a PageView into its selected item.
+class SwiftZoomPage<T> extends Page<T> {
+  const SwiftZoomPage({
     required this.child,
     super.key,
     super.name,
@@ -23,23 +20,21 @@ class SwiftInteractiveZoomPage<T> extends Page<T> {
     super.restorationId,
     super.canPop,
     super.onPopInvoked,
-    this.namespace,
     this.enableDrag = true,
-    this.transitionDuration = const Duration(milliseconds: 420),
+    this.dismissDirection = SwiftZoomDismissDirection.any,
+    this.transitionDuration = const Duration(milliseconds: 560),
   });
 
-  final Object sourceId;
   final Widget child;
-  final Object? namespace;
   final bool enableDrag;
+  final SwiftZoomDismissDirection dismissDirection;
   final Duration transitionDuration;
 
   @override
   Route<T> createRoute(BuildContext context) {
-    return SwiftInteractiveZoomRoute<T>(
-      sourceId: sourceId,
-      namespace: namespace,
+    return SwiftZoomRoute<T>(
       enableDrag: enableDrag,
+      dismissDirection: dismissDirection,
       settings: this,
       transitionDuration: transitionDuration,
       builder: (_) => child,

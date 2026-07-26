@@ -10,7 +10,7 @@ export 'src/routing/sheet_route.dart';
 export 'src/routing/scroll_sheet_route.dart';
 export 'src/routing/modal_route.dart';
 export 'src/routing/page_view_animation.dart';
-export 'src/routing/interactive_zoom_route.dart';
+export 'src/routing/zoom_route.dart';
 export 'src/routing_adapters/go_router_adapter.dart';
 export 'src/routing_adapters/auto_route_adapter.dart';
 

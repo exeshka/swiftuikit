@@ -45,7 +45,7 @@ void main() async {
 | Route | Description |
 |-------|-------------|
 | `SwiftPage` / `SwiftPageAutoRoute` | Full-screen page with iOS swipe-back gesture and parallax/scale transition |
-| `SwiftInteractiveZoomPage` / `SwiftInteractiveZoomAutoRoute` | Gesture-driven card-to-page zoom transition with runtime source IDs |
+| `SwiftZoomPage` / `SwiftZoomAutoRoute` | Element-to-element zoom whose destination Hero can change while the page is open |
 | `SwiftSheetPage` / `SwiftSheetAutoRoute` | Modal bottom sheet with drag-to-dismiss |
 
 ## Usage with go_router
@@ -126,27 +126,25 @@ SwiftPage<void>(
 | `borderRadius` | `BorderRadius?` | — | Custom border radius geometry |
 | `transitionDuration` | `Duration` | `500ms` | Transition animation duration |
 
-## SwiftInteractiveZoom
+## SwiftZoomHero / SwiftZoomRoute
 
-`SwiftInteractiveZoomRoute` is a standalone transition. It owns both the zoom
-animation and interactive swipe-back, so it does not affect `SwiftPage` or any
-other route type. Mark the opening card or image with
-`SwiftInteractiveZoomSource` and pass its stable ID to the route. Wrap the
-source page in `SwiftInteractiveZoomBackground` to make that page scale and
-use the device corner radius while the zoom route is active.
+`SwiftZoomHero` is an element-to-element transition independent from the
+route. Put matching IDs around the source element and the complete destination
+page. The route only handles the background, whole-page drag, and the fallback
+animation.
 
 ```dart
-SwiftInteractiveZoomBackground(
-  child: Scaffold(
-    body: SwiftInteractiveZoomSource(
-      id: product.id,
-      child: ProductCard(
-        product: product,
-        onTap: () => Navigator.of(context).push(
-          SwiftInteractiveZoomRoute<void>(
-            sourceId: product.id,
-            builder: (_) => ProductScreen(product: product),
-          ),
+SwiftZoomHero(
+  id: product.id,
+  borderRadius: BorderRadius.circular(24),
+  child: ProductCard(
+    product: product,
+    onTap: () => Navigator.of(context).push(
+      SwiftZoomRoute<void>(
+        dismissDirection: SwiftZoomDismissDirection.horizontal,
+        builder: (_) => ProductGallery(
+          products: products,
+          initialIndex: index,
         ),
       ),
     ),
@@ -154,48 +152,38 @@ SwiftInteractiveZoomBackground(
 )
 ```
 
-The source is resolved again when the route closes, so use model IDs rather
-than a stored `BuildContext` or list index. The route supports pan-to-dismiss
-in any direction; set `canOnlySwipeFromEdge: true` to restrict its start to the
-leading screen edge.
-
-With `go_router`, read the same ID that was used to build the destination
-screen and pass it to `SwiftInteractiveZoomPage`:
+Wrap the whole destination page and update its ID when the selected item
+changes:
 
 ```dart
-GoRoute(
-  path: '/products/:productId',
-  pageBuilder: (context, state) {
-    final productId = state.pathParameters['productId']!;
-    return SwiftInteractiveZoomPage<void>(
-      key: state.pageKey,
-      sourceId: productId,
-      child: ProductScreen(productId: productId),
-    );
-  },
+SwiftZoomHero(
+  id: products[currentIndex].id,
+  borderRadius: ScreenRadiusService.instance.radius,
+  child: PageView.builder(
+    controller: pageController,
+    scrollDirection: Axis.vertical,
+    onPageChanged: (index) => setState(() => currentIndex = index),
+    itemCount: products.length,
+    itemBuilder: (_, index) => ProductScreen(
+      product: products[index],
+    ),
+  ),
 )
 ```
 
-With `auto_route`, resolve the ID from the generated runtime arguments. The
-route declaration remains static while every pushed product gets its own Hero
-tag:
+If the current source is not mounted when the route closes, the complete page
+uses a scale-and-fade fallback instead. The route accepts drags in every
+direction by default. Set `SwiftZoomDismissDirection.horizontal` only when a
+screen should reserve vertical gesture starts for its scrollable content. Once
+the horizontal dismiss wins, the page still follows the finger in both axes.
+
+For `go_router` / Navigator 2.0 use `SwiftZoomPage`. For `auto_route`, declare
+the route without a source ID:
 
 ```dart
-SwiftInteractiveZoomAutoRoute(
-  page: ProductRoute.page,
-  sourceIdResolver: (data) =>
-      data.argsAs<ProductRouteArgs>().productId,
-)
-
-context.router.push(ProductRoute(productId: product.id));
-```
-
-In both cases the source uses that same value:
-
-```dart
-SwiftInteractiveZoomSource(
-  id: product.id,
-  child: ProductCard(product: product),
+SwiftZoomAutoRoute(
+  page: ProductGalleryRoute.page,
+  dismissDirection: SwiftZoomDismissDirection.horizontal,
 )
 ```
 

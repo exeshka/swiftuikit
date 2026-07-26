@@ -56,10 +56,13 @@ class App extends StatelessWidget {
         path: '/product/:productId',
         pageBuilder: (context, state) {
           final productId = state.pathParameters['productId']!;
-          return SwiftInteractiveZoomPage(
+          return SwiftZoomPage(
             key: state.pageKey,
-            sourceId: productId,
-            child: DetailScreen(productId: productId),
+            child: SwiftZoomHero(
+              id: productId,
+              borderRadius: ScreenRadiusService.instance.radius,
+              child: DetailScreen(productId: productId),
+            ),
           );
         },
       ),
