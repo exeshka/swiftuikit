@@ -5,6 +5,42 @@ import 'package:swiftuikit/src/routing/page_transitions.dart';
 import 'package:swiftuikit/src/routing/scroll_sheet_route.dart';
 import 'package:swiftuikit/src/routing/sheet_route.dart' as sheet_route;
 import 'package:swiftuikit/src/routing/modal_route.dart' as modal_route;
+import 'package:swiftuikit/src/routing/zoom_route.dart';
+
+/// A [Page] adapter for [SwiftZoomRoute].
+///
+/// The child owns its current [SwiftZoomHero] ID, so the route does not require
+/// source information and can dismiss a PageView into its selected item.
+class SwiftZoomPage<T> extends Page<T> {
+  const SwiftZoomPage({
+    required this.child,
+    super.key,
+    super.name,
+    super.arguments,
+    super.restorationId,
+    super.canPop,
+    super.onPopInvoked,
+    this.enableDrag = true,
+    this.dismissDirection = SwiftZoomDismissDirection.any,
+    this.transitionDuration = const Duration(milliseconds: 560),
+  });
+
+  final Widget child;
+  final bool enableDrag;
+  final SwiftZoomDismissDirection dismissDirection;
+  final Duration transitionDuration;
+
+  @override
+  Route<T> createRoute(BuildContext context) {
+    return SwiftZoomRoute<T>(
+      enableDrag: enableDrag,
+      dismissDirection: dismissDirection,
+      settings: this,
+      transitionDuration: transitionDuration,
+      builder: (_) => child,
+    );
+  }
+}
 
 /// A [Page] adapter for go_router and Navigator 2.0 that uses
 /// [SwiftPageRoute].
@@ -76,6 +112,9 @@ class SwiftSheetPage<T> extends Page<T> {
     this.showDragHandle = false,
     this.enableDrag = true,
     this.animateBackground = true,
+    this.preserveTopSafeArea = false,
+    this.dismissThreshold = 0.32,
+    this.minFlingVelocity = 1.0,
   });
 
   final Widget child;
@@ -85,6 +124,9 @@ class SwiftSheetPage<T> extends Page<T> {
   final bool showDragHandle;
   final bool enableDrag;
   final bool animateBackground;
+  final bool preserveTopSafeArea;
+  final double dismissThreshold;
+  final double minFlingVelocity;
 
   @override
   Route<T> createRoute(BuildContext context) {
@@ -97,11 +139,15 @@ class SwiftSheetPage<T> extends Page<T> {
       showDragHandle: showDragHandle,
       enableDrag: enableDrag,
       animateBackground: animateBackground,
-      scrollableBuilder: (BuildContext context, ScrollController scrollController) =>
-          PrimaryScrollController(
-            controller: scrollController,
-            child: child,
-          ),
+      preserveTopSafeArea: preserveTopSafeArea,
+      dismissThreshold: dismissThreshold,
+      minFlingVelocity: minFlingVelocity,
+      scrollableBuilder:
+          (BuildContext context, ScrollController scrollController) =>
+              PrimaryScrollController(
+                controller: scrollController,
+                child: child,
+              ),
     );
   }
 }

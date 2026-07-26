@@ -1,17 +1,39 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:swiftuikit/swiftuikit.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    const productId = 'product-42';
     return Scaffold(
       appBar: AppBar(title: const Text('swiftuikit demos (go_router)')),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
+          _SectionHeader('Navigation'),
+          _DemoTile(
+            label: 'Navigation Lab',
+            subtitle: 'push, pushReplacement, replace, Back и проверка стека',
+            color: Colors.indigo,
+            onTap: () => context.push('/navigation-lab'),
+          ),
+          const SizedBox(height: 24),
+          _SectionHeader('SwiftZoom'),
+          SwiftZoomHero(
+            id: productId,
+            borderRadius: BorderRadius.circular(12),
+            child: _DemoTile(
+              label: 'Product #42',
+              subtitle: 'The product ID is also the Hero tag',
+              bottomPadding: 0,
+              onTap: () => context.push('/product/$productId'),
+            ),
+          ),
+          const SizedBox(height: 32),
           _SectionHeader('SwiftPage'),
           _DemoTile(
             label: 'SwiftPage',
@@ -26,10 +48,22 @@ class HomeScreen extends StatelessWidget {
           const SizedBox(height: 24),
           _SectionHeader('SwiftSheet'),
           _DemoTile(
+            label: 'SwiftSheet Navigation Lab',
+            subtitle: 'Sheet → Sheet/Page, replacement, Back, result и drag',
+            color: Colors.teal.shade700,
+            onTap: () => context.push('/sheet-navigation-lab'),
+          ),
+          _DemoTile(
             label: 'SwiftSheet',
             subtitle: 'Default sheet with drag-to-dismiss',
             color: Colors.green.shade600,
             onTap: () => context.push('/sheet'),
+          ),
+          _DemoTile(
+            label: 'SwiftSheet (full height + safe area)',
+            subtitle: 'preserveTopSafeArea: true, topGap: 0',
+            color: Colors.indigo,
+            onTap: () => context.push('/sheet-full-height'),
           ),
           _DemoTile(
             label: 'SwiftSheet (no bg animation)',
@@ -88,17 +122,19 @@ class _DemoTile extends StatelessWidget {
     required this.subtitle,
     required this.onTap,
     this.color,
+    this.bottomPadding = 8,
   });
 
   final String label;
   final String subtitle;
   final VoidCallback onTap;
   final Color? color;
+  final double bottomPadding;
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
+      padding: EdgeInsets.only(bottom: bottomPadding),
       child: ListTile(
         tileColor: color ?? CupertinoColors.systemBlue,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),

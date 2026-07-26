@@ -86,6 +86,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "6.0.0"
+  flutter_physics:
+    dependency: transitive
+    description:
+      name: flutter_physics
+      sha256: ab3d1fd06f7fcc70d239d570a4761d1d9602dcb9551e3c6c04723d331007b60b
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.2.0"
   flutter_test:
     dependency: "direct dev"
     description: flutter
@@ -187,11 +195,10 @@ packages:
   screen_corner_radius:
     dependency: transitive
     description:
-      path: "."
-      ref: HEAD
-      resolved-ref: "746d3bdc78c1a6938131daaeb35bacb886a2ada7"
-      url: "https://github.com/exeshka/screen_corner_radius"
-    source: git
+      name: screen_corner_radius
+      sha256: "3e6465e9a0373852eb8af80bab2e972667b0302ed5b864366e5308158282e6f7"
+      url: "https://pub.dev"
+    source: hosted
     version: "3.0.0"
   sky_engine:
     dependency: transitive
@@ -236,7 +243,7 @@ packages:
       path: ".."
       relative: true
     source: path
-    version: "0.1.2"
+    version: "0.1.4"
   term_glyph:
     dependency: transitive
     description:

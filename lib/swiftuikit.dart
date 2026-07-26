@@ -1,11 +1,16 @@
 export 'src/widgets/swift_step_sheet.dart';
 export 'src/widgets/swift_modal_scaffold.dart';
+export 'src/widgets/scroll/swift_sheet_scroll_provider.dart';
+export 'src/widgets/scroll/scroll_overlap_listener.dart';
+export 'src/widgets/scroll/scroll_value_listener.dart';
+export 'src/widgets/scroll/snapping_scroll_physics.dart';
 
 export 'src/routing/page_transitions.dart';
 export 'src/routing/sheet_route.dart';
 export 'src/routing/scroll_sheet_route.dart';
 export 'src/routing/modal_route.dart';
 export 'src/routing/page_view_animation.dart';
+export 'src/routing/zoom_route.dart';
 export 'src/routing_adapters/go_router_adapter.dart';
 export 'src/routing_adapters/auto_route_adapter.dart';
 

@@ -6,6 +6,24 @@ import 'package:swiftuikit/src/routing/page_transitions.dart';
 import 'package:swiftuikit/src/routing/scroll_sheet_route.dart';
 import 'package:swiftuikit/src/routing/sheet_route.dart' as sheet_route;
 import 'package:swiftuikit/src/routing/modal_route.dart' as modal_route;
+import 'package:swiftuikit/src/routing/zoom_route.dart';
+
+Route<T> swiftZoomRouteBuilder<T>(
+  BuildContext context,
+  Widget child,
+  AutoRoutePage<T> page, {
+  bool enableDrag = true,
+  SwiftZoomDismissDirection dismissDirection = SwiftZoomDismissDirection.any,
+  Duration transitionDuration = const Duration(milliseconds: 560),
+}) {
+  return SwiftZoomRoute<T>(
+    enableDrag: enableDrag,
+    dismissDirection: dismissDirection,
+    settings: page,
+    transitionDuration: transitionDuration,
+    builder: (_) => child,
+  );
+}
 
 Route<T> swiftPageRouteBuilder<T>(
   BuildContext context,
@@ -50,6 +68,9 @@ Route<T> swiftSheetRouteBuilder<T>(
   bool showDragHandle = false,
   bool enableDrag = true,
   bool animateBackground = true,
+  bool preserveTopSafeArea = false,
+  double dismissThreshold = 0.32,
+  double minFlingVelocity = 1.0,
 }) {
   return sheet_route.SwiftSheetRoute<T>(
     settings: page,
@@ -60,11 +81,12 @@ Route<T> swiftSheetRouteBuilder<T>(
     showDragHandle: showDragHandle,
     enableDrag: enableDrag,
     animateBackground: animateBackground,
-    scrollableBuilder: (BuildContext context, ScrollController scrollController) =>
-        PrimaryScrollController(
-          controller: scrollController,
-          child: child,
-        ),
+    preserveTopSafeArea: preserveTopSafeArea,
+    dismissThreshold: dismissThreshold,
+    minFlingVelocity: minFlingVelocity,
+    scrollableBuilder:
+        (BuildContext context, ScrollController scrollController) =>
+            PrimaryScrollController(controller: scrollController, child: child),
   );
 }
 
@@ -128,6 +150,48 @@ Route<T> swiftModalRouteBuilder<T>(
     transitionDurationOverride: transitionDuration,
     dismissThreshold: dismissThreshold,
   );
+}
+
+/// An auto_route adapter for [SwiftZoomRoute].
+///
+/// Matching IDs live in [SwiftZoomHero] widgets rather than route arguments.
+class SwiftZoomAutoRoute<R> extends CustomRoute<R> {
+  SwiftZoomAutoRoute({
+    required super.page,
+    super.fullscreenDialog,
+    super.maintainState,
+    super.fullMatch,
+    super.guards,
+    super.usesPathAsKey,
+    super.children,
+    super.meta,
+    super.title,
+    super.path,
+    super.keepHistory,
+    super.initial,
+    super.allowSnapshotting,
+    super.restorationId,
+    this.enableDrag = true,
+    this.dismissDirection = SwiftZoomDismissDirection.any,
+    this.transitionDuration = const Duration(milliseconds: 560),
+  }) : super(
+         opaque: false,
+         customRouteBuilder:
+             <T>(BuildContext context, Widget child, AutoRoutePage<T> page) {
+               return swiftZoomRouteBuilder<T>(
+                 context,
+                 child,
+                 page,
+                 enableDrag: enableDrag,
+                 dismissDirection: dismissDirection,
+                 transitionDuration: transitionDuration,
+               );
+             },
+       );
+
+  final bool enableDrag;
+  final SwiftZoomDismissDirection dismissDirection;
+  final Duration transitionDuration;
 }
 
 class SwiftPageAutoRoute<R> extends CustomRoute<R> {
@@ -212,6 +276,9 @@ class SwiftSheetAutoRoute<R> extends CustomRoute<R> {
     this.showDragHandle = false,
     this.enableDrag = true,
     this.animateBackground = true,
+    this.preserveTopSafeArea = false,
+    this.dismissThreshold = 0.32,
+    this.minFlingVelocity = 1.0,
   }) : super(
          opaque: false,
          barrierDismissible: true,
@@ -229,6 +296,9 @@ class SwiftSheetAutoRoute<R> extends CustomRoute<R> {
                  showDragHandle: showDragHandle,
                  enableDrag: enableDrag,
                  animateBackground: animateBackground,
+                 preserveTopSafeArea: preserveTopSafeArea,
+                 dismissThreshold: dismissThreshold,
+                 minFlingVelocity: minFlingVelocity,
                );
              },
        );
@@ -240,6 +310,9 @@ class SwiftSheetAutoRoute<R> extends CustomRoute<R> {
   final bool showDragHandle;
   final bool enableDrag;
   final bool animateBackground;
+  final bool preserveTopSafeArea;
+  final double dismissThreshold;
+  final double minFlingVelocity;
 }
 
 /// **Not stable** — API may change.

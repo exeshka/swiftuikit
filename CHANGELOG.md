@@ -1,6 +1,15 @@
+## 0.1.4
+
+### New features
+- Added `SwiftZoomHero`, `SwiftZoomRoute`, `SwiftZoomPage`, and `SwiftZoomAutoRoute` with dynamic destination IDs and interactive drag-to-dismiss
+
+### Breaking changes
+- Removed the legacy `SwiftInteractiveZoomRoute`, `SwiftInteractiveZoomSource`, `SwiftInteractiveZoomBackground`, `SwiftInteractiveZoomPage`, and `SwiftInteractiveZoomAutoRoute` APIs
+
 ## 0.1.3
 
 - Re-publish with hosted `screen_corner_radius` dependency (pub.dev compatible)
+
 ### Fixes
 - Fixed `SwiftSheetRoute` stacking animation in go_router: previous sheet now correctly animates UP (not DOWN) when a new sheet is pushed on top
 - `delegateTransition` now checks both `SwiftSheetScope` and `CupertinoSheetScope` for parent sheet detection

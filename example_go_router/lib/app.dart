@@ -7,6 +7,8 @@ import 'src/screens/home_screen.dart';
 import 'src/screens/detail_screen.dart';
 import 'src/screens/detail_no_swipe_screen.dart';
 import 'src/screens/sheet_screen.dart';
+import 'src/screens/navigation_lab_screen.dart';
+import 'src/screens/sheet_navigation_lab_screen.dart';
 import 'src/screens/hero_flow/hero_page_one_screen.dart';
 import 'src/screens/hero_flow/hero_page_two_screen.dart';
 import 'src/screens/hero_flow/hero_sheet_one_screen.dart';
@@ -23,18 +25,46 @@ class App extends StatelessWidget {
     routes: [
       GoRoute(
         path: '/',
-        pageBuilder: (context, state) =>
-            SwiftPage(child: const SplashScreen()),
+        pageBuilder: (context, state) => SwiftPage(child: const SplashScreen()),
       ),
       GoRoute(
         path: '/home',
+        pageBuilder: (context, state) => SwiftPage(child: const HomeScreen()),
+      ),
+      GoRoute(
+        path: '/navigation-lab',
         pageBuilder: (context, state) =>
-            SwiftPage(child: const HomeScreen()),
+            SwiftPage(key: state.pageKey, child: const NavigationLabScreen()),
+      ),
+      GoRoute(
+        path: '/navigation-result',
+        pageBuilder: (context, state) => SwiftPage(
+          key: state.pageKey,
+          child: NavigationResultScreen(
+            operation: state.uri.queryParameters['operation'] ?? 'unknown',
+            expectedBackDestination:
+                state.uri.queryParameters['back'] ?? 'unknown',
+            canReturnResult: state.uri.queryParameters['result'] == 'true',
+          ),
+        ),
       ),
       GoRoute(
         path: '/detail',
-        pageBuilder: (context, state) =>
-            SwiftPage(child: const DetailScreen()),
+        pageBuilder: (context, state) => SwiftPage(child: const DetailScreen()),
+      ),
+      GoRoute(
+        path: '/product/:productId',
+        pageBuilder: (context, state) {
+          final productId = state.pathParameters['productId']!;
+          return SwiftZoomPage(
+            key: state.pageKey,
+            child: SwiftZoomHero(
+              id: productId,
+              borderRadius: ScreenRadiusService.instance.radius,
+              child: DetailScreen(productId: productId),
+            ),
+          );
+        },
       ),
       GoRoute(
         path: '/detail-no-swipe',
@@ -48,6 +78,33 @@ class App extends StatelessWidget {
         path: '/sheet',
         pageBuilder: (context, state) =>
             SwiftSheetPage(child: const SheetScreen()),
+      ),
+      GoRoute(
+        path: '/sheet-navigation-lab',
+        pageBuilder: (context, state) => SwiftSheetPage(
+          key: state.pageKey,
+          child: const SheetNavigationLabScreen(),
+        ),
+      ),
+      GoRoute(
+        path: '/sheet-navigation-result',
+        pageBuilder: (context, state) => SwiftSheetPage(
+          key: state.pageKey,
+          child: SheetNavigationResultScreen(
+            operation: state.uri.queryParameters['operation'] ?? 'unknown',
+            expectedBackDestination:
+                state.uri.queryParameters['back'] ?? 'unknown',
+            canReturnResult: state.uri.queryParameters['result'] == 'true',
+          ),
+        ),
+      ),
+      GoRoute(
+        path: '/sheet-full-height',
+        pageBuilder: (context, state) => SwiftSheetPage(
+          key: state.pageKey,
+          preserveTopSafeArea: true,
+          child: const SheetFullHeightScreen(),
+        ),
       ),
       GoRoute(
         path: '/sheet-no-bg',
@@ -110,8 +167,6 @@ class App extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp.router(
-      routerConfig: _router,
-    );
+    return MaterialApp.router(routerConfig: _router);
   }
 }

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
 class DetailScreen extends StatelessWidget {
-  const DetailScreen({super.key});
+  const DetailScreen({super.key, this.productId});
+
+  final String? productId;
 
   @override
   Widget build(BuildContext context) {
@@ -13,7 +15,10 @@ class DetailScreen extends StatelessWidget {
           children: [
             const Icon(Icons.check_circle_outline, size: 64),
             const SizedBox(height: 16),
-            Text('SwiftPage demo', style: Theme.of(context).textTheme.titleLarge),
+            Text(
+              productId == null ? 'SwiftPage demo' : 'Product $productId',
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
             const SizedBox(height: 8),
             const Text('Swipe from the left edge to go back'),
           ],
