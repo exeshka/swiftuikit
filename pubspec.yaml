@@ -1,6 +1,6 @@
 name: swiftuikit
 description: "iOS-style page, zoom, sheet, scroll-sheet, and modal transitions for Flutter, with go_router and auto_route adapters."
-version: 0.1.4
+version: 0.1.5
 homepage: https://github.com/exeshka/swiftuikit
 
 environment:
