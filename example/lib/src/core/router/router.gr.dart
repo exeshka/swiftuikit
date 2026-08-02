@@ -9,25 +9,42 @@
 // coverage:ignore-file
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'package:auto_route/auto_route.dart' as _i8;
-import 'package:collection/collection.dart' as _i11;
-import 'package:example/src/screens/product_detail_screen.dart' as _i1;
-import 'package:example/src/screens/product_list_screen.dart' as _i3;
-import 'package:example/src/screens/product_wrappers.dart' as _i2;
-import 'package:example/src/screens/profile/profile_edit_screen.dart' as _i4;
-import 'package:example/src/screens/profile/profile_screen.dart' as _i5;
-import 'package:example/src/screens/profile/profile_wrapper_screen.dart' as _i6;
-import 'package:example/src/screens/swift_zoom_gallery_screen.dart' as _i7;
-import 'package:flutter/cupertino.dart' as _i9;
-import 'package:flutter/material.dart' as _i10;
+import 'package:auto_route/auto_route.dart' as _i9;
+import 'package:collection/collection.dart' as _i12;
+import 'package:example/src/screens/native_merged_header_screen.dart' as _i1;
+import 'package:example/src/screens/product_detail_screen.dart' as _i2;
+import 'package:example/src/screens/product_list_screen.dart' as _i4;
+import 'package:example/src/screens/product_wrappers.dart' as _i3;
+import 'package:example/src/screens/profile/profile_edit_screen.dart' as _i5;
+import 'package:example/src/screens/profile/profile_screen.dart' as _i6;
+import 'package:example/src/screens/profile/profile_wrapper_screen.dart' as _i7;
+import 'package:example/src/screens/swift_zoom_gallery_screen.dart' as _i8;
+import 'package:flutter/cupertino.dart' as _i10;
+import 'package:flutter/material.dart' as _i11;
 
 /// generated route for
-/// [_i1.ProductDetailScreen]
-class ProductDetailRoute extends _i8.PageRouteInfo<ProductDetailRouteArgs> {
+/// [_i1.NativeMergedHeaderScreen]
+class NativeMergedHeaderRoute extends _i9.PageRouteInfo<void> {
+  const NativeMergedHeaderRoute({List<_i9.PageRouteInfo>? children})
+    : super(NativeMergedHeaderRoute.name, initialChildren: children);
+
+  static const String name = 'NativeMergedHeaderRoute';
+
+  static _i9.PageInfo page = _i9.PageInfo(
+    name,
+    builder: (data) {
+      return const _i1.NativeMergedHeaderScreen();
+    },
+  );
+}
+
+/// generated route for
+/// [_i2.ProductDetailScreen]
+class ProductDetailRoute extends _i9.PageRouteInfo<ProductDetailRouteArgs> {
   ProductDetailRoute({
-    _i9.Key? key,
-    required _i1.ProductEntity product,
-    List<_i8.PageRouteInfo>? children,
+    _i10.Key? key,
+    required _i2.ProductEntity product,
+    List<_i9.PageRouteInfo>? children,
   }) : super(
          ProductDetailRoute.name,
          args: ProductDetailRouteArgs(key: key, product: product),
@@ -36,11 +53,11 @@ class ProductDetailRoute extends _i8.PageRouteInfo<ProductDetailRouteArgs> {
 
   static const String name = 'ProductDetailRoute';
 
-  static _i8.PageInfo page = _i8.PageInfo(
+  static _i9.PageInfo page = _i9.PageInfo(
     name,
     builder: (data) {
       final args = data.argsAs<ProductDetailRouteArgs>();
-      return _i1.ProductDetailScreen(key: args.key, product: args.product);
+      return _i2.ProductDetailScreen(key: args.key, product: args.product);
     },
   );
 }
@@ -48,9 +65,9 @@ class ProductDetailRoute extends _i8.PageRouteInfo<ProductDetailRouteArgs> {
 class ProductDetailRouteArgs {
   const ProductDetailRouteArgs({this.key, required this.product});
 
-  final _i9.Key? key;
+  final _i10.Key? key;
 
-  final _i1.ProductEntity product;
+  final _i2.ProductEntity product;
 
   @override
   String toString() {
@@ -69,13 +86,13 @@ class ProductDetailRouteArgs {
 }
 
 /// generated route for
-/// [_i2.ProductDetailSheetPage]
+/// [_i3.ProductDetailSheetPage]
 class ProductDetailSheetRoute
-    extends _i8.PageRouteInfo<ProductDetailSheetRouteArgs> {
+    extends _i9.PageRouteInfo<ProductDetailSheetRouteArgs> {
   ProductDetailSheetRoute({
-    _i10.Key? key,
-    required _i1.ProductEntity product,
-    List<_i8.PageRouteInfo>? children,
+    _i11.Key? key,
+    required _i2.ProductEntity product,
+    List<_i9.PageRouteInfo>? children,
   }) : super(
          ProductDetailSheetRoute.name,
          args: ProductDetailSheetRouteArgs(key: key, product: product),
@@ -84,11 +101,11 @@ class ProductDetailSheetRoute
 
   static const String name = 'ProductDetailSheetRoute';
 
-  static _i8.PageInfo page = _i8.PageInfo(
+  static _i9.PageInfo page = _i9.PageInfo(
     name,
     builder: (data) {
       final args = data.argsAs<ProductDetailSheetRouteArgs>();
-      return _i2.ProductDetailSheetPage(key: args.key, product: args.product);
+      return _i3.ProductDetailSheetPage(key: args.key, product: args.product);
     },
   );
 }
@@ -96,9 +113,9 @@ class ProductDetailSheetRoute
 class ProductDetailSheetRouteArgs {
   const ProductDetailSheetRouteArgs({this.key, required this.product});
 
-  final _i10.Key? key;
+  final _i11.Key? key;
 
-  final _i1.ProductEntity product;
+  final _i2.ProductEntity product;
 
   @override
   String toString() {
@@ -117,78 +134,78 @@ class ProductDetailSheetRouteArgs {
 }
 
 /// generated route for
-/// [_i3.ProductListScreen]
-class ProductListRoute extends _i8.PageRouteInfo<void> {
-  const ProductListRoute({List<_i8.PageRouteInfo>? children})
+/// [_i4.ProductListScreen]
+class ProductListRoute extends _i9.PageRouteInfo<void> {
+  const ProductListRoute({List<_i9.PageRouteInfo>? children})
     : super(ProductListRoute.name, initialChildren: children);
 
   static const String name = 'ProductListRoute';
 
-  static _i8.PageInfo page = _i8.PageInfo(
+  static _i9.PageInfo page = _i9.PageInfo(
     name,
     builder: (data) {
-      return const _i3.ProductListScreen();
+      return const _i4.ProductListScreen();
     },
   );
 }
 
 /// generated route for
-/// [_i4.ProfileEditScreen]
-class ProfileEditRoute extends _i8.PageRouteInfo<void> {
-  const ProfileEditRoute({List<_i8.PageRouteInfo>? children})
+/// [_i5.ProfileEditScreen]
+class ProfileEditRoute extends _i9.PageRouteInfo<void> {
+  const ProfileEditRoute({List<_i9.PageRouteInfo>? children})
     : super(ProfileEditRoute.name, initialChildren: children);
 
   static const String name = 'ProfileEditRoute';
 
-  static _i8.PageInfo page = _i8.PageInfo(
+  static _i9.PageInfo page = _i9.PageInfo(
     name,
     builder: (data) {
-      return const _i4.ProfileEditScreen();
+      return const _i5.ProfileEditScreen();
     },
   );
 }
 
 /// generated route for
-/// [_i5.ProfileScreen]
-class ProfileRoute extends _i8.PageRouteInfo<void> {
-  const ProfileRoute({List<_i8.PageRouteInfo>? children})
+/// [_i6.ProfileScreen]
+class ProfileRoute extends _i9.PageRouteInfo<void> {
+  const ProfileRoute({List<_i9.PageRouteInfo>? children})
     : super(ProfileRoute.name, initialChildren: children);
 
   static const String name = 'ProfileRoute';
 
-  static _i8.PageInfo page = _i8.PageInfo(
+  static _i9.PageInfo page = _i9.PageInfo(
     name,
     builder: (data) {
-      return const _i5.ProfileScreen();
+      return const _i6.ProfileScreen();
     },
   );
 }
 
 /// generated route for
-/// [_i6.ProfileWrapperScreen]
-class ProfileWrapperRoute extends _i8.PageRouteInfo<void> {
-  const ProfileWrapperRoute({List<_i8.PageRouteInfo>? children})
+/// [_i7.ProfileWrapperScreen]
+class ProfileWrapperRoute extends _i9.PageRouteInfo<void> {
+  const ProfileWrapperRoute({List<_i9.PageRouteInfo>? children})
     : super(ProfileWrapperRoute.name, initialChildren: children);
 
   static const String name = 'ProfileWrapperRoute';
 
-  static _i8.PageInfo page = _i8.PageInfo(
+  static _i9.PageInfo page = _i9.PageInfo(
     name,
     builder: (data) {
-      return const _i6.ProfileWrapperScreen();
+      return const _i7.ProfileWrapperScreen();
     },
   );
 }
 
 /// generated route for
-/// [_i7.SwiftZoomGalleryScreen]
+/// [_i8.SwiftZoomGalleryScreen]
 class SwiftZoomGalleryRoute
-    extends _i8.PageRouteInfo<SwiftZoomGalleryRouteArgs> {
+    extends _i9.PageRouteInfo<SwiftZoomGalleryRouteArgs> {
   SwiftZoomGalleryRoute({
-    _i9.Key? key,
-    required List<_i1.ProductEntity> products,
+    _i10.Key? key,
+    required List<_i2.ProductEntity> products,
     required int initialIndex,
-    List<_i8.PageRouteInfo>? children,
+    List<_i9.PageRouteInfo>? children,
   }) : super(
          SwiftZoomGalleryRoute.name,
          args: SwiftZoomGalleryRouteArgs(
@@ -201,11 +218,11 @@ class SwiftZoomGalleryRoute
 
   static const String name = 'SwiftZoomGalleryRoute';
 
-  static _i8.PageInfo page = _i8.PageInfo(
+  static _i9.PageInfo page = _i9.PageInfo(
     name,
     builder: (data) {
       final args = data.argsAs<SwiftZoomGalleryRouteArgs>();
-      return _i7.SwiftZoomGalleryScreen(
+      return _i8.SwiftZoomGalleryScreen(
         key: args.key,
         products: args.products,
         initialIndex: args.initialIndex,
@@ -221,9 +238,9 @@ class SwiftZoomGalleryRouteArgs {
     required this.initialIndex,
   });
 
-  final _i9.Key? key;
+  final _i10.Key? key;
 
-  final List<_i1.ProductEntity> products;
+  final List<_i2.ProductEntity> products;
 
   final int initialIndex;
 
@@ -237,7 +254,7 @@ class SwiftZoomGalleryRouteArgs {
     if (identical(this, other)) return true;
     if (other is! SwiftZoomGalleryRouteArgs) return false;
     return key == other.key &&
-        const _i11.ListEquality<_i1.ProductEntity>().equals(
+        const _i12.ListEquality<_i2.ProductEntity>().equals(
           products,
           other.products,
         ) &&
@@ -247,6 +264,6 @@ class SwiftZoomGalleryRouteArgs {
   @override
   int get hashCode =>
       key.hashCode ^
-      const _i11.ListEquality<_i1.ProductEntity>().hash(products) ^
+      const _i12.ListEquality<_i2.ProductEntity>().hash(products) ^
       initialIndex.hashCode;
 }

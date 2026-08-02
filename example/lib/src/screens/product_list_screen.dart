@@ -369,6 +369,7 @@ class _SwiftZoomGallery extends StatelessWidget {
             return SwiftZoomHero(
               id: product.id,
               borderRadius: BorderRadius.circular(22),
+
               child: GestureDetector(
                 onTap: () {
                   context.router.push(

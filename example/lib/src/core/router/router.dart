@@ -9,7 +9,8 @@ import 'package:swiftuikit/swiftuikit.dart';
 class AppRouter extends RootStackRouter {
   @override
   List<AutoRoute> get routes => [
-    SwiftPageAutoRoute(page: ProductListRoute.page, initial: true),
+    SwiftPageAutoRoute(page: NativeMergedHeaderRoute.page, initial: true),
+    SwiftPageAutoRoute(page: ProductListRoute.page),
 
     SwiftZoomAutoRoute(
       page: SwiftZoomGalleryRoute.page,
