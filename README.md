@@ -524,6 +524,17 @@ modals, `SwiftPageViewAnimation`, `SwiftStepSheet`, and
 
 Bug reports, focused examples, and pull requests are welcome.
 
+## Support SwiftUIKit
+
+If SwiftUIKit saves you time or helps your Flutter app feel closer to native
+iOS, consider supporting its continued development.
+
+<p align="center">
+  <a href="https://ko-fi.com/exeshka">
+    <img src="https://img.shields.io/badge/Support_SwiftUIKit_on-Ko--fi-FF5E5B?style=for-the-badge&logo=ko-fi&logoColor=white" alt="Support SwiftUIKit on Ko-fi" />
+  </a>
+</p>
+
 ## License
 
 SwiftUIKit is available under the [MIT License](LICENSE).
