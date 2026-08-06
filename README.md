@@ -15,9 +15,9 @@ patterns that feel at home on Apple platforms while remaining Flutter-native.
 </div>
 
 <p align="center">
-  <img src="assets/image.png" alt="SwiftUIKit page transition" width="29%" />
-  <img src="assets/image%20copy.png" alt="SwiftUIKit sheet transition" width="29%" />
-  <img src="assets/image%20copy%202.png" alt="SwiftUIKit stacked presentation" width="29%" />
+  <img src="https://raw.githubusercontent.com/exeshka/swiftuikit/main/assets/image.png" alt="SwiftUIKit page transition" width="29%" />
+  <img src="https://raw.githubusercontent.com/exeshka/swiftuikit/main/assets/image%20copy.png" alt="SwiftUIKit sheet transition" width="29%" />
+  <img src="https://raw.githubusercontent.com/exeshka/swiftuikit/main/assets/image%20copy%202.png" alt="SwiftUIKit stacked presentation" width="29%" />
 </p>
 
 > SwiftUIKit is an independent project inspired by Apple interface patterns.
@@ -79,7 +79,7 @@ Or add it manually:
 
 ```yaml
 dependencies:
-  swiftuikit: ^0.2.0
+  swiftuikit: ^0.2.1
 ```
 
 To follow the latest GitHub revision:
@@ -128,7 +128,7 @@ the animation.
 > indistinguishable from its native iOS counterpart.
 
 <p align="center">
-  <img src="assets/swift_text_demo.gif" alt="SwiftText music player demo" width="320" />
+  <img src="https://raw.githubusercontent.com/exeshka/swiftuikit/main/assets/swift_text_demo.gif" alt="SwiftText music player demo" width="320" />
 </p>
 
 ```dart

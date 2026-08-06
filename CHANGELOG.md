@@ -1,3 +1,9 @@
+## 0.2.1
+
+### Documentation
+
+- Fixed screenshots and the animated `SwiftText` preview not rendering on pub.dev by using absolute asset URLs
+
 ## 0.2.0
 
 ### New features
