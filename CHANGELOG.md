@@ -1,8 +1,17 @@
-## Unreleased
+## 0.2.0
 
 ### New features
 
 - Added `SwiftText`, a glyph-level text transition with automatic numeric direction, rich text support, blur, and rapid retargeting
+
+### Breaking changes
+
+- Raised the minimum supported Flutter version to 3.22.0
+
+### Documentation
+
+- Rebuilt the README as a complete component catalog with setup and usage examples
+- Added an optimized animated `SwiftText` preview
 
 ### Example
 

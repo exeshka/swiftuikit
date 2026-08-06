@@ -79,7 +79,7 @@ Or add it manually:
 
 ```yaml
 dependencies:
-  swiftuikit: ^0.1.5
+  swiftuikit: ^0.2.0
 ```
 
 To follow the latest GitHub revision:
