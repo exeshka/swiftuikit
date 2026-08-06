@@ -1,3 +1,13 @@
+## Unreleased
+
+### New features
+
+- Added `SwiftText`, a glyph-level text transition with automatic numeric direction, rich text support, blur, and rapid retargeting
+
+### Example
+
+- Added a responsive English music player showcasing `SwiftText` across track metadata, counters, and navigation labels
+
 ## 0.1.5
 
 ### New features

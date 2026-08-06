@@ -1,25 +1,88 @@
-# swiftuikit
+<div align="center">
 
-iOS-style page transitions and sheet routes for Flutter.
+# SwiftUIKit
+
+**A growing collection of Flutter widgets, routes, and interaction primitives inspired by iOS 26–27.**
+
+[![pub.dev](https://img.shields.io/pub/v/swiftuikit?logo=dart&label=pub.dev&color=0175C2)](https://pub.dev/packages/swiftuikit)
+[![Flutter](https://img.shields.io/badge/Flutter-3.22%2B-02569B?logo=flutter&logoColor=white)](https://flutter.dev)
+[![Inspired by](https://img.shields.io/badge/inspired_by-iOS_26%E2%80%9327-111111?logo=apple&logoColor=white)](#why-swiftuikit)
+[![License](https://img.shields.io/badge/license-MIT-6E56CF)](LICENSE)
+
+Motion, depth, interactive gestures, adaptive corners, and presentation
+patterns that feel at home on Apple platforms while remaining Flutter-native.
+
+</div>
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/exeshka/swiftuikit/main/assets/image.png" width="24%" />
-  <img src="https://raw.githubusercontent.com/exeshka/swiftuikit/main/assets/image%20copy.png" width="24%" />
-  <img src="https://raw.githubusercontent.com/exeshka/swiftuikit/main/assets/image%20copy%202.png" width="24%" />
+  <img src="assets/image.png" alt="SwiftUIKit page transition" width="29%" />
+  <img src="assets/image%20copy.png" alt="SwiftUIKit sheet transition" width="29%" />
+  <img src="assets/image%20copy%202.png" alt="SwiftUIKit stacked presentation" width="29%" />
 </p>
 
-Provides two routing adapters: **go_router / Navigator 2.0** and **auto_route**.
+> SwiftUIKit is an independent project inspired by Apple interface patterns.
+> It is not affiliated with or endorsed by Apple Inc.
 
-## Quick start
+## Why SwiftUIKit
 
-**pub.dev:**
+Flutter has excellent primitives, but reproducing the interaction details of
+modern iOS interfaces often requires coordinating routes, gestures, clipping,
+scroll positions, spring motion, and physical screen corners. SwiftUIKit
+packages those details into composable building blocks.
+
+| Motion-first | Router-ready | Composable | Adaptive |
+|---|---|---|---|
+| Spring-like transitions and interruption-safe retargeting | Direct `Navigator`, Navigator 2.0 / `go_router`, and `auto_route` APIs | Use complete routes or lower-level widgets independently | Physical screen corner radius and safe-area aware presentation |
+
+## Component catalog
+
+### Text and page motion
+
+| Component | What it does | Status |
+|---|---|---|
+| [`SwiftText`](#swifttext) | Animates changed glyphs with vertical motion, blur, opacity, and automatic numeric direction | Stable |
+| [`SwiftPageViewAnimation`](#swiftpageviewanimation) | Adds overlap, parallax, scale, and rounded overscroll to a horizontal `PageView` | Experimental |
+
+### Navigation and presentations
+
+| Component | What it does | Status |
+|---|---|---|
+| [`SwiftPageRoute`](#swiftpage) | Full-screen page transition with interactive swipe-back, scale, and parallax | Stable |
+| [`SwiftZoomHero` + `SwiftZoomRoute`](#swiftzoom) | Element-to-element zoom with a draggable whole-page dismissal and dynamic destinations | Stable |
+| [`SwiftSheetRoute`](#swiftsheet) | Stack-aware iOS sheet with drag-to-dismiss and scroll handoff | Stable |
+| [`SwiftScrollSheetRoute`](#swiftscrollsheet) | Draggable sheet with fractional or fixed-height detents and programmatic control | Experimental |
+| [`SwiftModalRoute`](#swiftmodal) | Content-sized modal with dimming, rounded corners, and drag-to-dismiss | Experimental |
+
+### Composition and scroll utilities
+
+| Component | What it does | Status |
+|---|---|---|
+| [`SwiftStepSheet`](#swiftstepsheet) | Multi-step content container with animated height changes | Experimental |
+| [`SwiftModalScaffold`](#swiftmodalscaffold) | Morphs a floating scroll sheet into a full-screen surface as it expands | Experimental |
+| [`SwiftScrollSheetDragTarget`](#swiftscrollsheetdragtarget) | Turns a custom header or handle into a drag surface for a scroll sheet | Experimental |
+| [`SwiftSheetScrollProvider`](#scroll-coordination) | Exposes a sheet's effective `ScrollController` to descendants | Stable |
+| [`SwiftSheetScrollBinding`](#scroll-coordination) | Binds the primary scroll controller, with a safe fallback | Stable |
+| [`ScrollOverlapListener`](#scroll-coordination) | Rebuilds from the current leading overscroll amount | Stable |
+| [`ScrollValueListener`](#scroll-coordination) | Rebuilds from the current scroll offset | Stable |
+| [`SnappingScrollPhysics`](#snappingscrollphysics) | Snaps a scroll position to configurable points using spring physics | Stable |
+| [`ScreenRadiusService`](#screenradiusservice) | Reads and caches the device's physical corner radius | Stable |
+
+## Installation
+
+Install the current pub.dev release:
+
+```bash
+flutter pub add swiftuikit
+```
+
+Or add it manually:
 
 ```yaml
 dependencies:
-  swiftuikit: ^latest
+  swiftuikit: ^0.1.5
 ```
 
-**GitHub (latest):**
+To follow the latest GitHub revision:
 
 ```yaml
 dependencies:
@@ -28,56 +91,383 @@ dependencies:
       url: https://github.com/exeshka/swiftuikit
 ```
 
-## Setup
-
-Call `ScreenRadiusService.instance.initialize()` before `runApp()` to enable device-aware corner radius clipping:
+Import the public library:
 
 ```dart
-void main() async {
+import 'package:swiftuikit/swiftuikit.dart';
+```
+
+## Setup
+
+Initialize `ScreenRadiusService` before `runApp` when using routes or widgets
+that follow the physical corners of the device:
+
+```dart
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await ScreenRadiusService.instance.initialize();
-  runApp(MyApp());
+  runApp(const App());
 }
 ```
 
-## Route types
+Without initialization, corner-aware components safely fall back to
+`BorderRadius.zero`.
 
-| Route | Description |
-|-------|-------------|
-| `SwiftPage` / `SwiftPageAutoRoute` | Full-screen page with iOS swipe-back gesture and parallax/scale transition |
-| `SwiftZoomPage` / `SwiftZoomAutoRoute` | Element-to-element zoom whose destination Hero can change while the page is open |
-| `SwiftSheetPage` / `SwiftSheetAutoRoute` | Modal bottom sheet with drag-to-dismiss |
+## Widget guide
 
-## Usage with go_router
+### SwiftText
 
-Use the page classes in a `pageBuilder`:
+`SwiftText` is a glyph-level counterpart to SwiftUI's numeric text content
+transition. Unchanged glyphs stay sharp while changed glyphs move vertically,
+fade, and blur. Numeric direction is detected automatically, rapid updates
+retarget from the current visual state, and style-only changes do not restart
+the animation.
+
+> **99% native feel.** The timing, roll direction, blur, opacity, and
+> interruption behavior are tuned so the text transition feels almost
+> indistinguishable from its native iOS counterpart.
+
+<p align="center">
+  <img src="assets/swift_text_demo.gif" alt="SwiftText music player demo" width="320" />
+</p>
+
+```dart
+SwiftText(
+  'Balance: $balance',
+  duration: const Duration(milliseconds: 450),
+  style: const TextStyle(
+    fontSize: 32,
+    fontWeight: FontWeight.w700,
+  ),
+)
+```
+
+Use `countsDown` to override the detected roll direction, `SwiftText.rich` for
+styled `TextSpan` content, and `onEnd` to observe completion. `WidgetSpan` is
+not supported because inline render objects cannot move as individual glyphs.
+
+```dart
+SwiftText.rich(
+  TextSpan(
+    children: [
+      const TextSpan(text: 'Score  '),
+      TextSpan(
+        text: '$score',
+        style: const TextStyle(fontWeight: FontWeight.w800),
+      ),
+    ],
+  ),
+)
+```
+
+### SwiftPage
+
+`SwiftPageRoute` provides a full-screen push transition with an interactive
+swipe-back gesture. The incoming page overlaps the previous page while the
+background scales and moves with the gesture.
+
+```dart
+Navigator.of(context).push(
+  SwiftPageRoute<void>(
+    settings: const RouteSettings(name: '/details'),
+    child: const DetailsScreen(),
+    canSwipe: true,
+    canOnlySwipeFromEdge: false,
+    minScale: 0.95,
+  ),
+);
+```
+
+Key controls include `pageOverlapFraction`, `backGestureWidth`,
+`clipWithScreenRadius`, `radius`, `borderRadius`, and a custom transition
+duration. Use `SwiftPage` with Navigator 2.0 / `go_router`, or
+`SwiftPageAutoRoute` with `auto_route`.
+
+### SwiftZoom
+
+`SwiftZoomHero` connects a source element to a complete destination page.
+`SwiftZoomRoute` manages background dimming, fallback scale, and interactive
+whole-page dismissal. The destination ID may change while the route is open,
+so a `PageView` can dismiss into the source for its currently selected item.
+
+Source:
+
+```dart
+SwiftZoomHero(
+  id: product.id,
+  borderRadius: BorderRadius.circular(24),
+  child: ProductCard(product: product),
+)
+```
+
+Destination:
+
+```dart
+SwiftZoomHero(
+  id: products[currentIndex].id,
+  borderRadius: ScreenRadiusService.instance.radius,
+  child: ProductGallery(
+    products: products,
+    initialIndex: currentIndex,
+  ),
+)
+```
+
+Route:
+
+```dart
+Navigator.of(context).push(
+  SwiftZoomRoute<void>(
+    dismissDirection: SwiftZoomDismissDirection.horizontal,
+    builder: (_) => const ProductGalleryScreen(),
+  ),
+);
+```
+
+Choose `SwiftZoomDismissDirection.any`, `.horizontal`, or `.downward` to
+coordinate dismissal with the destination's own scroll gestures. If the source
+is no longer mounted, the route falls back to a complete-page scale and fade.
+
+### SwiftSheet
+
+`SwiftSheetRoute` presents an iOS-style sheet that stacks correctly above
+pages and other sheets. It coordinates drag-to-dismiss with the sheet's scroll
+position and can animate the previous route into the background.
+
+For direct Navigator usage, `showSwiftSheet` is the shortest entry point:
+
+```dart
+showSwiftSheet<void>(
+  context: context,
+  showDragHandle: true,
+  scrollableBuilder: (context, controller) {
+    return ListView(
+      controller: controller,
+      children: const [
+        ListTile(title: Text('Account')),
+        ListTile(title: Text('Notifications')),
+      ],
+    );
+  },
+);
+```
+
+The sheet supports custom radii, nested navigation, background animation,
+top-safe-area preservation, drag thresholds, and fling thresholds. Use
+`SwiftSheetRoute.popSheet(context)` to close the complete sheet from nested
+content.
+
+### SwiftScrollSheet
+
+`SwiftScrollSheetRoute` combines draggable sheet behavior with snap detents.
+Detents may be fractions of the available height, fixed logical-pixel heights,
+or the built-in `medium` and `large` values.
+
+```dart
+final sheetController = SwiftScrollSheetController(initialValue: 0.5);
+
+Navigator.of(context).push(
+  SwiftScrollSheetRoute<void>(
+    settings: const RouteSettings(name: '/library'),
+    child: const LibrarySheet(),
+    detents: const [
+      SwiftSheetDetent.medium,
+      SwiftSheetDetent.large,
+    ],
+    initialDetent: SwiftSheetDetent.medium,
+    sheetController: sheetController,
+  ),
+);
+```
+
+`SwiftScrollSheetController` exposes `animateTo`, `jumpTo`, `expand`,
+`collapse`, `snapToNearest`, the current `extent`, and the resolved snap stops.
+Inside the route, use `SwiftScrollSheetRoute.controllerOf(context)` or
+`SwiftScrollSheetRoute.extentOf(context)` when direct access is more convenient.
+
+#### SwiftScrollSheetDragTarget
+
+Wrap a custom header or drag handle to forward vertical gestures to the
+nearest `SwiftScrollSheetRoute`:
+
+```dart
+SwiftScrollSheetDragTarget(
+  child: const SheetHeader(title: 'Library'),
+)
+```
+
+### SwiftModal
+
+`SwiftModalRoute` sizes itself to its child up to the available screen height.
+It slides from the bottom, dims the background, supports a configurable
+barrier, and hands drag gestures off from scrollable content before dismissing.
+
+```dart
+Navigator.of(context).push(
+  SwiftModalRoute<void>(
+    settings: const RouteSettings(name: '/filters'),
+    child: const FiltersPanel(),
+    barrierDismissible: true,
+    barrierOpacity: 0.3,
+    dismissThreshold: 0.3,
+  ),
+);
+```
+
+Use `SwiftModalPage` for Navigator 2.0 / `go_router`, or
+`SwiftModalAutoRoute` for `auto_route`.
+
+### SwiftPageViewAnimation
+
+`SwiftPageViewAnimation` adds iOS-inspired depth to horizontal paging: the
+previous page can remain partially covered, pages scale with progress, and
+edge overscroll reveals adaptive rounded corners.
+
+```dart
+SwiftPageViewAnimation.pageView(
+  controller: pageController,
+  itemCount: pages.length,
+  itemBuilder: (context, index) => pages[index],
+  minScale: 0.95,
+  pageOverlapFraction: 0.20,
+  onPageChanged: onPageChanged,
+)
+```
+
+Use `parallaxIndexes` to restrict the effect to selected pages,
+`coverPreviousPage` to disable overlap, and `radius` or `borderRadius` to
+override the physical screen radius.
+
+### SwiftStepSheet
+
+`SwiftStepSheet` switches between a list of steps and animates height changes
+with `AnimatedSize`. Its state exposes navigation commands and the enclosing
+modal route's open progress.
+
+```dart
+final stepKey = GlobalKey<SwiftStepSheetState>();
+
+SwiftStepSheet(
+  key: stepKey,
+  steps: const [
+    ContactStep(),
+    AddressStep(),
+    ConfirmationStep(),
+  ],
+)
+```
+
+Call `nextStep`, `previousStep`, or `goToStep` through the state key or
+`SwiftStepSheet.of(context)`. Descendants can read the route transition with
+`SwiftStepSheet.openProgressOf(context)`.
+
+### SwiftModalScaffold
+
+`SwiftModalScaffold` is designed for content inside a
+`SwiftScrollSheetRoute`. As the sheet expands, it removes its floating margin
+and shadow, flattens the lower corners, and aligns the upper corners with the
+physical screen.
+
+```dart
+SwiftModalScaffold(
+  header: const SheetHeader(title: 'Collection'),
+  body: ListView.builder(
+    itemCount: items.length,
+    itemBuilder: (context, index) => ItemTile(items[index]),
+  ),
+)
+```
+
+The optional `header` is automatically wrapped in
+`SwiftScrollSheetDragTarget`.
+
+### Scroll coordination
+
+These smaller widgets make scroll-driven effects reusable without moving
+controller logic into page state:
+
+| Widget | Use it for |
+|---|---|
+| `SwiftSheetScrollProvider` | Providing a known `ScrollController` to a sheet subtree |
+| `SwiftSheetScrollBinding` | Exposing the nearest `PrimaryScrollController`, with an owned fallback when none exists |
+| `ScrollOverlapListener` | Building from leading overscroll, clamped by `maxOverlap` |
+| `ScrollValueListener` | Building from the current offset of a single attached scroll position |
+
+```dart
+ScrollValueListener(
+  controller: controller,
+  builder: (context, offset) {
+    return Header(elevation: (offset / 24).clamp(0.0, 1.0));
+  },
+)
+```
+
+### SnappingScrollPhysics
+
+`SnappingScrollPhysics` snaps a scroll position to a list of logical-pixel
+points. Low-velocity movement uses `snapThreshold`; a fling chooses the next
+point in its direction.
+
+```dart
+ListView(
+  controller: controller,
+  physics: const SnappingScrollPhysics(
+    snapPoints: [0, 240, 480],
+    springConfig: SnapSpringConfig.snappy,
+  ),
+  children: children,
+)
+```
+
+Choose `SnapSpringConfig.smooth`, `.snappy`, or `.bouncy`, or provide custom
+mass, stiffness, and damping.
+
+### ScreenRadiusService
+
+`ScreenRadiusService` is a `ChangeNotifier` singleton that reads and caches the
+physical corner radius reported by the platform. Components use its
+`BorderRadius` to keep page and sheet clipping concentric with the screen.
+
+```dart
+final borderRadius = ScreenRadiusService.instance.radius;
+final radius = ScreenRadiusService.instance.radiusValue;
+```
+
+Call `refresh()` if the host window changes and the radius must be queried
+again.
+
+## Routing adapters
+
+The same transition core is exposed for three navigation styles:
+
+| Experience | Direct Navigator | Navigator 2.0 / `go_router` | `auto_route` |
+|---|---|---|---|
+| Page | `SwiftPageRoute` | `SwiftPage` | `SwiftPageAutoRoute` |
+| Zoom | `SwiftZoomRoute` | `SwiftZoomPage` | `SwiftZoomAutoRoute` |
+| Sheet | `SwiftSheetRoute` / `showSwiftSheet` | `SwiftSheetPage` | `SwiftSheetAutoRoute` |
+| Scroll sheet | `SwiftScrollSheetRoute` | `SwiftScrollSheetPage` | `SwiftScrollSheetAutoRoute` |
+| Content modal | `SwiftModalRoute` | `SwiftModalPage` | `SwiftModalAutoRoute` |
+
+### Navigator 2.0 / go_router
+
+Use the `Page` adapters from a `pageBuilder`:
 
 ```dart
 GoRoute(
-  path: '/detail',
+  path: '/details',
   pageBuilder: (context, state) {
     return SwiftPage<void>(
       key: state.pageKey,
       name: state.name,
-      child: DetailScreen(),
+      child: const DetailsScreen(),
     );
   },
-);
-
-GoRoute(
-  path: '/compose',
-  pageBuilder: (context, state) {
-    return SwiftSheetPage<void>(
-      key: state.pageKey,
-      child: ComposeScreen(),
-    );
-  },
-);
+)
 ```
 
-## Usage with auto_route
+### auto_route
 
-Use the auto route classes in your `@AutoRouterConfig`:
+Use the matching route definitions in `RootStackRouter`:
 
 ```dart
 @AutoRouterConfig(replaceInRouteName: 'Screen|Page,Route')
@@ -85,152 +475,55 @@ class AppRouter extends RootStackRouter {
   @override
   List<AutoRoute> get routes => [
     SwiftPageAutoRoute(page: HomeRoute.page, initial: true),
-    SwiftPageAutoRoute(page: DetailRoute.page),
+    SwiftPageAutoRoute(page: DetailsRoute.page),
+    SwiftZoomAutoRoute(page: GalleryRoute.page),
     SwiftSheetAutoRoute(
-      page: SheetRoute.page,
+      page: SettingsRoute.page,
       showDragHandle: true,
-      animateBackground: true,
     ),
   ];
 }
 ```
 
-Run codegen from the `example/` directory:
+Regenerate routes from the application package after changing route
+definitions:
 
 ```bash
-cd example && dart run build_runner build --delete-conflicting-outputs
+dart run build_runner build --delete-conflicting-outputs
 ```
 
-## SwiftPage / SwiftPageAutoRoute
+## Low-level building blocks
 
-Full-screen page transition with iOS-style swipe-back gesture.
+Most applications should use the routes and adapters above. The package also
+exports these lower-level pieces for custom integrations:
 
-```dart
-SwiftPage<void>(
-  child: MyScreen(),
-  canSwipe: true,              // enable swipe-back gesture (default: true)
-  canOnlySwipeFromEdge: false, // restrict swipe to screen edge (default: false)
-  minScale: 0.95,              // scale of the outgoing page during push (default: 0.95)
-  transitionDuration: Duration(milliseconds: 500),
-)
+| API | Purpose |
+|---|---|
+| `SwiftSheetTransition` | Builds the primary and delegated animations used by stacked sheets |
+| `SwiftSheetScope` | Propagates the resolved sheet radius to nested page routes |
+| `SwiftPageTransitions` | Central configuration and route builder for page and sheet motion |
+| `SwiftTextSmoothCurve` | Critically damped curve used by the default `SwiftText` transition |
+
+## Example app
+
+The [`example`](example/) application contains the auto_route catalog,
+interactive page and zoom flows, stacked sheets, and the responsive
+[`SwiftText` music player](example/lib/src/screens/swift_text_player_screen.dart).
+
+```bash
+cd example
+flutter run
 ```
 
-| Property | Type | Default | Description |
-|----------|------|---------|-------------|
-| `canSwipe` | `bool` | `true` | Enable swipe-back gesture |
-| `canOnlySwipeFromEdge` | `bool` | `false` | Restrict swipe detection to the screen edge |
-| `minScale` | `double` | `0.95` | Scale of the outgoing page during a push transition |
-| `pageOverlapFraction` | `double` | `0.40` | How much the incoming page overlaps the outgoing page |
-| `clipWithScreenRadius` | `bool` | `true` | Clip with physical device screen corners |
-| `radius` | `double?` | — | Custom corner radius |
-| `borderRadius` | `BorderRadius?` | — | Custom border radius geometry |
-| `transitionDuration` | `Duration` | `500ms` | Transition animation duration |
+## Stability
 
-## SwiftZoomHero / SwiftZoomRoute
+APIs annotated with `@experimental` are usable but may change before the next
+stable release. At the moment this includes scroll sheets, content-sized
+modals, `SwiftPageViewAnimation`, `SwiftStepSheet`, and
+`SwiftModalScaffold`.
 
-`SwiftZoomHero` is an element-to-element transition independent from the
-route. Put matching IDs around the source element and the complete destination
-page. The route only handles the background, whole-page drag, and the fallback
-animation.
-
-```dart
-SwiftZoomHero(
-  id: product.id,
-  borderRadius: BorderRadius.circular(24),
-  child: ProductCard(
-    product: product,
-    onTap: () => Navigator.of(context).push(
-      SwiftZoomRoute<void>(
-        dismissDirection: SwiftZoomDismissDirection.horizontal,
-        builder: (_) => ProductGallery(
-          products: products,
-          initialIndex: index,
-        ),
-      ),
-    ),
-  ),
-)
-```
-
-Wrap the whole destination page and update its ID when the selected item
-changes:
-
-```dart
-SwiftZoomHero(
-  id: products[currentIndex].id,
-  borderRadius: ScreenRadiusService.instance.radius,
-  child: PageView.builder(
-    controller: pageController,
-    scrollDirection: Axis.vertical,
-    onPageChanged: (index) => setState(() => currentIndex = index),
-    itemCount: products.length,
-    itemBuilder: (_, index) => ProductScreen(
-      product: products[index],
-    ),
-  ),
-)
-```
-
-If the current source is not mounted when the route closes, the complete page
-uses a scale-and-fade fallback instead. The route accepts drags in every
-direction by default. Set `SwiftZoomDismissDirection.horizontal` only when a
-screen should reserve vertical gesture starts for its scrollable content. Once
-the horizontal dismiss wins, the page still follows the finger in both axes.
-
-For `go_router` / Navigator 2.0 use `SwiftZoomPage`. For `auto_route`, declare
-the route without a source ID:
-
-```dart
-SwiftZoomAutoRoute(
-  page: ProductGalleryRoute.page,
-  dismissDirection: SwiftZoomDismissDirection.horizontal,
-)
-```
-
-## SwiftSheetPage / SwiftSheetAutoRoute
-
-Modal bottom sheet with drag-to-dismiss.
-
-```dart
-SwiftSheetPage<void>(
-  child: ComposeScreen(),
-  showDragHandle: true,     // show drag indicator at the top (default: false)
-  enableDrag: true,         // allow drag-to-dismiss (default: true)
-  dismissThreshold: 0.32,   // dismiss after dragging 32% of the sheet
-  minFlingVelocity: 1.0,    // sheet heights per second
-  animateBackground: true,  // animate the previous page (default: true)
-  preserveTopSafeArea: true, // keep system top inset and open at full height
-  sheetRadius: 38.0,        // corner radius
-)
-```
-
-| Property | Type | Default | Description |
-|----------|------|---------|-------------|
-| `showDragHandle` | `bool` | `false` | Show a drag handle indicator at the top of the sheet |
-| `enableDrag` | `bool` | `true` | Allow drag-to-dismiss gesture |
-| `dismissThreshold` | `double` | `0.32` | Fraction of sheet height required to dismiss |
-| `minFlingVelocity` | `double` | `1.0` | Downward fling velocity required to dismiss, in sheet heights per second |
-| `animateBackground` | `bool` | `true` | Animate (scale, slide, round corners of) the previous page when the sheet appears |
-| `preserveTopSafeArea` | `bool` | `false` | Keep the system top inset and open the sheet at 100% screen height |
-| `sheetRadius` | `double?` | — | Corner radius of the sheet |
-| `sheetBorderRadius` | `BorderRadius?` | — | Custom border radius geometry for the sheet |
-| `transitionDuration` | `Duration` | `500ms` | Transition animation duration |
-
-When `preserveTopSafeArea` is enabled, the current sheet and the route behind
-it use the physical screen radius from `ScreenRadiusService` by default.
-An explicit `sheetBorderRadius` or `sheetRadius` takes priority and is applied
-to both routes.
-
-## Roadmap
-
-What's planned for future releases:
-
-- **Sheets & modals from SwiftUI 26** — pull-down menus, confirmation sheets, and other presentation styles currently available in native SwiftUI. Note: Liquid Glass implementations in the Flutter community are not production-ready for these use cases. We're waiting for the Flutter team to provide proper support.
-
-- **SwiftUI components without Liquid Glass** — Header, Bottom Navigation Bar, and other UI elements that can be reliably implemented today.
-
-We're hoping for community contributions to help close the gap between what Flutter offers natively and what SwiftUI provides out of the box.
+Bug reports, focused examples, and pull requests are welcome.
 
 ## License
 
-See [LICENSE](LICENSE) for details.
+SwiftUIKit is available under the [MIT License](LICENSE).

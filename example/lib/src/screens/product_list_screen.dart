@@ -314,6 +314,12 @@ class _CategoryPage extends StatelessWidget {
                             ),
                           ),
                         ),
+                        const SliverPadding(
+                          padding: EdgeInsets.fromLTRB(16, 0, 16, 34),
+                          sliver: SliverToBoxAdapter(
+                            child: _SwiftTextPlayerCard(),
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -417,6 +423,109 @@ class _SwiftZoomGallery extends StatelessWidget {
           },
         ),
       ],
+    );
+  }
+}
+
+class _SwiftTextPlayerCard extends StatelessWidget {
+  const _SwiftTextPlayerCard();
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      button: true,
+      label: 'Open the SwiftText music player demo',
+      child: GestureDetector(
+        key: const ValueKey('swift-text-player-card'),
+        onTap: () => context.router.push(const SwiftTextPlayerRoute()),
+        child: Container(
+          height: 174,
+          padding: const EdgeInsets.all(22),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(28),
+            gradient: const LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [Color(0xff9f736c), Color(0xff38476b)],
+            ),
+            border: Border.all(color: Colors.white12),
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'SWIFTUI-STYLE COMPONENT',
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.58),
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 1.15,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    const Text(
+                      'SwiftText Player',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 25,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: -0.5,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      'Glyph transitions, live counters, and rapid retargeting.',
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.68),
+                        fontSize: 14,
+                        height: 1.3,
+                      ),
+                    ),
+                    const Spacer(),
+                    const Row(
+                      children: [
+                        Text(
+                          'Open player',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        SizedBox(width: 7),
+                        Icon(
+                          CupertinoIcons.arrow_right,
+                          color: Colors.white,
+                          size: 16,
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 18),
+              Container(
+                width: 88,
+                height: 126,
+                decoration: BoxDecoration(
+                  color: Colors.black.withValues(alpha: 0.22),
+                  borderRadius: BorderRadius.circular(22),
+                ),
+                alignment: Alignment.center,
+                child: const Icon(
+                  CupertinoIcons.music_note_2,
+                  color: Colors.white,
+                  size: 46,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

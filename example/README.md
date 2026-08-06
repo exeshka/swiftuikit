@@ -1,17 +1,20 @@
-# example
+# swiftuikit example
 
-A new Flutter project.
+An interactive catalog for the transitions and components included in
+`swiftuikit`.
 
-## Getting Started
+The SwiftText Player demonstrates glyph transitions across track titles,
+artists, progress counters, and rapidly changing content. Its responsive
+layout supports compact phone screens and a two-column wide presentation.
 
-This project is a starting point for a Flutter application.
+## Run
 
-A few resources to get you started if this is your first Flutter project:
+```bash
+flutter run
+```
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+Regenerate auto_route files after changing routes:
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+```bash
+dart run build_runner build --delete-conflicting-outputs
+```

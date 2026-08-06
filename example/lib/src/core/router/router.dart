@@ -11,6 +11,8 @@ class AppRouter extends RootStackRouter {
   List<AutoRoute> get routes => [
     SwiftPageAutoRoute(page: ProductListRoute.page, initial: true),
 
+    SwiftPageAutoRoute(page: SwiftTextPlayerRoute.page),
+
     SwiftZoomAutoRoute(
       page: SwiftZoomGalleryRoute.page,
       dismissDirection: SwiftZoomDismissDirection.horizontal,
