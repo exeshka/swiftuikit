@@ -2,6 +2,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:example/gen/assets.gen.dart';
 import 'package:example/src/core/router/router.gr.dart';
 import 'package:example/src/screens/product_detail_screen.dart';
+import 'package:example/src/screens/swift_page_hero_demo_screen.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:sliver_tools/sliver_tools.dart';
@@ -48,7 +49,10 @@ class _ProductListScreenState extends State<ProductListScreen> {
               // parallaxIndexes: [],
               onPageChanged: (page) => setState(() => _currentPage = page),
               itemBuilder: (context, index) {
-                return _CategoryPage(controller: _controllerFor(index));
+                return _CategoryPage(
+                  controller: _controllerFor(index),
+                  heroTag: 'swift-page-interactive-hero-$index',
+                );
               },
             ),
           ),
@@ -161,8 +165,9 @@ class _PageIndicator extends StatelessWidget {
 
 class _CategoryPage extends StatelessWidget {
   final ScrollController controller;
+  final Object heroTag;
 
-  const _CategoryPage({required this.controller});
+  const _CategoryPage({required this.controller, required this.heroTag});
 
   @override
   Widget build(BuildContext context) {
@@ -306,6 +311,12 @@ class _CategoryPage extends StatelessWidget {
                   SliverSafeArea(
                     sliver: MultiSliver(
                       children: [
+                        SliverPadding(
+                          padding: const EdgeInsets.fromLTRB(16, 0, 16, 22),
+                          sliver: SliverToBoxAdapter(
+                            child: SwiftPageHeroDemoCard(heroTag: heroTag),
+                          ),
+                        ),
                         SliverPadding(
                           padding: const EdgeInsets.fromLTRB(16, 0, 16, 22),
                           sliver: SliverToBoxAdapter(

@@ -183,6 +183,15 @@ Key controls include `pageOverlapFraction`, `backGestureWidth`,
 duration. Use `SwiftPage` with Navigator 2.0 / `go_router`, or
 `SwiftPageAutoRoute` with `auto_route`.
 
+`canOnlySwipeFromEdge` defaults to `false`. The full-screen gesture follows the
+iOS 26 interaction model: it can start in any unclaimed area, while horizontal
+`PageView`, scroll, slider, and custom drag controls keep their own gestures.
+The leading-edge gesture remains available even when horizontal content fills
+the page. Set `canOnlySwipeFromEdge` to `true` for classic edge-only navigation.
+
+For a shared `Hero` to follow the interactive back gesture, set
+`transitionOnUserGestures: true` on both matching `Hero` widgets.
+
 ### SwiftZoom
 
 `SwiftZoomHero` connects a source element to a complete destination page.

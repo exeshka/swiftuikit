@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math' as math;
 import 'dart:ui' show lerpDouble;
 import 'package:flutter/cupertino.dart';
@@ -224,8 +225,6 @@ class SwiftPageRoute<T> extends PageRoute<T>
   Route? _nextRoute;
   bool _transitionGestureInProgress = false;
   bool _navigatorGestureActive = false;
-  int _navigatorGestureGeneration = 0;
-  final ValueNotifier<bool> _heroModeEnabled = ValueNotifier<bool>(true);
 
   /// Returns the next route in the navigator stack.
   Route? get nextRoute => _nextRoute;
@@ -236,22 +235,12 @@ class SwiftPageRoute<T> extends PageRoute<T>
   void _startUserGesture() {
     if (_transitionGestureInProgress) return;
     _transitionGestureInProgress = true;
-    _heroModeEnabled.value = false;
-    final int generation = ++_navigatorGestureGeneration;
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (generation != _navigatorGestureGeneration ||
-          !_transitionGestureInProgress ||
-          _navigatorGestureActive ||
-          navigator == null) {
-        return;
-      }
-      _navigatorGestureActive = true;
-      navigator!.didStartUserGesture();
-    });
+    if (_navigatorGestureActive) return;
+    _navigatorGestureActive = true;
+    navigator!.didStartUserGesture();
   }
 
   void _releaseInputLock() {
-    _navigatorGestureGeneration += 1;
     if (!_navigatorGestureActive) return;
     _navigatorGestureActive = false;
     navigator?.didStopUserGesture();
@@ -260,13 +249,6 @@ class SwiftPageRoute<T> extends PageRoute<T>
   void _settleUserGesture() {
     _transitionGestureInProgress = false;
     _releaseInputLock();
-    if (isActive) {
-      _heroModeEnabled.value = true;
-    }
-  }
-
-  void _finishDismissTransition() {
-    _transitionGestureInProgress = false;
   }
 
   @override
@@ -296,20 +278,7 @@ class SwiftPageRoute<T> extends PageRoute<T>
   }
 
   @override
-  Widget buildContent(BuildContext context) {
-    return ValueListenableBuilder<bool>(
-      valueListenable: _heroModeEnabled,
-      builder: (context, enabled, child) =>
-          HeroMode(enabled: enabled, child: child!),
-      child: child,
-    );
-  }
-
-  @override
-  void dispose() {
-    _heroModeEnabled.dispose();
-    super.dispose();
-  }
+  Widget buildContent(BuildContext context) => child;
 
   @override
   String? get title => null;
@@ -390,6 +359,9 @@ class _SwiftPageRouteTransitionState extends State<_SwiftPageRouteTransition> {
   double _lastSheetBackgroundProgress = 1.0;
   BorderRadius? _lastSheetBackgroundBorderRadius;
   bool _lastAnimateBackground = true;
+  bool _hasPageBackgroundClipConfiguration = false;
+  bool _lastPageBackgroundShouldClip = false;
+  BorderRadius _lastPageBackgroundBorderRadius = BorderRadius.zero;
 
   @override
   void initState() {
@@ -440,10 +412,32 @@ class _SwiftPageRouteTransitionState extends State<_SwiftPageRouteTransition> {
     return progress > precisionErrorTolerance ? target : BorderRadius.zero;
   }
 
-  BorderRadius _resolveClipBorderRadius(BuildContext context) {
-    if (widget.borderRadius != null) return widget.borderRadius!;
-    if (widget.radius != null) return BorderRadius.circular(widget.radius!);
-    if (!widget.clipWithScreenRadius) return BorderRadius.zero;
+  bool _shouldClipForPage(SwiftPageRoute<dynamic>? configuration) {
+    if (configuration != null) {
+      return configuration.clipWithScreenRadius ||
+          configuration.radius != null ||
+          configuration.borderRadius != null;
+    }
+    return widget.clipWithScreenRadius ||
+        widget.radius != null ||
+        widget.borderRadius != null;
+  }
+
+  BorderRadius _resolveClipBorderRadius(
+    BuildContext context, {
+    SwiftPageRoute<dynamic>? configuration,
+  }) {
+    final borderRadius = configuration != null
+        ? configuration.borderRadius
+        : widget.borderRadius;
+    final radius = configuration != null ? configuration.radius : widget.radius;
+    final clipWithScreenRadius = configuration != null
+        ? configuration.clipWithScreenRadius
+        : widget.clipWithScreenRadius;
+
+    if (borderRadius != null) return borderRadius;
+    if (radius != null) return BorderRadius.circular(radius);
+    if (!clipWithScreenRadius) return BorderRadius.zero;
 
     final screenRadius = ScreenRadiusService.instance.radius;
     final sheetScope = SwiftSheetScope.maybeOf(context);
@@ -517,6 +511,18 @@ class _SwiftPageRouteTransitionState extends State<_SwiftPageRouteTransition> {
         nextRoutePopGesture ||
         _wasNextRoutePopGesture ||
         navigatorPopGesture;
+
+    if (nextSwiftRoute != null) {
+      _hasPageBackgroundClipConfiguration = true;
+      _lastPageBackgroundShouldClip = _shouldClipForPage(nextSwiftRoute);
+      _lastPageBackgroundBorderRadius = _lastPageBackgroundShouldClip
+          ? _resolveClipBorderRadius(context, configuration: nextSwiftRoute)
+          : BorderRadius.zero;
+    } else if (widget.secondaryAnimation.isDismissed) {
+      _hasPageBackgroundClipConfiguration = false;
+      _lastPageBackgroundShouldClip = false;
+      _lastPageBackgroundBorderRadius = BorderRadius.zero;
+    }
 
     final Animation<double> currentPrimary = linearTransition
         ? widget.animation
@@ -686,12 +692,21 @@ class _SwiftPageRouteTransitionState extends State<_SwiftPageRouteTransition> {
               secondaryValue,
             );
 
-            final shouldClip =
-                widget.clipWithScreenRadius ||
-                widget.radius != null ||
-                widget.borderRadius != null;
-            final targetBorderRadius =
-                shouldClip ? _resolveClipBorderRadius(context) : BorderRadius.zero;
+            // A page moving out of the background is part of the same physical
+            // transition as the page above it. Use the foreground route's
+            // corner configuration so both surfaces keep one continuous shape.
+            final useForegroundClipConfiguration =
+                nextSwiftRoute != null ||
+                (_hasPageBackgroundClipConfiguration &&
+                    currentSecondary.value > precisionErrorTolerance);
+            final shouldClip = useForegroundClipConfiguration
+                ? _lastPageBackgroundShouldClip
+                : _shouldClipForPage(null);
+            final targetBorderRadius = shouldClip
+                ? useForegroundClipConfiguration
+                      ? _lastPageBackgroundBorderRadius
+                      : _resolveClipBorderRadius(context)
+                : BorderRadius.zero;
             final borderRadius = _borderRadiusForMovement(
               progress: radiusProgress,
               target: targetBorderRadius,
@@ -743,43 +758,164 @@ class _DirectionDependentDragGestureRecognizer
     required this.directionality,
     required this.enabledCallback,
     required this.checkStartedCallback,
-    required this.detectionArea,
     super.debugOwner,
   });
 
   final TextDirection directionality;
   final ValueGetter<bool> enabledCallback;
   final ValueGetter<bool> checkStartedCallback;
-  final ValueGetter<({double startOffset, double width})?> detectionArea;
+  final Map<int, Offset> _pendingOffsets = <int, Offset>{};
+  final Set<int> _activePointers = <int>{};
+  final Set<int> _scheduledAccepts = <int>{};
+
+  @override
+  void addAllowedPointer(PointerDownEvent event) {
+    _pendingOffsets[event.pointer] = Offset.zero;
+    _activePointers.add(event.pointer);
+    super.addAllowedPointer(event);
+  }
+
+  @override
+  bool hasSufficientGlobalDistanceToAccept(
+    PointerDeviceKind pointerDeviceKind,
+    double? deviceTouchSlop,
+  ) {
+    return false;
+  }
 
   @override
   void handleEvent(PointerEvent event) {
-    if (_shouldHandle(event)) {
+    if (checkStartedCallback()) {
       super.handleEvent(event);
-    } else {
+      _removePointerIfFinished(event);
+      return;
+    }
+
+    if (!enabledCallback()) {
       stopTrackingPointer(event.pointer);
+      _removePointer(event.pointer);
+      return;
+    }
+
+    var shouldScheduleAccept = false;
+    if (event case PointerMoveEvent()) {
+      final offset =
+          (_pendingOffsets[event.pointer] ?? Offset.zero) + event.delta;
+      _pendingOffsets[event.pointer] = offset;
+      final touchSlop = gestureSettings?.touchSlop ?? kTouchSlop;
+      if (offset.distanceSquared > touchSlop * touchSlop) {
+        final isHorizontal = offset.dx.abs() > offset.dy.abs();
+        final isBackDirection = switch (directionality) {
+          TextDirection.ltr => offset.dx > 0,
+          TextDirection.rtl => offset.dx < 0,
+        };
+        if (!isHorizontal || !isBackDirection) {
+          stopTrackingPointer(event.pointer);
+          _removePointer(event.pointer);
+          return;
+        }
+        shouldScheduleAccept = true;
+      }
+    }
+
+    super.handleEvent(event);
+
+    if (shouldScheduleAccept &&
+        _activePointers.contains(event.pointer) &&
+        _scheduledAccepts.add(event.pointer)) {
+      scheduleMicrotask(() {
+        _scheduledAccepts.remove(event.pointer);
+        if (_activePointers.contains(event.pointer) &&
+            !checkStartedCallback()) {
+          resolve(GestureDisposition.accepted);
+        }
+      });
+    }
+
+    _removePointerIfFinished(event);
+  }
+
+  void _removePointerIfFinished(PointerEvent event) {
+    if (event is PointerUpEvent || event is PointerCancelEvent) {
+      _removePointer(event.pointer);
     }
   }
 
-  bool _shouldHandle(PointerEvent event) {
-    if (checkStartedCallback()) return true;
-    if (!enabledCallback()) return false;
+  void _removePointer(int pointer) {
+    _pendingOffsets.remove(pointer);
+    _activePointers.remove(pointer);
+    _scheduledAccepts.remove(pointer);
+  }
 
-    final isCorrectDirection = switch ((directionality, event.delta.dx)) {
-      (TextDirection.ltr, > 0) || (TextDirection.rtl, < 0) || (_, 0) => true,
-      _ => false,
-    };
-    if (!isCorrectDirection) return false;
+  @override
+  void rejectGesture(int pointer) {
+    _removePointer(pointer);
+    super.rejectGesture(pointer);
+  }
 
-    final area = detectionArea();
-    if (area != null &&
-        event is PointerDownEvent &&
-        (event.localPosition.dx < area.startOffset ||
-            event.localPosition.dx > area.startOffset + area.width)) {
-      return false;
+  @override
+  void dispose() {
+    _pendingOffsets.clear();
+    _activePointers.clear();
+    _scheduledAccepts.clear();
+    super.dispose();
+  }
+}
+
+class _EdgeBackGestureRecognizer extends HorizontalDragGestureRecognizer {
+  _EdgeBackGestureRecognizer({
+    required this.directionality,
+    required this.checkStartedCallback,
+    super.debugOwner,
+  });
+
+  final ValueGetter<TextDirection> directionality;
+  final ValueGetter<bool> checkStartedCallback;
+  final Map<int, Offset> _pendingOffsets = <int, Offset>{};
+
+  @override
+  void addAllowedPointer(PointerDownEvent event) {
+    _pendingOffsets[event.pointer] = Offset.zero;
+    super.addAllowedPointer(event);
+  }
+
+  @override
+  void handleEvent(PointerEvent event) {
+    if (event case PointerMoveEvent() when !checkStartedCallback()) {
+      final offset =
+          (_pendingOffsets[event.pointer] ?? Offset.zero) + event.delta;
+      _pendingOffsets[event.pointer] = offset;
+      if (offset.distanceSquared >= 9.0) {
+        final isHorizontal = offset.dx.abs() > offset.dy.abs();
+        final isBackDirection = switch (directionality()) {
+          TextDirection.ltr => offset.dx > 0,
+          TextDirection.rtl => offset.dx < 0,
+        };
+        if (!isHorizontal || !isBackDirection) {
+          stopTrackingPointer(event.pointer);
+          _pendingOffsets.remove(event.pointer);
+          return;
+        }
+        resolve(GestureDisposition.accepted);
+      }
     }
 
-    return true;
+    super.handleEvent(event);
+    if (event is PointerUpEvent || event is PointerCancelEvent) {
+      _pendingOffsets.remove(event.pointer);
+    }
+  }
+
+  @override
+  void rejectGesture(int pointer) {
+    _pendingOffsets.remove(pointer);
+    super.rejectGesture(pointer);
+  }
+
+  @override
+  void dispose() {
+    _pendingOffsets.clear();
+    super.dispose();
   }
 }
 
@@ -807,9 +943,26 @@ class _SwiftBackGestureDetector<T> extends StatefulWidget {
 class _SwiftBackGestureDetectorState<T>
     extends State<_SwiftBackGestureDetector<T>> {
   _SwiftBackGestureController<T>? _backGestureController;
+  late final HorizontalDragGestureRecognizer _edgeRecognizer;
+
+  @override
+  void initState() {
+    super.initState();
+    _edgeRecognizer =
+        _EdgeBackGestureRecognizer(
+            debugOwner: this,
+            directionality: () => Directionality.of(context),
+            checkStartedCallback: () => _backGestureController != null,
+          )
+          ..onStart = _handleDragStart
+          ..onUpdate = _handleDragUpdate
+          ..onEnd = _handleDragEnd
+          ..onCancel = _handleDragCancel;
+  }
 
   @override
   void dispose() {
+    _edgeRecognizer.dispose();
     if (_backGestureController != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (_backGestureController?.navigator.mounted ?? false) {
@@ -821,29 +974,20 @@ class _SwiftBackGestureDetectorState<T>
     super.dispose();
   }
 
+  bool _isGestureEnabled() {
+    if (!widget.canSwipe) return false;
+    final route = widget.route;
+    if (!route.isActive || !route.isCurrent) return false;
+    return route.popGestureEnabled;
+  }
+
   _DirectionDependentDragGestureRecognizer _createRecognizer() {
     final directionality = Directionality.of(context);
     return _DirectionDependentDragGestureRecognizer(
         debugOwner: this,
         directionality: directionality,
         checkStartedCallback: () => _backGestureController != null,
-        enabledCallback: () {
-          if (!widget.canSwipe) return false;
-          final route = widget.route;
-          if (route.isFirst) return false;
-          if (route.willHandlePopInternally) return false;
-          if (route.fullscreenDialog) return false;
-          if (!route.isActive || !route.isCurrent) return false;
-          return true;
-        },
-        detectionArea: () => widget.canOnlySwipeFromEdge
-            ? (
-                startOffset: 0.0,
-                width:
-                    widget.backGestureWidth ??
-                    MediaQuery.sizeOf(context).width * 0.2,
-              )
-            : null,
+        enabledCallback: _isGestureEnabled,
       )
       ..onStart = _handleDragStart
       ..onUpdate = _handleDragUpdate
@@ -861,9 +1005,7 @@ class _SwiftBackGestureDetectorState<T>
       getIsActive: () => widget.route.isActive,
       getIsCurrent: () => widget.route.isCurrent,
       startUserGesture: widget.route._startUserGesture,
-      releaseInputLock: widget.route._releaseInputLock,
       settleUserGesture: widget.route._settleUserGesture,
-      finishDismissTransition: widget.route._finishDismissTransition,
     );
   }
 
@@ -892,6 +1034,12 @@ class _SwiftBackGestureDetectorState<T>
     _backGestureController = null;
   }
 
+  void _handleEdgePointerDown(PointerDownEvent event) {
+    if (_isGestureEnabled()) {
+      _edgeRecognizer.addPointer(event);
+    }
+  }
+
   double _convertToLogical(double value) {
     return switch (Directionality.of(context)) {
       TextDirection.rtl => -value,
@@ -903,31 +1051,46 @@ class _SwiftBackGestureDetectorState<T>
   Widget build(BuildContext context) {
     assert(debugCheckHasDirectionality(context));
 
-    final gestureDetector = RawGestureDetector(
-      behavior: HitTestBehavior.translucent,
-      gestures: {
-        _DirectionDependentDragGestureRecognizer:
-            GestureRecognizerFactoryWithHandlers<
-              _DirectionDependentDragGestureRecognizer
-            >(_createRecognizer, (instance) {}),
-      },
-    );
-
-    return AnimatedBuilder(
-      animation: widget.route.animation!,
-      builder: (context, child) => IgnorePointer(
-        ignoring:
-            !widget.route.isCurrent &&
-            widget.route.animation!.status == AnimationStatus.reverse,
+    Widget gestureDetector({Widget? child}) {
+      return RawGestureDetector(
+        behavior: HitTestBehavior.translucent,
+        gestures: {
+          _DirectionDependentDragGestureRecognizer:
+              GestureRecognizerFactoryWithHandlers<
+                _DirectionDependentDragGestureRecognizer
+              >(_createRecognizer, (instance) {}),
+        },
         child: child,
-      ),
-      child: Stack(
-        fit: StackFit.passthrough,
-        children: [
-          widget.child,
-          Positioned.fill(child: gestureDetector),
-        ],
-      ),
+      );
+    }
+
+    final textDirection = Directionality.of(context);
+    final padding = MediaQuery.paddingOf(context);
+    final systemEdgeInset = switch (textDirection) {
+      TextDirection.ltr => padding.left,
+      TextDirection.rtl => padding.right,
+    };
+    final edgeWidth =
+        widget.backGestureWidth ?? math.max(20.0, systemEdgeInset);
+    final child = widget.canOnlySwipeFromEdge
+        ? widget.child
+        : gestureDetector(child: widget.child);
+
+    return Stack(
+      fit: StackFit.passthrough,
+      children: [
+        child,
+        PositionedDirectional(
+          start: 0,
+          width: edgeWidth,
+          top: 0,
+          bottom: 0,
+          child: Listener(
+            behavior: HitTestBehavior.translucent,
+            onPointerDown: _handleEdgePointerDown,
+          ),
+        ),
+      ],
     );
   }
 }
@@ -939,9 +1102,7 @@ class _SwiftBackGestureController<T> {
     required this.getIsActive,
     required this.getIsCurrent,
     required this.startUserGesture,
-    required this.releaseInputLock,
     required this.settleUserGesture,
-    required this.finishDismissTransition,
   }) {
     startUserGesture();
   }
@@ -951,9 +1112,7 @@ class _SwiftBackGestureController<T> {
   final ValueGetter<bool> getIsActive;
   final ValueGetter<bool> getIsCurrent;
   final VoidCallback startUserGesture;
-  final VoidCallback releaseInputLock;
   final VoidCallback settleUserGesture;
-  final VoidCallback finishDismissTransition;
 
   void dragUpdate(double delta) {
     controller.value -= delta;
@@ -961,8 +1120,12 @@ class _SwiftBackGestureController<T> {
 
   void dragEnd(double velocity) {
     const Curve animationCurve = Curves.fastEaseInToSlowEaseOut;
-    const int maxDroppedSwipeForwardTime = 800;
     const int maxPageBackAnimationTime = 300;
+    final settleDuration =
+        controller.reverseDuration ??
+        controller.duration ??
+        const Duration(milliseconds: 400);
+    final settleMilliseconds = settleDuration.inMilliseconds;
     final bool isCurrent = getIsCurrent();
     final bool animateForward;
 
@@ -978,11 +1141,7 @@ class _SwiftBackGestureController<T> {
     TickerFuture? ticker;
     if (animateForward) {
       final droppedForwardTime = math.min(
-        lerpDouble(
-          maxDroppedSwipeForwardTime.toDouble(),
-          0,
-          controller.value,
-        )!.floor(),
+        lerpDouble(settleMilliseconds.toDouble(), 0, controller.value)!.floor(),
         maxPageBackAnimationTime,
       );
       ticker = controller.animateTo(
@@ -996,31 +1155,21 @@ class _SwiftBackGestureController<T> {
       }
 
       if (controller.isAnimating) {
-        final droppedBackTime = math.max(
-          lerpDouble(
-            0,
-            maxDroppedSwipeForwardTime.toDouble(),
-            controller.value,
-          )!.floor(),
-          250,
-        );
+        final droppedBackTime = lerpDouble(
+          0,
+          settleMilliseconds.toDouble(),
+          controller.value,
+        )!.floor();
         ticker = controller.animateBack(
           0.0,
           duration: Duration(milliseconds: droppedBackTime),
           curve: animationCurve,
         );
       }
-      releaseInputLock();
-      if (ticker != null) {
-        ticker.whenCompleteOrCancel(finishDismissTransition);
-      } else {
-        finishDismissTransition();
-      }
-      return;
     }
 
     if (controller.isAnimating) {
-      ticker.whenCompleteOrCancel(settleUserGesture);
+      ticker!.whenCompleteOrCancel(settleUserGesture);
     } else {
       settleUserGesture();
     }

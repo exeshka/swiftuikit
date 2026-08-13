@@ -1,3 +1,18 @@
+## Unreleased
+
+### Fixes
+
+- Kept interactive page pops input-locked and linear until their settle animation completes
+- Restored native interactive `Hero` flights through `transitionOnUserGestures`
+- Prevented rapid follow-up swipes from interrupting a page that is still settling
+- Made post-gesture settling proportional to the remaining distance so input
+  unlocks as soon as the native-speed transition finishes
+- Added iOS 26-style full-screen gesture arbitration: unclaimed content swipes
+  navigate back while horizontal scrollables and drag controls keep their gestures
+- Kept a prioritized leading-edge swipe available over horizontal page content
+- Matched the previous page's animated corner shape to the foreground page
+  throughout interactive push, pop, and settle transitions
+
 ## 0.2.1
 
 ### Documentation
