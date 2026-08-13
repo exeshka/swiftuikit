@@ -261,6 +261,13 @@ showSwiftSheet<void>(
 );
 ```
 
+Regular `Hero` transitions work when opening and closing a sheet. To keep the
+Hero attached to a drag-to-dismiss gesture, set
+`transitionOnUserGestures: true` on both matching `Hero` widgets. After a
+committed dismiss, the revealed route remains interactive while the sheet and
+Hero finish settling. Automatic `CupertinoNavigationBar` and
+`CupertinoSliverNavigationBar` Heroes do not cross the modal sheet boundary.
+
 The sheet supports custom radii, nested navigation, background animation,
 top-safe-area preservation, drag thresholds, and fling thresholds. Use
 `SwiftSheetRoute.popSheet(context)` to close the complete sheet from nested

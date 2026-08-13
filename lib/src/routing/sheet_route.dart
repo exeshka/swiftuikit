@@ -677,10 +677,18 @@ class _StretchDragControllerProvider extends InheritedWidget {
 /// Any time a SwiftSheetRoute contains a large scrollable that might conflict
 /// with the dismiss drag gesture, pass the provided [ScrollController] from `scrollableBuilder`
 /// to the scrollable.
+class _NativeSheetScopeBridge {
+  late WidgetBuilder builder;
+
+  Widget build(BuildContext context, ScrollController controller) {
+    return builder(context);
+  }
+}
+
 class SwiftSheetRoute<T> extends CupertinoSheetRoute<T> {
   /// Creates a page route that displays an iOS styled sheet.
   SwiftSheetRoute({
-    super.settings,
+    RouteSettings? settings,
     @Deprecated(
       'Use scrollableBuilder instead. '
       'This feature was deprecated after v3.40.0-0.2.pre.',
@@ -690,14 +698,48 @@ class SwiftSheetRoute<T> extends CupertinoSheetRoute<T> {
     bool enableDrag = true,
     bool showDragHandle = false,
     double? topGap,
-    this.preserveTopSafeArea = false,
-    this.dismissThreshold = 0.32,
-    this.minFlingVelocity = 1.0,
-    this.sheetRadius,
-    this.sheetBorderRadius,
-    this.routeCanPop = true,
-    this.animateBackground = true,
-    this.transitionDurationOverride = const Duration(milliseconds: 500),
+    bool preserveTopSafeArea = false,
+    double dismissThreshold = 0.32,
+    double minFlingVelocity = 1.0,
+    double? sheetRadius,
+    BorderRadius? sheetBorderRadius,
+    bool routeCanPop = true,
+    bool animateBackground = true,
+    Duration transitionDurationOverride = const Duration(milliseconds: 500),
+  }) : this._(
+         settings: settings,
+         builder: builder,
+         scrollableBuilder: scrollableBuilder,
+         enableDrag: enableDrag,
+         showDragHandle: showDragHandle,
+         topGap: topGap,
+         preserveTopSafeArea: preserveTopSafeArea,
+         dismissThreshold: dismissThreshold,
+         minFlingVelocity: minFlingVelocity,
+         sheetRadius: sheetRadius,
+         sheetBorderRadius: sheetBorderRadius,
+         routeCanPop: routeCanPop,
+         animateBackground: animateBackground,
+         transitionDurationOverride: transitionDurationOverride,
+         nativeScopeBridge: _NativeSheetScopeBridge(),
+       );
+
+  SwiftSheetRoute._({
+    required super.settings,
+    required this._builder,
+    required this._scrollableBuilder,
+    required this._enableDrag,
+    required this._showDragHandle,
+    required super.topGap,
+    required this.preserveTopSafeArea,
+    required this.dismissThreshold,
+    required this.minFlingVelocity,
+    required this.sheetRadius,
+    required this.sheetBorderRadius,
+    required this.routeCanPop,
+    required this.animateBackground,
+    required this.transitionDurationOverride,
+    required _NativeSheetScopeBridge nativeScopeBridge,
   }) : assert(
          !preserveTopSafeArea || topGap == null || topGap == 0.0,
          'topGap must be null or 0.0 when preserveTopSafeArea is true',
@@ -710,19 +752,26 @@ class SwiftSheetRoute<T> extends CupertinoSheetRoute<T> {
          minFlingVelocity >= 0.0,
          'minFlingVelocity must be greater than or equal to 0.0',
        ),
-       _builder = builder,
-       _scrollableBuilder = scrollableBuilder,
        _topGap = topGap,
        super(
-         builder: builder,
-         scrollableBuilder: scrollableBuilder,
-         enableDrag: enableDrag,
-         showDragHandle: showDragHandle,
-         topGap: topGap,
-       );
+         scrollableBuilder: nativeScopeBridge.build,
+         enableDrag: false,
+         showDragHandle: false,
+       ) {
+    nativeScopeBridge.builder = _buildSheetContent;
+  }
 
   /// Corner radius value.
   final double? sheetRadius;
+
+  final bool _enableDrag;
+  final bool _showDragHandle;
+
+  @override
+  bool get enableDrag => _enableDrag;
+
+  @override
+  bool get showDragHandle => _showDragHandle;
 
   /// Border radius geometry.
   final BorderRadius? sheetBorderRadius;
@@ -763,23 +812,32 @@ class SwiftSheetRoute<T> extends CupertinoSheetRoute<T> {
   Route? previousRoute;
   bool _transitionGestureInProgress = false;
   bool _navigatorGestureActive = false;
+  int _nextGestureSession = 0;
+  final Set<int> _activeGestureSessions = <int>{};
 
-  void _startUserGesture() {
+  int _startUserGesture() {
+    final int session = ++_nextGestureSession;
+    _activeGestureSessions.add(session);
     _transitionGestureInProgress = true;
-    if (_navigatorGestureActive) return;
-    _navigatorGestureActive = true;
-    navigator?.didStartUserGesture();
+    if (!_navigatorGestureActive) {
+      _navigatorGestureActive = true;
+      navigator?.didStartUserGesture();
+    }
+    return session;
   }
 
-  void _releaseInputLock() {
-    if (!_navigatorGestureActive) return;
+  void _releaseInputLock(int session) {
+    if (!_activeGestureSessions.remove(session)) return;
+    if (_activeGestureSessions.isNotEmpty || !_navigatorGestureActive) return;
     _navigatorGestureActive = false;
     navigator?.didStopUserGesture();
   }
 
-  void _settleUserGesture() {
+  void _settleUserGesture(int session) {
+    if (!_activeGestureSessions.contains(session)) return;
+    _releaseInputLock(session);
+    if (_activeGestureSessions.isNotEmpty) return;
     _transitionGestureInProgress = false;
-    _releaseInputLock();
   }
 
   void _finishDismissTransition() {
@@ -792,7 +850,7 @@ class SwiftSheetRoute<T> extends CupertinoSheetRoute<T> {
     Animation<double> animation,
     Animation<double> secondaryAnimation,
   ) {
-    return HeroMode(enabled: false, child: buildContent(context));
+    return _buildHeroAlignedSheetPage(topGap, buildContent(context));
   }
 
   @override
@@ -800,10 +858,29 @@ class SwiftSheetRoute<T> extends CupertinoSheetRoute<T> {
     if (_usesDefaultScreenRadius) {
       return AnimatedBuilder(
         animation: ScreenRadiusService.instance,
-        builder: (context, child) => _buildSheetContent(context),
+        builder: (context, child) => _buildContentWithNativeSheetScope(context),
       );
     }
-    return _buildSheetContent(context);
+    return _buildContentWithNativeSheetScope(context);
+  }
+
+  Widget _buildContentWithNativeSheetScope(BuildContext context) {
+    // CupertinoNavigationBar disables its implicit cross-route Hero whenever
+    // CupertinoSheetRoute.hasParentSheet is true. Keep Flutter's native private
+    // sheet scope around our custom content, but discard the native visual and
+    // drag wrappers because SwiftSheet supplies its own versions below.
+    final Widget nativeContent = super.buildContent(context);
+    final MediaQuery nativeMediaQuery = nativeContent as MediaQuery;
+    final ClipRSuperellipse nativeClip =
+        nativeMediaQuery.child as ClipRSuperellipse;
+    final CupertinoUserInterfaceLevel nativeInterfaceLevel =
+        nativeClip.child as CupertinoUserInterfaceLevel;
+    final Widget nativeSheetScope = nativeInterfaceLevel.child;
+    assert(
+      nativeSheetScope.runtimeType.toString() == '_CupertinoSheetScope',
+      'Flutter CupertinoSheetRoute content structure changed.',
+    );
+    return nativeSheetScope;
   }
 
   ScrollableWidgetBuilder get _effectiveBuilder =>
@@ -817,29 +894,14 @@ class SwiftSheetRoute<T> extends CupertinoSheetRoute<T> {
     if (!showDragHandle) {
       return _effectiveBuilder(context, controller);
     }
-    return Stack(
-      fit: StackFit.expand,
-      children: [
-        MediaQuery(
-          data: MediaQuery.of(
-            context,
-          ).copyWith(padding: const EdgeInsets.only(top: 15)),
-          child: _effectiveBuilder(context, controller),
-        ),
-        const Align(
-          alignment: Alignment.topCenter,
-          child: Padding(
-            padding: EdgeInsets.only(top: 5),
-            child: DecoratedBox(
-              decoration: ShapeDecoration(
-                shape: StadiumBorder(),
-                color: CupertinoColors.tertiaryLabel,
-              ),
-              child: SizedBox(height: 5, width: 36),
-            ),
-          ),
-        ),
-      ],
+    // The native Cupertino sheet scope paints the handle. Keep SwiftSheet's
+    // content inset here because its inner MediaQuery intentionally removes
+    // the native wrapper's top padding.
+    return MediaQuery(
+      data: MediaQuery.of(
+        context,
+      ).copyWith(padding: const EdgeInsets.only(top: 15)),
+      child: _effectiveBuilder(context, controller),
     );
   }
 
@@ -1100,7 +1162,7 @@ mixin _SwiftSheetRouteTransitionMixin<T> on PageRoute<T> {
     Animation<double> animation,
     Animation<double> secondaryAnimation,
   ) {
-    return buildContent(context);
+    return _buildHeroAlignedSheetPage(topGap, buildContent(context));
   }
 
   static _SwiftDragGestureController<T> _startPopGesture<T>(
@@ -1121,11 +1183,17 @@ mixin _SwiftSheetRouteTransitionMixin<T> on PageRoute<T> {
       getIsActive: () => route.isActive,
       popDragController: route.controller!,
       startUserGesture:
-          swiftRoute?._startUserGesture ?? route.navigator!.didStartUserGesture,
-      releaseInputLock:
-          swiftRoute?._releaseInputLock ?? route.navigator!.didStopUserGesture,
-      settleUserGesture:
-          swiftRoute?._settleUserGesture ?? route.navigator!.didStopUserGesture,
+          swiftRoute?._startUserGesture ??
+          () {
+            route.navigator!.didStartUserGesture();
+            return 0;
+          },
+      onReleaseInputLock:
+          swiftRoute?._releaseInputLock ??
+          (_) => route.navigator!.didStopUserGesture(),
+      onSettleUserGesture:
+          swiftRoute?._settleUserGesture ??
+          (_) => route.navigator!.didStopUserGesture(),
       finishDismissTransition: swiftRoute?._finishDismissTransition ?? () {},
     );
   }
@@ -1168,7 +1236,11 @@ mixin _SwiftSheetRouteTransitionMixin<T> on PageRoute<T> {
             dismissThreshold,
             minFlingVelocity,
           ),
-          child: child,
+          child: _SwiftSheetHeroCoordinateTransform(
+            topGap: topGap,
+            invert: true,
+            child: child,
+          ),
         ),
       ),
     );
@@ -1204,6 +1276,35 @@ mixin _SwiftSheetRouteTransitionMixin<T> on PageRoute<T> {
       topGap,
       0.32,
       1.0,
+    );
+  }
+}
+
+Widget _buildHeroAlignedSheetPage(double topGap, Widget child) {
+  // HeroController measures descendants in the PageRoute subtree's coordinate
+  // space. The visible top gap is applied outside that subtree by the route
+  // transition, so expose the same offset here and cancel it around the page
+  // during painting. This changes Hero geometry without moving sheet content.
+  return _SwiftSheetHeroCoordinateTransform(topGap: topGap, child: child);
+}
+
+class _SwiftSheetHeroCoordinateTransform extends StatelessWidget {
+  const _SwiftSheetHeroCoordinateTransform({
+    required this.topGap,
+    required this.child,
+    this.invert = false,
+  });
+
+  final double topGap;
+  final Widget child;
+  final bool invert;
+
+  @override
+  Widget build(BuildContext context) {
+    final double offset = MediaQuery.heightOf(context) * topGap;
+    return Transform.translate(
+      offset: Offset(0, invert ? -offset : offset),
+      child: child,
     );
   }
 }
@@ -1366,9 +1467,9 @@ class _SwiftDragGestureController<T> {
     required this.topGap,
     required this.dismissThreshold,
     required this.minFlingVelocity,
-    required this.startUserGesture,
-    required this.releaseInputLock,
-    required this.settleUserGesture,
+    required int Function() startUserGesture,
+    required this.onReleaseInputLock,
+    required this.onSettleUserGesture,
     required this.finishDismissTransition,
   }) {
     debugPrint(
@@ -1390,7 +1491,16 @@ class _SwiftDragGestureController<T> {
       popDragController.stop();
       popDragController.value = visualProgress;
     }
-    startUserGesture();
+    if (popDragController.value > popDragController.lowerBound &&
+        popDragController.status != AnimationStatus.reverse) {
+      // HeroController can divert an in-flight push into an interactive pop,
+      // but Flutter requires the route animation to already point in reverse.
+      // Setting value alone preserves the previous forward direction, so mark
+      // the controller as reversing before notifying the Navigator.
+      popDragController.reverse(from: popDragController.value);
+      popDragController.stop();
+    }
+    _gestureSession = startUserGesture();
   }
 
   final AnimationController popDragController;
@@ -1400,10 +1510,14 @@ class _SwiftDragGestureController<T> {
   final double topGap;
   final double dismissThreshold;
   final double minFlingVelocity;
-  final VoidCallback startUserGesture;
-  final VoidCallback releaseInputLock;
-  final VoidCallback settleUserGesture;
+  late final int _gestureSession;
+  final void Function(int) onReleaseInputLock;
+  final void Function(int) onSettleUserGesture;
   final VoidCallback finishDismissTransition;
+
+  void releaseInputLock() => onReleaseInputLock(_gestureSession);
+
+  void settleUserGesture() => onSettleUserGesture(_gestureSession);
 
   /// The drag gesture has changed by [delta]. The total range of the drag
   /// should be 0.0 to 1.0.
@@ -1624,8 +1738,8 @@ class _SwiftSheetScrollPosition extends ScrollPositionWithSingleContext {
       super.applyUserOffset(delta);
       return;
     }
-    onDragStart();
     if (!listShouldScroll && (delta > 0 || sheetIsDraggedDown())) {
+      onDragStart();
       onDragUpdate(delta);
     } else {
       super.applyUserOffset(delta);

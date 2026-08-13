@@ -12,6 +12,18 @@
 - Kept a prioritized leading-edge swipe available over horizontal page content
 - Matched the previous page's animated corner shape to the foreground page
   throughout interactive push, pop, and settle transitions
+- Enabled regular and `transitionOnUserGestures` Hero flights for SwiftSheet
+  routes, aligned their overlay coordinates with the sheet's top gap, and kept
+  the revealed route interactive while dismissal finishes
+- Made rapid SwiftSheet Hero reversals safe when a dismiss gesture interrupts
+  an active push or immediately re-grabs a canceled settle animation
+- Coordinated overlapping route-drag and scroll-handoff gesture sessions so
+  they cannot restart the same in-flight SwiftSheet Hero transition
+- Delayed SwiftSheet's interactive Hero flight until a scroll gesture actually
+  hands off to sheet dismissal, so normal list scrolling cannot pin the Hero in
+  the overlay
+- Restored native Cupertino sheet ancestry so automatic
+  CupertinoNavigationBar Heroes do not animate across the modal boundary
 
 ## 0.2.1
 

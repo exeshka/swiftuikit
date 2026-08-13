@@ -3,6 +3,7 @@ import 'package:example/gen/assets.gen.dart';
 import 'package:example/src/core/router/router.gr.dart';
 import 'package:example/src/screens/product_detail_screen.dart';
 import 'package:example/src/screens/swift_page_hero_demo_screen.dart';
+import 'package:example/src/screens/swift_sheet_hero_demo.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:sliver_tools/sliver_tools.dart';
@@ -51,7 +52,8 @@ class _ProductListScreenState extends State<ProductListScreen> {
               itemBuilder: (context, index) {
                 return _CategoryPage(
                   controller: _controllerFor(index),
-                  heroTag: 'swift-page-interactive-hero-$index',
+                  pageHeroTag: 'swift-page-interactive-hero-$index',
+                  sheetHeroTag: 'swift-sheet-interactive-hero-$index',
                 );
               },
             ),
@@ -165,9 +167,14 @@ class _PageIndicator extends StatelessWidget {
 
 class _CategoryPage extends StatelessWidget {
   final ScrollController controller;
-  final Object heroTag;
+  final Object pageHeroTag;
+  final Object sheetHeroTag;
 
-  const _CategoryPage({required this.controller, required this.heroTag});
+  const _CategoryPage({
+    required this.controller,
+    required this.pageHeroTag,
+    required this.sheetHeroTag,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -314,7 +321,15 @@ class _CategoryPage extends StatelessWidget {
                         SliverPadding(
                           padding: const EdgeInsets.fromLTRB(16, 0, 16, 22),
                           sliver: SliverToBoxAdapter(
-                            child: SwiftPageHeroDemoCard(heroTag: heroTag),
+                            child: SwiftPageHeroDemoCard(heroTag: pageHeroTag),
+                          ),
+                        ),
+                        SliverPadding(
+                          padding: const EdgeInsets.fromLTRB(16, 0, 16, 22),
+                          sliver: SliverToBoxAdapter(
+                            child: SwiftSheetHeroDemoCard(
+                              heroTag: sheetHeroTag,
+                            ),
                           ),
                         ),
                         SliverPadding(
