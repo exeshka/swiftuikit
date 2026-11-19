@@ -1,10 +1,10 @@
 name: swiftuikit
-description: "Flutter widgets and transitions inspired by iOS 26–27: animated text, pages, zoom, sheets, scroll sheets, and modals."
+description: "Flutter widgets and transitions inspired by iOS 26–27: animated text, pages, zoom, sheets, scroll sheets, modals, and an iOS 26 UI kit (progressive-blur chrome, liquid glass, glass controls)."
 version: 0.2.1
 homepage: https://github.com/exeshka/swiftuikit
 
 environment:
-  sdk: ^3.12.1
+  sdk: ^3.13.7
   flutter: ">=3.22.0"
 
 dependencies:
@@ -15,21 +15,24 @@ dependencies:
   equatable: ^2.0.7
   meta: ^1.15.0
   flutter_physics: ^0.2.0
+  flutter_keyboard_controller: ^1.0.4
+  theme_tailor_annotation: ^4.0.2
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
+  theme_tailor: ^4.0.2
+  build_runner: ^2.17.1
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
 
 # The following section is specific to Flutter packages.
 flutter:
-  # shaders:
-  #   - lib/src/liquid_glass/shaders/liquid_glass_arbitrary.frag
-  #   - lib/src/liquid_glass/shaders/liquid_glass_geometry.frag
-  #   - lib/src/liquid_glass/shaders/liquid_glass_final_render.frag
+  shaders:
+    - shaders/variable_blur.frag
+    - shaders/liquid_glass.frag
 
   # To add assets to your package, add an assets section, like this:
 

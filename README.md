@@ -67,6 +67,13 @@ packages those details into composable building blocks.
 | [`SnappingScrollPhysics`](#snappingscrollphysics) | Snaps a scroll position to configurable points using spring physics | Stable |
 | [`ScreenRadiusService`](#screenradiusservice) | Reads and caches the device's physical corner radius | Stable |
 
+## UI kit
+
+Besides the routes and sheets, the package contains an iOS 26 style UI kit: `ChromeScaffold` with progressive-blur bars, liquid
+glass (`LiquidGlass`, `LiquidGlassGroup`, `GlassSurface`), glass buttons, tab bar, segmented control, slider, switch, menu, text
+field and a themed `SwiftUiApp`. It is exported from the same library; call `preloadRavelUiKit()` before `runApp` to load the
+shaders. A demo app is in `example_ui_kit/`.
+
 ## Installation
 
 Install the current pub.dev release:

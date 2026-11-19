@@ -1,0 +1,12 @@
+BENCH none               frames=363 fps=59.97 build p50=0.57 p99=1.44 | raster p50=1.07 p99=1.53 | total p50=1.89 p99=3.19 | interval p50=16.68 p99=18.05 ms
+BENCH uniform (baseline) frames=364 fps=60.14 build p50=0.66 p99=1.52 | raster p50=1.90 p99=2.44 | total p50=2.81 p99=3.97 | interval p50=16.68 p99=17.83 ms
+BENCH kit blur           frames=369 fps=59.81 build p50=0.66 p99=1.54 | raster p50=2.08 p99=2.65 | total p50=3.02 p99=4.15 | interval p50=16.70 p99=18.01 ms
+BENCH BAR none           frames=364 fps=60.14 build p50=0.67 p99=1.55 | raster p50=1.24 p99=1.46 | total p50=2.13 p99=3.15 | interval p50=16.65 p99=17.78 ms
+BENCH BAR 6 liquid individual frames=364 fps=60.13 build p50=0.79 p99=1.65 | raster p50=2.44 p99=3.02 | total p50=3.42 p99=4.61 | interval p50=16.69 p99=18.20 ms
+BENCH BAR 6 liquid grouped frames=362 fps=59.81 build p50=0.69 p99=1.59 | raster p50=1.40 p99=1.89 | total p50=2.38 p99=3.57 | interval p50=16.70 p99=17.99 ms
+BENCH BAR 6 flat glass   frames=364 fps=60.13 build p50=0.70 p99=1.59 | raster p50=1.45 p99=1.74 | total p50=2.36 p99=3.43 | interval p50=16.69 p99=17.88 ms
+BENCH CARDS 4 liquid (36, individual) frames=364 fps=60.12 build p50=0.59 p99=1.03 | raster p50=5.22 p99=8.25 | total p50=5.99 p99=9.11 | interval p50=16.64 p99=19.59 ms
+BENCH CARDS 4 liquid, no engine blur frames=364 fps=60.10 build p50=0.59 p99=1.03 | raster p50=5.07 p99=7.94 | total p50=5.84 p99=8.76 | interval p50=16.56 p99=19.75 ms
+BENCH CARDS 4 liquid, no blur/rim/shadow frames=364 fps=60.13 build p50=0.60 p99=0.93 | raster p50=5.21 p99=8.21 | total p50=6.00 p99=8.97 | interval p50=16.67 p99=19.43 ms
+BENCH CARDS 4 flat glass frames=364 fps=60.12 build p50=0.56 p99=0.84 | raster p50=3.37 p99=4.35 | total p50=4.11 p99=5.07 | interval p50=16.69 p99=18.26 ms
+BENCH DONE

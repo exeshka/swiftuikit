@@ -1,0 +1,9 @@
+BENCH none               frames=364 fps=60.15 build p50=0.70 p99=1.63 | raster p50=1.68 p99=2.35 | total p50=2.56 p99=4.10 | interval p50=16.68 p99=18.12 ms
+BENCH uniform            frames=364 fps=60.13 build p50=0.70 p99=1.66 | raster p50=2.36 p99=3.52 | total p50=3.26 p99=5.15 | interval p50=16.70 p99=18.74 ms
+BENCH shader             frames=365 fps=59.80 build p50=0.69 p99=1.64 | raster p50=2.19 p99=3.21 | total p50=3.08 p99=5.08 | interval p50=16.70 p99=18.60 ms
+BENCH masked x6          frames=371 fps=60.07 build p50=0.70 p99=1.62 | raster p50=7.38 p99=10.65 | total p50=8.44 p99=11.79 | interval p50=16.64 p99=20.41 ms
+BENCH HEAVY none         frames=364 fps=60.13 build p50=0.71 p99=1.63 | raster p50=2.79 p99=4.34 | total p50=3.76 p99=5.72 | interval p50=16.66 p99=18.69 ms
+BENCH HEAVY uniform      frames=360 fps=59.74 build p50=0.74 p99=1.74 | raster p50=5.91 p99=9.47 | total p50=7.06 p99=11.31 | interval p50=16.65 p99=22.44 ms
+BENCH HEAVY shader       frames=362 fps=59.85 build p50=0.64 p99=2.19 | raster p50=9.37 p99=19.06 | total p50=10.53 p99=31.53 | interval p50=16.74 p99=21.07 ms
+BENCH HEAVY masked x6    frames=371 fps=39.57 build p50=0.57 p99=3.02 | raster p50=24.65 p99=29.43 | total p50=44.16 p99=53.28 | interval p50=25.07 p99=29.89 ms
+BENCH DONE

@@ -1,5 +1,17 @@
 ## Unreleased
 
+### UI kit
+
+- Merged the `ravel_ui_kit` package into swiftuikit: the iOS 26 style UI kit (progressive-blur `ChromeScaffold`, liquid glass
+  shader plates, glass buttons / tab bar / segmented / slider / menu / text field, themed through `SwiftUiThemeData`) is now exported
+  from `package:swiftuikit/swiftuikit.dart`. Call `preloadRavelUiKit()` once before `runApp`.
+- Shaders live in `shaders/` and are bundled with the package.
+- Liquid glass inside a page that SwiftSheet scales (an offscreen `ImageFilterLayer`) now stays in place instead of drifting down
+  by the slide.
+- Liquid glass groups melt only the plates that really interact (the pressed one and its neighbours within the spacing); the other
+  plates of a bar keep their own shape.
+- The kit example app moved to `example_ui_kit/`, its tests to `test/ui_kit/`, native reference tools to `tools/`.
+
 ### Fixes
 
 - Kept interactive page pops input-locked and linear until their settle animation completes

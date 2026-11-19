@@ -1,0 +1,28 @@
+PODS:
+  - Flutter (1.0.0)
+  - flutter_keyboard_controller (1.0.4):
+    - Flutter
+  - screen_corner_radius (0.0.1):
+    - Flutter
+
+DEPENDENCIES:
+  - Flutter (from `Flutter`)
+  - flutter_keyboard_controller (from `.symlinks/plugins/flutter_keyboard_controller/ios`)
+  - screen_corner_radius (from `.symlinks/plugins/screen_corner_radius/ios`)
+
+EXTERNAL SOURCES:
+  Flutter:
+    :path: Flutter
+  flutter_keyboard_controller:
+    :path: ".symlinks/plugins/flutter_keyboard_controller/ios"
+  screen_corner_radius:
+    :path: ".symlinks/plugins/screen_corner_radius/ios"
+
+SPEC CHECKSUMS:
+  Flutter: 71a624a5bc0c04062bf19101d501e466baf2fb47
+  flutter_keyboard_controller: 3c7b3967caaf44e973de5493a04a78c5c526c80c
+  screen_corner_radius: 64e0abb3920228a5f91c0680fa890222970025bd
+
+PODFILE CHECKSUM: 3ba3a73b1b12adcf321a227a745625fe0888cc82
+
+COCOAPODS: 1.17.0
