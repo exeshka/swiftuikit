@@ -1175,26 +1175,25 @@ class RenderLiquidGlassGroup extends RenderProxyBox {
     return math.max(w.highlight, math.max(w.press, 1 - w.presence));
   }
 
-  /// Which of [ps] (with their current [rects]) melt into one shape. Only the plates that really interact: the ones in motion
-  /// (pressed, lit, appearing or vanishing) and the neighbours within [_spacing] of them. A plate further away keeps its own
-  /// shape and is not touched by the morph (pressing one bar button must not change how all the others are drawn). With fewer
-  /// than two such plates there is nothing to melt and the result is all false.
+  /// Which of [ps] (with their current [rects]) melt into one shape. A pair melts when at least one of the two is in motion
+  /// (pressed, lit, appearing or vanishing) and they are within [_spacing] of each other: a plate melts only with the
+  /// neighbours it actually interacts with. A plate in motion with nobody in reach stays a shape of its own (pressing a button
+  /// at one end of a bar must not change how two plates at the other end are drawn), and so does a plate with no active
+  /// neighbour. Returns, per plate, whether it melts with someone.
   List<bool> _meltSet(List<RenderLiquidGlass> ps, List<Rect> rects) {
     final n = ps.length;
-    final none = List<bool>.filled(n, false);
-    if (_spacing <= 0 || n < 2) return none;
+    final melt = List<bool>.filled(n, false);
+    if (_spacing <= 0 || n < 2) return melt;
     final active = [for (final p in ps) _activity(p) > 0.004];
-    final melt = List<bool>.of(active);
-    var any = false;
     for (var i = 0; i < n; i++) {
-      if (!active[i]) continue;
-      any = true;
-      final reach = rects[i].inflate(_spacing);
-      for (var j = 0; j < n; j++) {
-        if (j != i && !melt[j] && reach.overlaps(rects[j])) melt[j] = true;
+      for (var j = i + 1; j < n; j++) {
+        if (!active[i] && !active[j]) continue;
+        if (rects[i].inflate(_spacing).overlaps(rects[j])) {
+          melt[i] = true;
+          melt[j] = true;
+        }
       }
     }
-    if (!any || melt.where((m) => m).length < 2) return none;
     return melt;
   }
 

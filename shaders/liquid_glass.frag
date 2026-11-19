@@ -33,7 +33,7 @@ uniform float uHdr;               // peak of highlights in SDR-white units (1: S
 uniform float uBlur;              // gaussian blur sigma in texture px (0: none); done here, no extra engine pass
 uniform vec4 uTints[MAX_PLATES];  // per-plate tint rgba (blended across merged plates)
 uniform float uFade;              // 0..1: how much of the glass is shown (the flat plate under it shows through the rest)
-uniform vec4 uMelt[MAX_PLATES];   // per plate: x = 1 when the plate takes part in the smooth union (it melts with its neighbours), 0 = stays a shape of its own
+uniform vec4 uMelt[MAX_PLATES];   // per plate: x = 1 when the plate melts with a neighbour it interacts with (smooth union, radius uMorphK), 0 = stays a shape of its own
 uniform sampler2D uTex;
 
 out vec4 fragColor;
@@ -227,7 +227,7 @@ void main() {
     vec2 p = pos - c;
     // far from this plate's box: it can neither cover the pixel nor visibly pull the smooth union (weight < 2e-4)
     vec2 qc = abs(p) - h;
-    if (max(qc.x, qc.y) > (uMorphK > 0.5 ? uMorphK * 3.0 + 2.0 : 2.0)) continue;
+    if (max(qc.x, qc.y) > (uMorphK > 0.5 && uMelt[i].x > 0.5 ? uMorphK * 3.0 + 2.0 : 2.0)) continue;
     float r = min(abs(uPlate[i].x), min(h.x, h.y));
     vec2 q = abs(p) - (h - vec2(r));
     float di;
