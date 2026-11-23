@@ -57,6 +57,7 @@ class HomeScreen extends StatelessWidget {
                 ),
               ),
             ),
+            item('Buttons: native styles and sizes', const ButtonsRoute(), RavelIconKind.plus),
             const ListSectionTitle('Applications'),
             item(
               'Chat list: search, folders, profile tab',

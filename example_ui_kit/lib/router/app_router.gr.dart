@@ -11,6 +11,22 @@
 part of 'app_router.dart';
 
 /// generated route for
+/// [ButtonsScreen]
+class ButtonsRoute extends PageRouteInfo<void> {
+  const ButtonsRoute({List<PageRouteInfo>? children})
+    : super(ButtonsRoute.name, initialChildren: children);
+
+  static const String name = 'ButtonsRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const ButtonsScreen();
+    },
+  );
+}
+
+/// generated route for
 /// [ChatGptScreen]
 class ChatGptRoute extends PageRouteInfo<void> {
   const ChatGptRoute({List<PageRouteInfo>? children})

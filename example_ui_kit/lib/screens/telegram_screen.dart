@@ -1,6 +1,5 @@
 import 'package:auto_route/auto_route.dart';
 
-import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:swiftuikit/swiftuikit.dart';
@@ -11,8 +10,8 @@ import 'profile_screen.dart';
 ///  * a bar with glass buttons, a search field that hides above the list and is revealed by pulling down,
 ///  * a scrollable strip of folders that sticks under the bar (the search scrolls away, the strip stays),
 ///  * a floating tab bar,
-///  * tapping the search opens an app-specific search layer: the field slides up, recents, results and a filter
-///    segmented control above the keyboard. The layer is the app's own (the kit only gives the pieces).
+///  * tapping the search opens the kit's [GlassSearchLauncher] layer: the field slides up, recents, results and a filter
+///    segmented control above the keyboard. What the layer shows is the app's own (the kit gives the layer and the field).
 @RoutePage()
 class TelegramScreen extends StatefulWidget {
   const TelegramScreen({super.key});
@@ -144,18 +143,9 @@ class _TelegramScreenState extends State<TelegramScreen>
   int _active = 0;
   // owned here so that the bars can be told which list is in view when the page changes
   final _chrome = ChromeController();
-  late final AnimationController _s = AnimationController(
-    vsync: this,
-    duration: const Duration(milliseconds: 380),
-    reverseDuration: const Duration(milliseconds: 150),
-  );
-  final _searchKey = GlobalKey();
-  final _focus = FocusNode();
-  final _query = TextEditingController();
+  final _search = GlobalKey<GlassSearchLauncherState>();
   int _tab = 1;
   String _filter = 'chats';
-  double _fieldY = 0;
-  bool _searching = false;
 
   @override
   void initState() {
@@ -165,13 +155,9 @@ class _TelegramScreenState extends State<TelegramScreen>
     if (const bool.fromEnvironment('TG_SEARCH')) {
       Future.delayed(
         const Duration(milliseconds: 1500),
-        () => mounted ? _openSearch() : null,
+        () => mounted ? _search.currentState?.open() : null,
       );
     }
-    _s.addStatusListener((st) {
-      if (st == AnimationStatus.dismissed && _searching)
-        setState(() => _searching = false);
-    });
   }
 
   @override
@@ -182,9 +168,6 @@ class _TelegramScreenState extends State<TelegramScreen>
     for (final c in _lists) {
       c.dispose();
     }
-    _s.dispose();
-    _focus.dispose();
-    _query.dispose();
     super.dispose();
   }
 
@@ -210,20 +193,6 @@ class _TelegramScreenState extends State<TelegramScreen>
       if ((mine - target).abs() > 0.5 && want >= 0)
         c.jumpTo(target.clamp(0.0, c.position.maxScrollExtent));
     }
-  }
-
-  void _openSearch() {
-    final box = _searchKey.currentContext?.findRenderObject() as RenderBox?;
-    _fieldY = box?.localToGlobal(Offset.zero).dy ?? 120;
-    setState(() => _searching = true);
-    _s.forward();
-    WidgetsBinding.instance.addPostFrameCallback((_) => _focus.requestFocus());
-  }
-
-  void _closeSearch() {
-    _focus.unfocus();
-    _query.clear();
-    _s.reverse();
   }
 
   // The lists of the other folders follow the collapse state of the one in view. (The snap of the half-open search to open or
@@ -302,17 +271,22 @@ class _TelegramScreenState extends State<TelegramScreen>
                   ),
                 ),
                 section: Padding(
-                  key: _searchKey,
                   padding: const EdgeInsets.fromLTRB(16, 4, 16, 4),
-                  child: Opacity(
-                    opacity: _searching ? 0 : 1,
-                    child: GestureDetector(
-                      onTap: _openSearch,
-                      child: const AbsorbPointer(
-                        child: GlassSearchBar(
-                          hintText: 'Search',
-                          liquid: false,
-                        ),
+                  child: GlassSearchLauncher(
+                    key: _search,
+                    liquid: false,
+                    resultsBuilder: (context, query) => _results_(context, t),
+                    bottomBuilder: (context) => StatefulBuilder(
+                      builder: (context, setLayer) => GlassSegmentedControl<String>(
+                        segments: const [
+                          GlassSegment(value: 'chats', label: 'Chats'),
+                          GlassSegment(value: 'channels', label: 'Channels'),
+                          GlassSegment(value: 'apps', label: 'Apps'),
+                          GlassSegment(value: 'posts', label: 'Posts'),
+                        ],
+                        value: _filter,
+                        height: 40,
+                        onChanged: (v) => setLayer(() => _filter = v),
                       ),
                     ),
                   ),
@@ -361,7 +335,6 @@ class _TelegramScreenState extends State<TelegramScreen>
                 ),
               ),
             ),
-            if (_searching) _searchLayer(context, t),
           ],
         ),
       ),
@@ -436,82 +409,6 @@ class _TelegramScreenState extends State<TelegramScreen>
     );
   }
 
-  /// The app's own search layer: opaque page, the field slides up from the list, recents / results below and the filter
-  /// segmented control above the keyboard.
-  Widget _searchLayer(BuildContext context, SwiftUiThemeData t) {
-    final mq = MediaQuery.of(context);
-    final top = mq.padding.top + 6;
-    return AnimatedBuilder(
-      animation: _s,
-      builder: (context, _) {
-        final p = Curves.easeOutCubic.transform(_s.value.clamp(0.0, 1.0));
-        final y = _fieldY + (top - _fieldY) * p;
-        final insetBottom = mq.viewInsets.bottom;
-        return Positioned.fill(
-          child: Stack(
-            children: [
-              Positioned.fill(
-                child: Opacity(
-                  opacity: p,
-                  child: const ColoredBox(color: Colors.black),
-                ),
-              ),
-              // content under the field
-              Positioned(
-                left: 0,
-                right: 0,
-                top: top + 50,
-                bottom: 0,
-                child: Opacity(
-                  opacity: Curves.easeIn.transform(
-                    ((p - 0.35) / 0.65).clamp(0.0, 1.0),
-                  ),
-                  child: _results_(t, insetBottom),
-                ),
-              ),
-              Positioned(
-                left: 16,
-                right: 16,
-                top: y,
-                child: GlassSearchBar(
-                  liquid: false,
-                  controller: _query,
-                  focusNode: _focus,
-                  hintText: 'Search',
-                  cancelLabel: 'Cancel',
-                  cancelAsButton: true,
-                  alwaysShowCancel: true,
-                  onCancel: _closeSearch,
-                ),
-              ),
-              Positioned(
-                left: 12,
-                right: 12,
-                // max(), not a switch at 0: the bar rides on the keyboard and must not dip below its resting place on the way
-                bottom: math.max(insetBottom, mq.padding.bottom) + 8,
-                // slides in (a fade would put the glass into an offscreen layer and the track would lose its backdrop)
-                child: Transform.translate(
-                  offset: Offset(0, (1 - p) * 80),
-                  child: GlassSegmentedControl<String>(
-                    segments: const [
-                      GlassSegment(value: 'chats', label: 'Chats'),
-                      GlassSegment(value: 'channels', label: 'Channels'),
-                      GlassSegment(value: 'apps', label: 'Apps'),
-                      GlassSegment(value: 'posts', label: 'Posts'),
-                    ],
-                    value: _filter,
-                    height: 40,
-                    onChanged: (v) => setState(() => _filter = v),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
   Widget _openButton(SwiftUiThemeData t, {required bool glass}) {
     final label = Text(
       'OPEN',
@@ -541,7 +438,8 @@ class _TelegramScreenState extends State<TelegramScreen>
     );
   }
 
-  Widget _results_(SwiftUiThemeData t, double insetBottom) {
+  Widget _results_(BuildContext context, SwiftUiThemeData t) {
+    final insetBottom = MediaQuery.paddingOf(context).bottom;
     return ListView(
       padding: EdgeInsets.only(bottom: insetBottom + 70),
       keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
@@ -623,7 +521,7 @@ class _TelegramScreenState extends State<TelegramScreen>
                   if (r.$4)
                     // Liquid glass at rest. While the page fades in (an Opacity layer has no backdrop to refract) the same pill is
                     // flat, so it never shows without a background.
-                    _openButton(t, glass: _s.isCompleted),
+                    _openButton(t, glass: ModalRoute.of(context)?.animation?.isCompleted ?? false),
                 ],
               ),
             ),

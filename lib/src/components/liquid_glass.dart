@@ -39,6 +39,8 @@ class LiquidGlass extends StatelessWidget {
     this.blur,
     this.toneLift,
     this.flat = false,
+    this.flatFade,
+    this.glassFade = const Duration(milliseconds: 260),
   });
 
   /// Circle: size × size with `cornerRadius == null` (fully round).
@@ -58,6 +60,8 @@ class LiquidGlass extends StatelessWidget {
     this.blur,
     this.toneLift,
     this.flat = false,
+    this.flatFade,
+    this.glassFade = const Duration(milliseconds: 260),
   }) : width = size,
        height = size,
        cornerRadius = null;
@@ -68,6 +72,15 @@ class LiquidGlass extends StatelessWidget {
   /// shadow, but the same press response with [interactive]: the spring grow, the highlight, the stretch under a drag.
   /// This is the look of `liquid: false`.
   final bool flat;
+
+  /// How long the glass takes to melt back into the flat plate when [flat] turns true. Null (default): at once, which is what the
+  /// app switcher snapshot needs and what native glass does (a visible flash). Give a duration to make the way from glass to the
+  /// flat fill a smooth cross-fade (a button that is glass only while it is pressed). Going to the background or a suspended
+  /// subtree is always at once.
+  final Duration? flatFade;
+
+  /// How long the glass takes to fade in over the flat plate.
+  final Duration glassFade;
 
   /// null: fully round ends (stadium / circle).
   final double? cornerRadius;
@@ -146,12 +159,13 @@ class LiquidGlass extends StatelessWidget {
     return ValueListenableBuilder<bool>(
       valueListenable: LiquidGlassLifecycle.inactive,
       builder: (context, inactive, _) {
-        final off = flat || inactive || LiquidGlassSuspend.of(context);
+        final instant = inactive || LiquidGlassSuspend.of(context);
+        final off = flat || instant;
         // One stable tree for both looks, so the content keeps its state and the look can cross-fade. Going flat is instant
         // (the app switcher takes its snapshot right away and no frames may follow); coming back fades the glass in.
         return TweenAnimationBuilder<double>(
           tween: Tween<double>(end: off ? 0.0 : 1.0),
-          duration: off ? Duration.zero : const Duration(milliseconds: 260),
+          duration: off ? (instant ? Duration.zero : (flatFade ?? Duration.zero)) : glassFade,
           curve: Curves.easeInOut,
           builder: (context, fade, _) {
             if (!interactive) return _buildGlass(context, 0, 0, Offset.zero, Offset.zero, 0, fade);
@@ -200,7 +214,8 @@ class LiquidGlass extends StatelessWidget {
       return _flatGlass(context);
     }
     return _LiquidGlassRender(
-      program: flat ? null : _program,
+      // a flat plate keeps the shader while the glass is still melting away (flatFade), then drops it
+      program: flat && fade < 0.004 ? null : _program,
       cornerRadius: cornerRadius,
       style: _GlassStyle(
         clear: clear,

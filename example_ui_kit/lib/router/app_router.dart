@@ -27,6 +27,7 @@ import '../screens/sticky_screen.dart';
 import '../screens/switcher_screen.dart';
 import '../screens/switch_screen.dart';
 import '../screens/telegram_screen.dart';
+import '../screens/buttons_screen.dart';
 
 part 'app_router.gr.dart';
 
@@ -52,6 +53,7 @@ class AppRouter extends RootStackRouter {
     AutoRoute(page: ProfileRoute.page, path: '/profile'),
 
     // ---- technical: headers, lists, inputs ------------------------------------------------------------------------
+    AutoRoute(page: ButtonsRoute.page, path: '/buttons'),
     AutoRoute(page: StickyRoute.page, path: '/sticky'),
     AutoRoute(page: StickyReplacingRoute.page, path: '/sticky-replace'),
     AutoRoute(page: NavBarsRoute.page, path: '/nav-bars'),
