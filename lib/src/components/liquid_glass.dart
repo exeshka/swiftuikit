@@ -5,6 +5,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/physics.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter/widgets.dart';
 
 import '../theme/swift_ui_theme.dart';
@@ -25,6 +26,7 @@ class LiquidGlass extends StatelessWidget {
     super.key,
     this.child,
     this.cornerRadius,
+    this.bottomCornerRadius,
     this.width,
     this.height,
     this.shadow = true,
@@ -41,6 +43,12 @@ class LiquidGlass extends StatelessWidget {
     this.flat = false,
     this.flatFade,
     this.glassFade = const Duration(milliseconds: 260),
+    this.opacity = 1,
+    this.glowSigma,
+    this.glowStrength = 1,
+    this.stretch = 1,
+    this.cornerScaleTR = 1,
+    this.cornerScaleBR = 1,
   });
 
   /// Circle: size × size with `cornerRadius == null` (fully round).
@@ -62,9 +70,16 @@ class LiquidGlass extends StatelessWidget {
     this.flat = false,
     this.flatFade,
     this.glassFade = const Duration(milliseconds: 260),
+    this.opacity = 1,
+    this.glowSigma,
+    this.glowStrength = 1,
+    this.stretch = 1,
+    this.cornerScaleTR = 1,
+    this.cornerScaleBR = 1,
   }) : width = size,
        height = size,
-       cornerRadius = null;
+       cornerRadius = null,
+       bottomCornerRadius = null;
 
   final Widget? child;
 
@@ -82,8 +97,34 @@ class LiquidGlass extends StatelessWidget {
   /// How long the glass takes to fade in over the flat plate.
   final Duration glassFade;
 
+  /// 0..1: how transparent the whole plate is (glass, shadow, flat fill and child together). Use this instead of an [Opacity]
+  /// widget: that one renders its subtree into an offscreen layer, where the glass has no backdrop to refract and the plate
+  /// turns into a flat blob (or vanishes). Here the fade is done inside the glass pass, so the backdrop stays live. Inside a
+  /// [LiquidGlassGroup] the group follows its first plate's value.
+  final double opacity;
+
+  /// Gaussian sigma (pt) of the press highlight around the finger. Null: fitted to the plate's size (a big plate lights up as a
+  /// whole, a small one around the finger). Give a value to keep the glow local on a big plate, e.g. a dialog.
+  final double? glowSigma;
+
+  /// Multiplier of the press highlight's brightness (1: as measured on native glass).
+  final double glowStrength;
+
+  /// Scales the radius of the top-right / bottom-right corner relative to the left ones (1: all corners alike). A morphing
+  /// plate that is not symmetric (a native menu pulled out of a toolbar button) needs corners of its own.
+  final double cornerScaleTR;
+  final double cornerScaleBR;
+
+  /// Multiplier of the drag response (how far the plate stretches toward the finger and narrows across). 1: as measured on native
+  /// glass buttons, which a big plate such as a dialog barely shows; raise it there.
+  final double stretch;
+
   /// null: fully round ends (stadium / circle).
   final double? cornerRadius;
+
+  /// A different radius for the two bottom corners (the top ones keep [cornerRadius]); null: the same. A sheet is round at the
+  /// bottom like the screen and has its own radius at the top.
+  final double? bottomCornerRadius;
   final double? width;
   final double? height;
   final bool shadow;
@@ -165,10 +206,21 @@ class LiquidGlass extends StatelessWidget {
         // (the app switcher takes its snapshot right away and no frames may follow); coming back fades the glass in.
         return TweenAnimationBuilder<double>(
           tween: Tween<double>(end: off ? 0.0 : 1.0),
-          duration: off ? (instant ? Duration.zero : (flatFade ?? Duration.zero)) : glassFade,
+          duration: off
+              ? (instant ? Duration.zero : (flatFade ?? Duration.zero))
+              : glassFade,
           curve: Curves.easeInOut,
           builder: (context, fade, _) {
-            if (!interactive) return _buildGlass(context, 0, 0, Offset.zero, Offset.zero, 0, fade);
+            if (!interactive)
+              return _buildGlass(
+                context,
+                0,
+                0,
+                Offset.zero,
+                Offset.zero,
+                0,
+                fade,
+              );
             return _LiquidPress(
               builder: (context, scale, hi, touch, drag, spread) =>
                   _buildGlass(context, scale, hi, touch, drag, spread, fade),
@@ -208,26 +260,37 @@ class LiquidGlass extends StatelessWidget {
     double fade = 1,
   ]) {
     final t = SwiftUiTheme.of(context);
-    final content = child;
+    final content = opacity >= 0.999 || child == null
+        ? child
+        : Opacity(opacity: opacity.clamp(0.0, 1.0), child: child);
     if (!supported && !flat) {
       if (ui.ImageFilter.isShaderFilterSupported) preload();
-      return _flatGlass(context);
+      final flatPlate = _flatGlass(context);
+      return opacity >= 0.999
+          ? flatPlate
+          : Opacity(opacity: opacity.clamp(0.0, 1.0), child: flatPlate);
     }
     return _LiquidGlassRender(
       // a flat plate keeps the shader while the glass is still melting away (flatFade), then drops it
       program: flat && fade < 0.004 ? null : _program,
       cornerRadius: cornerRadius,
+      bottomCornerRadius: bottomCornerRadius,
       style: _GlassStyle(
         clear: clear,
         shadowColor: shadow && !clear
             ? t.glass.glassShadow.withValues(
-                alpha: (t.isDark ? 0.10 : 0.16) * fade,
+                alpha: (t.isDark ? 0.10 : 0.16) * fade * opacity,
               )
             : null,
         fade: fade,
-        flat: tint ?? flatFill(t.glass.glassFill, t.colors.background, isDark: t.isDark),
+        opacity: opacity,
+        flat:
+            tint ??
+            flatFill(t.glass.glassFill, t.colors.background, isDark: t.isDark),
         flatShadow: shadow && !clear
-            ? t.glass.glassShadow.withValues(alpha: t.glass.glassShadow.a * (1 - fade))
+            ? t.glass.glassShadow.withValues(
+                alpha: t.glass.glassShadow.a * (1 - fade) * opacity,
+              )
             : null,
         tint: tint ?? t.glass.liquidTint,
         bezel: bezel ?? t.glass.liquidBezel,
@@ -254,6 +317,11 @@ class LiquidGlass extends StatelessWidget {
       touch: touch,
       drag: drag,
       spread: spread,
+      glowSigma: glowSigma,
+      glowStrength: glowStrength,
+      cornerScaleTR: cornerScaleTR,
+      cornerScaleBR: cornerScaleBR,
+      stretch: stretch,
       child: content,
     );
   }
@@ -325,6 +393,7 @@ class _GlassStyle {
     required this.devicePixelRatio,
     this.clear = false,
     this.fade = 1,
+    this.opacity = 1,
     this.flat = const Color(0x00000000),
     this.flatShadow,
   });
@@ -350,13 +419,16 @@ class _GlassStyle {
   /// look (app in the background, suspended subtree) and comes back cross-fades instead of popping.
   final double fade;
 
+  /// 0..1: overall transparency of the plate (see [LiquidGlass.opacity]).
+  final double opacity;
+
   /// Colour of the flat plate under a fading glass.
   final Color flat;
 
   /// Drop shadow of the flat plate (null: none).
   final Color? flatShadow;
 
-  _GlassStyle withPrefilter(double v) => _GlassStyle(
+  _GlassStyle withPrefilter(double v, {double? fade}) => _GlassStyle(
     shadowColor: shadowColor,
     tint: tint,
     bezel: bezel,
@@ -373,7 +445,8 @@ class _GlassStyle {
     clear: clear,
     hdr: hdr,
     prefilter: v,
-    fade: fade,
+    fade: fade ?? this.fade,
+    opacity: opacity,
     flat: flat,
     flatShadow: flatShadow,
   );
@@ -383,6 +456,7 @@ class _LiquidGlassRender extends SingleChildRenderObjectWidget {
   const _LiquidGlassRender({
     required this.program,
     required this.cornerRadius,
+    required this.bottomCornerRadius,
     required this.style,
     required this.width,
     required this.height,
@@ -394,11 +468,17 @@ class _LiquidGlassRender extends SingleChildRenderObjectWidget {
     required this.touch,
     required this.drag,
     required this.spread,
+    this.glowSigma,
+    this.glowStrength = 1,
+    this.stretch = 1,
+    this.cornerScaleTR = 1,
+    this.cornerScaleBR = 1,
     super.child,
   });
 
   final ui.FragmentProgram? program; // null: a flat plate, no shader
   final double? cornerRadius;
+  final double? bottomCornerRadius;
   final _GlassStyle style;
   final double? width;
   final double? height;
@@ -409,6 +489,14 @@ class _LiquidGlassRender extends SingleChildRenderObjectWidget {
   final double highlight;
   final Offset touch;
   final Offset drag;
+  final double? glowSigma;
+  final double glowStrength;
+
+  /// Scales the radius of the top-right / bottom-right corner relative to the left ones (1: all corners alike). A morphing
+  /// plate that is not symmetric (a native menu pulled out of a toolbar button) needs corners of its own.
+  final double cornerScaleTR;
+  final double cornerScaleBR;
+  final double stretch;
   final double spread; // 0..1: how far the press highlight has spread over the plate (latched once a drag starts)
 
   @override
@@ -457,6 +545,9 @@ class _PlateGeom {
     this.glowSigma = 140,
     this.ellipse = false,
     this.melt = true,
+    this.radiusBottom = -1,
+    this.trScale = 1,
+    this.brScale = 1,
   ]);
   final Rect rect; // logical, owner-local
   final double radius; // logical
@@ -470,6 +561,10 @@ class _PlateGeom {
   final Color tint; // per-plate tint (blended when plates merge)
   final double glowSigma; // gaussian sigma of the press highlight, pt
   final bool ellipse; // circle plate: stretched into an ellipse (not a rounded rectangle) while dragged
+  final double
+  radiusBottom; // radius of the bottom corners (logical); < 0: same as [radius]
+  final double trScale;
+  final double brScale;
   bool melt; // takes part in the smooth union of the pass (see RenderLiquidGlassGroup._meltSet)
 }
 
@@ -506,11 +601,7 @@ class _GlassPass {
     double morph = 0,
   }) {
     final rrects = [
-      for (final p in plates)
-        RRect.fromRectAndRadius(
-          p.rect.shift(offset),
-          Radius.circular(p.radius),
-        ),
+      for (final p in plates) RenderLiquidGlass._outline(p, offset),
     ];
 
     // shadows, outside the plates only (inside they would darken the glass)
@@ -568,6 +659,9 @@ class _GlassPass {
             plates[i].glowSigma,
             plates[i].ellipse,
             plates[i].melt,
+            plates[i].radiusBottom,
+            plates[i].trScale,
+            plates[i].brScale,
           ),
       ],
     );
@@ -625,6 +719,7 @@ class _GlassSpec {
       morph,
       style.prefilter,
       style.fade,
+      style.opacity,
       for (final p in plates) ...[
         p.rect.left,
         p.rect.top,
@@ -643,6 +738,9 @@ class _GlassSpec {
         p.glowSigma,
         p.ellipse ? 1.0 : 0.0,
         p.melt ? 1.0 : 0.0,
+        p.radiusBottom,
+        p.trScale,
+        p.brScale,
       ],
     ];
   }
@@ -703,7 +801,8 @@ class _GlassBackdropLayer extends BackdropFilterLayer {
         final Rect? b = switch (l) {
           ClipRectLayer(:final clipRect) => clipRect,
           ClipRRectLayer(:final clipRRect) => clipRRect?.outerRect,
-          ClipRSuperellipseLayer(:final clipRSuperellipse) => clipRSuperellipse?.outerRect,
+          ClipRSuperellipseLayer(:final clipRSuperellipse) =>
+            clipRSuperellipse?.outerRect,
           ClipPathLayer(:final clipPath) => clipPath?.getBounds(),
           _ => null,
         };
@@ -764,6 +863,12 @@ class _GlassBackdropLayer extends BackdropFilterLayer {
       sh.setFloat(_GlassPass.oTints + i * 4 + 2, p.tint.b);
       sh.setFloat(_GlassPass.oTints + i * 4 + 3, p.tint.a);
       sh.setFloat(_GlassPass.oMelt + i * 4, p.melt ? 1 : 0);
+      sh.setFloat(
+        _GlassPass.oMelt + i * 4 + 1,
+        p.radiusBottom < 0 ? -1 : p.radiusBottom * s,
+      );
+      sh.setFloat(_GlassPass.oMelt + i * 4 + 2, p.trScale);
+      sh.setFloat(_GlassPass.oMelt + i * 4 + 3, p.brScale);
     }
     final o = _GlassPass.oScalars;
     sh.setFloat(o, st.refraction);
@@ -780,7 +885,7 @@ class _GlassBackdropLayer extends BackdropFilterLayer {
     sh.setFloat(o + 11, sp.morph * 1.05 * s);
     sh.setFloat(o + 12, st.light ? 1 : 0);
     sh.setFloat(_GlassPass.oHdr, st.hdr);
-    sh.setFloat(_GlassPass.oFade, st.fade);
+    sh.setFloat(_GlassPass.oFade, st.fade * st.opacity);
     // Blur: an engine prefilter (fraction of the sigma, kills aliasing of thin features) plus the shader's own taps for
     // the rest. sigma_total^2 = sigma_pre^2 + sigma_shader^2.
     final total = RenderLiquidGlass.debugSkip & 4 == 0 ? st.blur * s : 0.0;
@@ -827,6 +932,23 @@ class _GlassBackdropLayer extends BackdropFilterLayer {
 ///
 /// [debugSkip] (bitmask: 1 shadow, 2 rim, 4 engine blur) exists only for cost
 /// measurements in the benchmark.
+/// Whether an [Opacity] / [FadeTransition] above [r] is fading its subtree right now (alpha below 1).
+///
+/// Such an ancestor paints the subtree into an offscreen layer that starts transparent, so a backdrop filter inside it has no
+/// backdrop to refract and the glass would vanish. A plate that finds itself in one draws the flat plate instead (which fades
+/// correctly with the ancestor) and returns to glass when the fade is over. [LiquidGlass.opacity] is the way to fade glass
+/// with the real backdrop kept.
+bool _insideFade(RenderObject r) {
+  for (RenderObject? p = r.parent; p != null; p = p.parent) {
+    if (p is RenderOpacity) {
+      if (p.opacity < 0.999) return true;
+    } else if (p is RenderAnimatedOpacity) {
+      if (p.opacity.value < 0.999) return true;
+    }
+  }
+  return false;
+}
+
 class RenderLiquidGlass extends RenderProxyBox {
   RenderLiquidGlass();
 
@@ -930,8 +1052,12 @@ class RenderLiquidGlass extends RenderProxyBox {
     final grow =
         emax *
         (1 - math.exp(-math.pow(dist / (200 + 60 * roundness), 1.2))) *
-        big;
-    final sq = (1 - math.exp(-math.pow(dist / 380, 1.8))) * big;
+        big *
+        _w.stretch;
+    final sq =
+        (1 - math.exp(-math.pow(dist / 380, 1.8))) *
+        big *
+        (1 + (_w.stretch - 1) * 0.5);
     // squeeze across: the width shrinks when pulled along the short axis (capsule -17 % at 450 pt, circle -16 %); the height
     // shrinks when pulled sideways only on round plates (circle -8 % at 250 pt, capsule 0)
     final squeezeW = (0.17 + 0.08 * roundness) * sq;
@@ -966,7 +1092,8 @@ class RenderLiquidGlass extends RenderProxyBox {
   /// Gaussian sigma of the press highlight around the finger, pt.
   // While dragging the highlight is flat across the plate (native toolbar capsule: ~0.22 everywhere). The spread is LATCHED
   // (animated 0 -> 1 once the drag starts, kept until release) so pulling out and coming back never re-narrows the glow into a flash.
-  double get _glowSigma => (65 + (300 - 65) * _bigT) * (1 + 3 * _w.spread);
+  double get _glowSigma =>
+      _w.glowSigma ?? (65 + (300 - 65) * _bigT) * (1 + 3 * _w.spread);
 
   double get _radius =>
       math.min(_w.cornerRadius ?? size.shortestSide / 2, size.shortestSide / 2);
@@ -1015,11 +1142,35 @@ class RenderLiquidGlass extends RenderProxyBox {
       _w.style.clear ? 0.0 : glassSmallness(size.shortestSide),
       global,
       scale,
-      _w.highlight * _pressGlow / 0.16,
+      _w.highlight * _pressGlow / 0.16 * _w.glowStrength,
       _w.touch,
       _w.style.tint,
       _glowSigma,
       _w.cornerRadius == null && (size.width - size.height).abs() < 1.0,
+      true,
+      _w.bottomCornerRadius == null
+          ? -1
+          : math.min(_w.bottomCornerRadius!, size.shortestSide / 2) *
+                localScale *
+                k,
+      _w.cornerScaleTR,
+      _w.cornerScaleBR,
+    );
+  }
+
+  /// The plate's outline: a rounded rectangle, with its own radius at the bottom corners when it has one.
+  static RRect _outline(_PlateGeom g, Offset shift) {
+    final r = g.rect.shift(shift);
+    if (g.radiusBottom < 0 && g.trScale == 1 && g.brScale == 1) {
+      return RRect.fromRectAndRadius(r, Radius.circular(g.radius));
+    }
+    final rb = g.radiusBottom < 0 ? g.radius : g.radiusBottom;
+    return RRect.fromRectAndCorners(
+      r,
+      topLeft: Radius.circular(g.radius),
+      topRight: Radius.circular(g.radius * g.trScale),
+      bottomLeft: Radius.circular(rb),
+      bottomRight: Radius.circular(rb * g.brScale),
     );
   }
 
@@ -1033,44 +1184,88 @@ class RenderLiquidGlass extends RenderProxyBox {
     );
   }
 
+  double _blend = 1;
+  Duration? _blendStamp;
+  static const _returnTime = Duration(milliseconds: 160);
+
+  /// 0 while an ancestor fades this plate, then 0..1 over [_returnTime] once it is over.
+  double _afterFade(bool under) {
+    if (under) {
+      _blend = 0;
+      _blendStamp = null;
+      return 0;
+    }
+    if (_blend >= 1) return 1;
+    final now = SchedulerBinding.instance.currentFrameTimeStamp;
+    final last = _blendStamp;
+    _blendStamp = now;
+    _blend = last == null
+        ? 0.0001
+        : math.min(
+            1,
+            _blend + (now - last).inMicroseconds / _returnTime.inMicroseconds,
+          );
+    if (_blend < 1) {
+      SchedulerBinding.instance.addPostFrameCallback((_) {
+        if (attached) markNeedsPaint();
+      });
+    }
+    return Curves.easeInOut.transform(_blend);
+  }
+
   @override
   void paint(PaintingContext context, Offset offset) {
-    final fade = _w.style.fade;
+    final under = _insideFade(this);
+    // after an ancestor fade the glass comes back over the flat plate (a short cross-fade instead of a pop)
+    final fade = math.min(_w.style.fade, _afterFade(under));
+    if (_w.style.opacity <= 0.004) {
+      // fully transparent: nothing of the plate is drawn (the child is already transparent)
+      return;
+    }
     if (fade < 0.999 && _w.presence > 0.01 && size.shortestSide > 0) {
       // The flat plate (under a fading glass, or alone). It follows the press exactly like the glass: grows with the spring,
       // stretches under a drag (the same geometry the shader plate uses) and lights up under the finger.
       final flat = _w.style.flat;
       final g = _geom(this, Offset.zero);
-      final rrect = RRect.fromRectAndRadius(
-        g.rect.shift(offset),
-        Radius.circular(g.radius),
-      );
+      final rrect = _outline(g, offset);
       final canvas = context.canvas;
       // inside a group the group draws the flat fill (so neighbouring plates can melt into one), the highlight stays here
       if (_group == null) {
-        _drawFlatShadow(canvas, rrect, _w.style.flatShadow);
+        _drawFlatShadow(
+          canvas,
+          rrect,
+          under ? _w.style.shadowColor : _w.style.flatShadow,
+        );
         canvas.drawRRect(
           rrect,
-          Paint()..color = flat.withValues(alpha: flat.a * (1 - fade)),
+          Paint()
+            ..color = flat.withValues(
+              alpha: flat.a * (1 - fade) * _w.style.opacity,
+            ),
         );
       }
-      final hi = _w.highlight * _pressGlow * (1 - fade);
+      final hi = _w.highlight * _pressGlow * _w.glowStrength * (1 - fade);
       if (hi > 0.004) {
         canvas.drawRRect(
           rrect,
-          Paint()..color = const Color(0xFFFFFFFF).withValues(alpha: (hi * 0.55).clamp(0.0, 0.5)),
+          Paint()
+            ..color = const Color(0xFFFFFFFF)
+                .withValues(alpha: (hi * 0.55).clamp(0.0, 0.5)),
         );
       }
     }
     if (_w.program != null &&
         _group == null &&
+        !under &&
         _w.presence > 0.01 &&
         fade > 0.004) {
       layer = _pass.paint(
         context,
         offset,
         [_geom(this, Offset.zero)],
-        _w.highQuality ? _w.style : _w.style.withPrefilter(0),
+        _w.highQuality
+            ? _w.style.withPrefilter(_w.style.prefilter, fade: fade)
+            : _w.style.withPrefilter(0, fade: fade),
         needsCompositing,
         layer,
       );
@@ -1233,14 +1428,14 @@ class RenderLiquidGlassGroup extends RenderProxyBox {
   /// The flat plates of the group. Like the glass they melt into one shape while one of them is pressed, appears or vanishes:
   /// no shader, the classic "gooey" trick: the plates are blurred together and the alpha is pushed back to a hard edge, so
   /// where two blurs overlap they join into a neck. At rest (or alone) every plate is drawn crisp, as plain rounded rects.
-  void _paintFlat(PaintingContext context, Offset offset) {
+  void _paintFlat(PaintingContext context, Offset offset, bool under) {
     final flats = [
       for (final p in _plates)
         if (p.attached &&
             p.hasSize &&
             p.size.shortestSide > 0 &&
             p._w.presence > 0.01 &&
-            p._w.style.fade < 0.999)
+            (under || p._w.style.fade < 0.999))
           p,
     ];
     if (flats.isEmpty) return;
@@ -1250,11 +1445,14 @@ class RenderLiquidGlassGroup extends RenderProxyBox {
     for (final p in flats) {
       final g = p._geom(this, Offset.zero);
       rects.add(g.rect);
-      rrects.add(
-        RRect.fromRectAndRadius(g.rect.shift(offset), Radius.circular(g.radius)),
-      );
+      rrects.add(RenderLiquidGlass._outline(g, offset));
       final flat = p._w.style.flat;
-      colors.add(flat.withValues(alpha: flat.a * (1 - p._w.style.fade)));
+      colors.add(
+        flat.withValues(
+          alpha:
+              flat.a * (under ? 1 : 1 - p._w.style.fade) * p._w.style.opacity,
+        ),
+      );
     }
     // only the plates that really interact melt; the rest stay crisp
     final melt = _meltSet(flats, rects);
@@ -1267,7 +1465,7 @@ class RenderLiquidGlassGroup extends RenderProxyBox {
       RenderLiquidGlass._drawFlatShadow(
         canvas,
         rrects[i],
-        flats[i]._w.style.flatShadow,
+        under ? flats[i]._w.style.shadowColor : flats[i]._w.style.flatShadow,
       );
     }
     final sigma = _spacing * activity.clamp(0.0, 1.0) * 0.6;
@@ -1335,7 +1533,8 @@ class RenderLiquidGlassGroup extends RenderProxyBox {
 
   @override
   void paint(PaintingContext context, Offset offset) {
-    _paintFlat(context, offset);
+    final under = _insideFade(this);
+    _paintFlat(context, offset, under);
     final live = [
       for (final p in _plates)
         if (p.attached &&
@@ -1343,10 +1542,11 @@ class RenderLiquidGlassGroup extends RenderProxyBox {
             p.size.shortestSide > 0 &&
             p._w.presence > 0.01 &&
             p._w.program != null &&
+            p._w.style.opacity > 0.004 &&
             p._w.style.fade > 0.004)
           p,
     ];
-    if (live.isEmpty || program == null) {
+    if (under || live.isEmpty || program == null) {
       layer = null;
     } else {
       final geoms = [for (final p in live) p._geom(this, offset)];

@@ -1,5 +1,6 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:swiftuikit/swiftuikit.dart' show GlassSheetAutoRoute;
 
 import '../screens/chatgpt_screen.dart';
 import '../screens/claude_screen.dart';
@@ -28,6 +29,7 @@ import '../screens/switcher_screen.dart';
 import '../screens/switch_screen.dart';
 import '../screens/telegram_screen.dart';
 import '../screens/buttons_screen.dart';
+import '../screens/sheets_screen.dart';
 
 part 'app_router.gr.dart';
 
@@ -54,6 +56,8 @@ class AppRouter extends RootStackRouter {
 
     // ---- technical: headers, lists, inputs ------------------------------------------------------------------------
     AutoRoute(page: ButtonsRoute.page, path: '/buttons'),
+    AutoRoute(page: SheetsRoute.page, path: '/sheets'),
+    GlassSheetAutoRoute(page: SheetContentRoute.page, path: '/sheet-content', scrollable: false),
     AutoRoute(page: StickyRoute.page, path: '/sticky'),
     AutoRoute(page: StickyReplacingRoute.page, path: '/sticky-replace'),
     AutoRoute(page: NavBarsRoute.page, path: '/nav-bars'),

@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -28,7 +29,7 @@ class SwiftModalRoute<T> extends PageRoute<T>
     this.barrierOpacity = 0.3,
     this.transitionDurationOverride = const Duration(milliseconds: 400),
     this.dismissThreshold = 0.3,
-  })  : super(settings: settings);
+  }) : super(settings: settings);
 
   final Widget child;
   final double? sheetRadius;
@@ -172,15 +173,14 @@ class _SwiftModalRouteTransitionState
     }
   }
 
-
-
   @override
   Widget build(BuildContext context) {
     final route = widget.route;
     final bool linearTransition = route.popGestureInProgress;
 
-    final Animation<double> currentPrimary =
-        linearTransition ? widget.animation : _primaryCurve;
+    final Animation<double> currentPrimary = linearTransition
+        ? widget.animation
+        : _primaryCurve;
 
     final double screenHeight = MediaQuery.sizeOf(context).height;
     final double topPadding = MediaQuery.paddingOf(context).top;
@@ -203,17 +203,11 @@ class _SwiftModalRouteTransitionState
       sheetBody = SizedBox(
         height: maxHeight,
         child: SingleChildScrollView(
-          child: SizedBox(
-            width: double.infinity,
-            child: widget.child,
-          ),
+          child: SizedBox(width: double.infinity, child: widget.child),
         ),
       );
     } else {
-      sheetBody = SizedBox(
-        width: double.infinity,
-        child: widget.child,
-      );
+      sheetBody = SizedBox(width: double.infinity, child: widget.child);
     }
 
     final sheetContent = MediaQuery.removePadding(
@@ -245,10 +239,7 @@ class _SwiftModalRouteTransitionState
                   opacity: 0,
                   child: ConstrainedBox(
                     constraints: BoxConstraints(maxHeight: maxHeight),
-                    child: SizedBox(
-                      key: _measureKey,
-                      child: widget.child,
-                    ),
+                    child: SizedBox(key: _measureKey, child: widget.child),
                   ),
                 ),
               // Barrier

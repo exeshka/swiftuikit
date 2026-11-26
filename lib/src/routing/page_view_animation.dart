@@ -162,8 +162,13 @@ class _SwiftPageViewAnimationState extends State<SwiftPageViewAnimation> {
     if (px < 0) {
       return (px / pos.viewportDimension).clamp(-1.0, 0.0);
     }
-    if (pos.hasContentDimensions && pos.maxScrollExtent > 0 && px > pos.maxScrollExtent) {
-      return ((px - pos.maxScrollExtent) / pos.viewportDimension).clamp(0.0, 1.0);
+    if (pos.hasContentDimensions &&
+        pos.maxScrollExtent > 0 &&
+        px > pos.maxScrollExtent) {
+      return ((px - pos.maxScrollExtent) / pos.viewportDimension).clamp(
+        0.0,
+        1.0,
+      );
     }
     return 0;
   }

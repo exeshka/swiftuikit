@@ -29,6 +29,7 @@ export 'src/services/screen_radius_service.dart';
 // iOS 26 style UI kit: progressive-blur ChromeScaffold, liquid glass, glass controls, themed through SwiftUiThemeData.
 // The ThemeMode of SwiftUiApp is a Flutter type, so an app need not import `material.dart` for it.
 export 'package:flutter/material.dart' show ThemeMode;
+
 export 'src/app/swift_ui_app.dart';
 export 'src/theme/swift_ui_theme.dart';
 export 'src/theme/swift_ui_theme_data.dart';
@@ -53,6 +54,8 @@ export 'src/components/glass_surface.dart';
 export 'src/components/pressable.dart';
 export 'src/components/buttons.dart';
 export 'src/components/glass_button.dart';
+export 'src/components/glass_sheet.dart';
+export 'src/components/glass_alert.dart';
 export 'src/components/list_row.dart';
 export 'src/components/headers.dart';
 export 'src/components/glass_toolbar.dart';

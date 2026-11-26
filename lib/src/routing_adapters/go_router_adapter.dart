@@ -1,3 +1,4 @@
+import 'package:swiftuikit/src/components/glass_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:meta/meta.dart';
 
@@ -142,12 +143,10 @@ class SwiftSheetPage<T> extends Page<T> {
       preserveTopSafeArea: preserveTopSafeArea,
       dismissThreshold: dismissThreshold,
       minFlingVelocity: minFlingVelocity,
-      scrollableBuilder:
-          (BuildContext context, ScrollController scrollController) =>
-              PrimaryScrollController(
-                controller: scrollController,
-                child: child,
-              ),
+      scrollableBuilder: (
+        BuildContext context,
+        ScrollController scrollController,
+      ) => PrimaryScrollController(controller: scrollController, child: child),
     );
   }
 }
@@ -258,6 +257,53 @@ class SwiftModalPage<T> extends Page<T> {
       barrierOpacity: barrierOpacity,
       transitionDurationOverride: transitionDuration,
       dismissThreshold: dismissThreshold,
+    );
+  }
+}
+
+/// A [Page] adapter for go_router and Navigator 2.0: an iOS 26 resizable sheet ([GlassSheetRoute]) whose content is [child].
+class GlassSheetPage<T> extends Page<T> {
+  const GlassSheetPage({
+    required this.child,
+    super.key,
+    super.name,
+    super.arguments,
+    super.restorationId,
+    super.canPop,
+    super.onPopInvoked,
+    this.detents = const [GlassSheetDetent.medium, GlassSheetDetent.large],
+    this.initialDetent,
+    this.controller,
+    this.dismissible = true,
+    this.showGrabber = true,
+    this.scrollable = true,
+    this.backgroundColor,
+    this.liquid,
+  });
+
+  final Widget child;
+  final List<GlassSheetDetent> detents;
+  final GlassSheetDetent? initialDetent;
+  final GlassSheetController? controller;
+  final bool dismissible;
+  final bool showGrabber;
+  final bool scrollable;
+  final Color? backgroundColor;
+  final bool? liquid;
+
+  @override
+  Route<T> createRoute(BuildContext context) {
+    return GlassSheetRoute<T>(
+      settings: this,
+      child: child,
+      detents: detents,
+      initialDetent: initialDetent,
+      sheetController: controller,
+      dismissible: dismissible,
+      showGrabber: showGrabber,
+      scrollable: scrollable,
+      backgroundColor: backgroundColor,
+      liquid: liquid,
     );
   }
 }

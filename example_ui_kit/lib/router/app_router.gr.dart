@@ -425,6 +425,38 @@ class ProfileRouteArgs {
 }
 
 /// generated route for
+/// [SheetContentScreen]
+class SheetContentRoute extends PageRouteInfo<void> {
+  const SheetContentRoute({List<PageRouteInfo>? children})
+    : super(SheetContentRoute.name, initialChildren: children);
+
+  static const String name = 'SheetContentRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const SheetContentScreen();
+    },
+  );
+}
+
+/// generated route for
+/// [SheetsScreen]
+class SheetsRoute extends PageRouteInfo<void> {
+  const SheetsRoute({List<PageRouteInfo>? children})
+    : super(SheetsRoute.name, initialChildren: children);
+
+  static const String name = 'SheetsRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const SheetsScreen();
+    },
+  );
+}
+
+/// generated route for
 /// [StickyReplacingScreen]
 class StickyReplacingRoute extends PageRouteInfo<void> {
   const StickyReplacingRoute({List<PageRouteInfo>? children})

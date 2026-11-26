@@ -34,8 +34,8 @@ class SwiftStepSheet extends StatefulWidget {
   /// Retrieves the closest [SwiftStepSheetState] from the context to access current step index
   /// and trigger page transition commands.
   static SwiftStepSheetState of(BuildContext context) {
-    final _SwiftStepSheetScope? scope =
-        context.dependOnInheritedWidgetOfExactType<_SwiftStepSheetScope>();
+    final _SwiftStepSheetScope? scope = context
+        .dependOnInheritedWidgetOfExactType<_SwiftStepSheetScope>();
     if (scope == null) {
       throw FlutterError(
         'SwiftStepSheet.of() called with a context that does not contain a SwiftStepSheet.',
@@ -46,8 +46,8 @@ class SwiftStepSheet extends StatefulWidget {
 
   /// Helper to fetch the current sheet's open progress (0.0 to 1.0) directly from context.
   static double openProgressOf(BuildContext context) {
-    final _SwiftStepSheetScope? scope =
-        context.dependOnInheritedWidgetOfExactType<_SwiftStepSheetScope>();
+    final _SwiftStepSheetScope? scope = context
+        .dependOnInheritedWidgetOfExactType<_SwiftStepSheetScope>();
     return scope?.openProgress ?? 1.0;
   }
 }

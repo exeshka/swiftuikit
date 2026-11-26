@@ -7,6 +7,7 @@ import 'package:swiftuikit/src/routing/scroll_sheet_route.dart';
 import 'package:swiftuikit/src/routing/sheet_route.dart' as sheet_route;
 import 'package:swiftuikit/src/routing/modal_route.dart' as modal_route;
 import 'package:swiftuikit/src/routing/zoom_route.dart';
+import 'package:swiftuikit/src/components/glass_sheet.dart';
 
 Route<T> swiftZoomRouteBuilder<T>(
   BuildContext context,
@@ -84,9 +85,10 @@ Route<T> swiftSheetRouteBuilder<T>(
     preserveTopSafeArea: preserveTopSafeArea,
     dismissThreshold: dismissThreshold,
     minFlingVelocity: minFlingVelocity,
-    scrollableBuilder:
-        (BuildContext context, ScrollController scrollController) =>
-            PrimaryScrollController(controller: scrollController, child: child),
+    scrollableBuilder: (
+      BuildContext context,
+      ScrollController scrollController,
+    ) => PrimaryScrollController(controller: scrollController, child: child),
   );
 }
 
@@ -441,4 +443,59 @@ class SwiftModalAutoRoute<R> extends CustomRoute<R> {
   final double barrierOpacity;
   final Duration transitionDuration;
   final double dismissThreshold;
+}
+
+/// An iOS 26 resizable sheet (`.sheet` with detents) as a page of the router: the page widget is the content of the sheet.
+///
+/// ```dart
+/// GlassSheetAutoRoute(page: FilterRoute.page, detents: [GlassSheetDetent.medium, GlassSheetDetent.large])
+/// ```
+/// A content that scrolls by itself uses `GlassSheet.scrollControllerOf(context)` and `scrollable: false`.
+class GlassSheetAutoRoute<R> extends CustomRoute<R> {
+  GlassSheetAutoRoute({
+    required super.page,
+    super.fullscreenDialog,
+    super.maintainState,
+    super.fullMatch,
+    super.guards,
+    super.usesPathAsKey,
+    super.children,
+    super.meta,
+    super.title,
+    super.path,
+    super.keepHistory,
+    super.initial,
+    super.allowSnapshotting,
+    super.restorationId,
+    List<GlassSheetDetent> detents = const [
+      GlassSheetDetent.medium,
+      GlassSheetDetent.large,
+    ],
+    GlassSheetDetent? initialDetent,
+    GlassSheetController? controller,
+    bool dismissible = true,
+    bool showGrabber = true,
+    bool scrollable = true,
+    Color? backgroundColor,
+    bool? liquid,
+  }) : super(
+         opaque: false,
+         barrierDismissible: false,
+         barrierColor: null,
+         customRouteBuilder:
+             <T>(BuildContext context, Widget child, AutoRoutePage<T> page) {
+               return GlassSheetRoute<T>(
+                 settings: page,
+                 child: child,
+                 detents: detents,
+                 initialDetent: initialDetent,
+                 sheetController: controller,
+                 dismissible: dismissible,
+                 showGrabber: showGrabber,
+                 scrollable: scrollable,
+                 backgroundColor: backgroundColor,
+                 liquid: liquid,
+               );
+             },
+       );
 }

@@ -6,7 +6,10 @@ import '../theme/swift_ui_theme.dart';
 import 'glass_search_bar.dart';
 
 /// Builds what the search layer shows under the field for the current [query] (it rebuilds on every keystroke).
-typedef GlassSearchResultsBuilder = Widget Function(BuildContext context, String query);
+typedef GlassSearchResultsBuilder = Widget Function(
+  BuildContext context,
+  String query,
+);
 
 /// The search field of a page that does not type in place. It looks like a [GlassSearchBar] but is not editable: tapping it opens a
 /// search layer above the whole page. The field slides up to the top, the page fades out, the results are shown under it, and a
@@ -92,7 +95,8 @@ class GlassSearchLauncher extends StatefulWidget {
 class GlassSearchLauncherState extends State<GlassSearchLauncher> {
   final _fieldKey = GlobalKey();
   TextEditingController? _ownController;
-  TextEditingController get _controller => widget.controller ?? (_ownController ??= TextEditingController());
+  TextEditingController get _controller =>
+      widget.controller ?? (_ownController ??= TextEditingController());
   bool _open = false;
 
   @override
@@ -156,7 +160,8 @@ class GlassSearchLauncherState extends State<GlassSearchLauncher> {
 class _GlassSearchRoute extends PageRoute<void> {
   _GlassSearchRoute({required this.builder});
 
-  final Widget Function(BuildContext context, Animation<double> animation) builder;
+  final Widget Function(BuildContext context, Animation<double> animation)
+  builder;
 
   @override
   Duration get transitionDuration => const Duration(milliseconds: 380);
@@ -180,8 +185,11 @@ class _GlassSearchRoute extends PageRoute<void> {
   bool get maintainState => true;
 
   @override
-  Widget buildPage(BuildContext context, Animation<double> animation, Animation<double> secondaryAnimation) =>
-      builder(context, animation);
+  Widget buildPage(
+    BuildContext context,
+    Animation<double> animation,
+    Animation<double> secondaryAnimation,
+  ) => builder(context, animation);
 
   // the layer animates itself
   @override
@@ -241,20 +249,30 @@ class _SearchLayerState extends State<_SearchLayer> {
     final top = mq.padding.top + 6;
     final insetBottom = mq.viewInsets.bottom;
     final screenW = mq.size.width;
-    final resultsPadding = mq.padding.copyWith(top: 0, bottom: math.max(mq.padding.bottom, insetBottom));
+    final resultsPadding = mq.padding.copyWith(
+      top: 0,
+      bottom: math.max(mq.padding.bottom, insetBottom),
+    );
     return AnimatedBuilder(
       animation: widget.animation,
       builder: (context, _) {
-        final p = Curves.easeOutCubic.transform(widget.animation.value.clamp(0.0, 1.0));
+        final p = Curves.easeOutCubic.transform(
+          widget.animation.value.clamp(0.0, 1.0),
+        );
         final y = widget.from.top + (top - widget.from.top) * p;
-        final left = widget.from.left + (l.layerPadding.left - widget.from.left) * p;
-        final right = (screenW - widget.from.right) + (l.layerPadding.right - (screenW - widget.from.right)) * p;
+        final left =
+            widget.from.left + (l.layerPadding.left - widget.from.left) * p;
+        final right =
+            (screenW - widget.from.right) +
+            (l.layerPadding.right - (screenW - widget.from.right)) * p;
         return Stack(
           children: [
             Positioned.fill(
               child: Opacity(
                 opacity: p,
-                child: ColoredBox(color: l.backgroundColor ?? t.colors.background),
+                child: ColoredBox(
+                  color: l.backgroundColor ?? t.colors.background,
+                ),
               ),
             ),
             // what is under the field
@@ -264,12 +282,15 @@ class _SearchLayerState extends State<_SearchLayer> {
               top: top + l.height + 6,
               bottom: 0,
               child: Opacity(
-                opacity: Curves.easeIn.transform(((p - 0.35) / 0.65).clamp(0.0, 1.0)),
+                opacity: Curves.easeIn.transform(
+                  ((p - 0.35) / 0.65).clamp(0.0, 1.0),
+                ),
                 child: MediaQuery(
                   data: mq.copyWith(padding: resultsPadding),
                   child: ListenableBuilder(
                     listenable: widget.controller,
-                    builder: (context, _) => l.resultsBuilder(context, widget.controller.text),
+                    builder: (context, _) =>
+                        l.resultsBuilder(context, widget.controller.text),
                   ),
                 ),
               ),
@@ -300,7 +321,10 @@ class _SearchLayerState extends State<_SearchLayer> {
                 // max(), not a switch at 0: the bar rides on the keyboard and must not dip below its resting place on the way
                 bottom: math.max(insetBottom, mq.padding.bottom) + 8,
                 // slides in (a fade would put the glass into an offscreen layer and the track would lose its backdrop)
-                child: Transform.translate(offset: Offset(0, (1 - p) * 80), child: l.bottomBuilder!(context)),
+                child: Transform.translate(
+                  offset: Offset(0, (1 - p) * 80),
+                  child: l.bottomBuilder!(context),
+                ),
               ),
           ],
         );

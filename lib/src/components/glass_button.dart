@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/widgets.dart';
 
 import '../theme/swift_ui_theme.dart';
+import '../theme/swift_ui_typography.dart' show iosTracking;
 import 'liquid_glass.dart';
 import 'pressable.dart';
 
@@ -30,7 +31,8 @@ enum GlassButtonStyle {
 
 /// `controlSize` of SwiftUI. On iOS 26.5 [mini] measures the same as [small] and [extraLarge] the same as [large] (only the label of
 /// a button with a title differs a little), the kit keeps all five so code ports one to one.
-enum GlassButtonSize { mini, small, regular, large, extraLarge }
+/// [toolbar] is the size native gives a button in a navigation bar or toolbar (42 pt, bigger than [regular]).
+enum GlassButtonSize { mini, small, regular, toolbar, large, extraLarge }
 
 /// An iOS 26 button: `Button` with `.buttonStyle(.glass / .glassProminent / .bordered / .borderedProminent / .borderless / .plain)`,
 /// `.controlSize(...)` and `.buttonBorderShape(.capsule / .circle)`.
@@ -112,25 +114,34 @@ class GlassButton extends StatelessWidget {
   static const _destructiveDark = Color(0xFFFF453A);
   static const _destructiveLight = Color(0xFFFF3B30);
 
-  bool get _glass => style == GlassButtonStyle.glass || style == GlassButtonStyle.glassProminent;
-  bool get _hasPlate => style != GlassButtonStyle.borderless && style != GlassButtonStyle.plain;
+  bool get _glass =>
+      style == GlassButtonStyle.glass ||
+      style == GlassButtonStyle.glassProminent;
+  bool get _hasPlate =>
+      style != GlassButtonStyle.borderless && style != GlassButtonStyle.plain;
 
   @override
   Widget build(BuildContext context) {
     final t = SwiftUiTheme.of(context);
     final m = _Metrics.of(size);
-    final tintColor = destructive ? (t.isDark ? _destructiveDark : _destructiveLight) : (tint ?? t.colors.accent);
+    final tintColor = destructive
+        ? (t.isDark ? _destructiveDark : _destructiveLight)
+        : (tint ?? t.colors.accent);
     // the colour of the label, the way each style paints it
     final foreground = switch (style) {
-      GlassButtonStyle.glass => (tint != null || destructive) ? tintColor : t.colors.foreground,
-      GlassButtonStyle.glassProminent || GlassButtonStyle.borderedProminent => t.colors.onAccent,
+      GlassButtonStyle.glass =>
+        (tint != null || destructive) ? tintColor : t.colors.foreground,
+      GlassButtonStyle.glassProminent ||
+      GlassButtonStyle.borderedProminent => t.colors.onAccent,
       GlassButtonStyle.bordered || GlassButtonStyle.borderless => tintColor,
       GlassButtonStyle.plain => t.colors.foreground,
     };
     final enabled = onPressed != null;
     // a disabled glass button keeps its plate (a dimming Opacity would put the glass into an offscreen layer and it would lose its
     // backdrop) and fades only its label, as the native one does
-    final shown = enabled || !_glass ? foreground : foreground.withValues(alpha: foreground.a * 0.4);
+    final shown = enabled || !_glass
+        ? foreground
+        : foreground.withValues(alpha: foreground.a * 0.4);
     final content = _content(context, t, m, shown);
 
     Widget plate;
@@ -161,11 +172,17 @@ class GlassButton extends StatelessWidget {
         child: content,
       );
     }
-    if (expand && !circle) plate = SizedBox(width: double.infinity, child: plate);
+    if (expand && !circle)
+      plate = SizedBox(width: double.infinity, child: plate);
     return enabled || _glass ? plate : Opacity(opacity: 0.4, child: plate);
   }
 
-  Widget _content(BuildContext context, SwiftUiThemeData t, _Metrics m, Color foreground) {
+  Widget _content(
+    BuildContext context,
+    SwiftUiThemeData t,
+    _Metrics m,
+    Color foreground,
+  ) {
     if (child != null) return child!;
     final text = label == null
         ? null
@@ -173,16 +190,32 @@ class GlassButton extends StatelessWidget {
             label!,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: t.typography.body.copyWith(fontSize: m.font, fontWeight: FontWeight.w400, color: foreground, height: 1),
+            style: t.typography.body.copyWith(
+              fontSize: m.font,
+              fontWeight: FontWeight.w400,
+              letterSpacing: iosTracking(m.font),
+              color: foreground,
+              height: 1,
+            ),
           );
     final glyph = icon == null
         ? null
         : IconTheme(
-            data: IconThemeData(color: foreground, size: circle ? m.circle * 0.55 : m.font * 1.1),
+            data: IconThemeData(
+              color: foreground,
+              size: circle ? m.circle * 0.55 : m.font * 1.1,
+            ),
             child: icon!,
           );
     if (text != null && glyph != null) {
-      return Row(mainAxisSize: MainAxisSize.min, children: [glyph, SizedBox(width: m.font * 0.45), Flexible(child: text)]);
+      return Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          glyph,
+          SizedBox(width: m.font * 0.45),
+          Flexible(child: text),
+        ],
+      );
     }
     return glyph ?? text!;
   }
@@ -200,7 +233,9 @@ class _Metrics {
     GlassButtonSize.mini => const _Metrics(26, 24, 10, 13),
     GlassButtonSize.small => const _Metrics(28, 24, 12, 15),
     GlassButtonSize.regular => const _Metrics(34, 30, 14, 17),
-    GlassButtonSize.large || GlassButtonSize.extraLarge => const _Metrics(50, 46, 18, 20),
+    GlassButtonSize.toolbar => const _Metrics(42, 42, 15, 17),
+    GlassButtonSize.large => const _Metrics(50, 46, 18, 17),
+    GlassButtonSize.extraLarge => const _Metrics(50, 46, 18, 20),
   };
 }
 
@@ -270,10 +305,16 @@ class _FlatButtonState extends State<_FlatButton> {
           child: Container(
             height: widget.height,
             width: widget.width,
-            padding: widget.width != null ? null : EdgeInsets.symmetric(horizontal: widget.hasPlate ? widget.padX : 4),
+            padding: widget.width != null
+                ? null
+                : EdgeInsets.symmetric(
+                    horizontal: widget.hasPlate ? widget.padX : 4,
+                  ),
             decoration: ShapeDecoration(
               color: fill,
-              shape: widget.width != null ? const CircleBorder() : const StadiumBorder(),
+              shape: widget.width != null
+                  ? const CircleBorder()
+                  : const StadiumBorder(),
             ),
             // widthFactor: the label sizes the button, a plain Center would take the whole width
             child: Center(widthFactor: 1, child: widget.child),
@@ -364,7 +405,10 @@ class _GlassPlateState extends State<_GlassPlate> {
       glassFade: const Duration(milliseconds: 140),
       child: w.circle
           ? Center(child: w.child)
-          : Padding(padding: EdgeInsets.symmetric(horizontal: w.padX), child: Center(widthFactor: 1, child: w.child)),
+          : Padding(
+              padding: EdgeInsets.symmetric(horizontal: w.padX),
+              child: Center(widthFactor: 1, child: w.child),
+            ),
     );
     return Pressable(
       onPressed: w.onPressed,

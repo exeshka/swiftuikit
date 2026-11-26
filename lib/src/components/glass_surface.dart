@@ -127,7 +127,9 @@ class GlassSurface extends StatelessWidget {
         shape: shape,
         dir: dir,
         // An explicit fill is the caller's colour and is kept as is; the theme glass is darkened a little.
-        fill: fill ?? flatFill(t.glass.glassFill, t.colors.background, isDark: t.isDark),
+        fill:
+            fill ??
+            flatFill(t.glass.glassFill, t.colors.background, isDark: t.isDark),
         shadow: shadow ? t.glass.glassShadow : null,
       ),
       child: content,

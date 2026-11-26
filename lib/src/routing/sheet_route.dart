@@ -898,9 +898,8 @@ class SwiftSheetRoute<T> extends CupertinoSheetRoute<T> {
     // content inset here because its inner MediaQuery intentionally removes
     // the native wrapper's top padding.
     return MediaQuery(
-      data: MediaQuery.of(
-        context,
-      ).copyWith(padding: const EdgeInsets.only(top: 15)),
+      data: MediaQuery.of(context)
+          .copyWith(padding: const EdgeInsets.only(top: 15)),
       child: _effectiveBuilder(context, controller),
     );
   }

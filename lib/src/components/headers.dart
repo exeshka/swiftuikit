@@ -9,6 +9,7 @@ import 'buttons.dart';
 import 'glass_toolbar.dart';
 import 'liquid_glass.dart';
 import '../theme/swift_ui_theme.dart';
+import '../theme/swift_ui_typography.dart' show iosTracking;
 
 /// The leading widget of a bar: [leading], or - when there is none and [auto] is on - a [GlassBackButton] if THIS route can be
 /// popped (there is a route below it), the way `CupertinoNavigationBar` and `AppBar` decide.
@@ -259,6 +260,7 @@ class _LargeTitleHeaderState extends State<LargeTitleHeader> {
     final smallTitle = t.typography.title.copyWith(
       fontSize: 17,
       fontWeight: FontWeight.w600,
+      letterSpacing: iosTracking(17),
     );
     Widget smallBlock(bool atStart) {
       final column = Column(

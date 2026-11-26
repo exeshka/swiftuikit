@@ -1,5 +1,6 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart' show timeDilation;
 import 'package:flutter/services.dart';
 import 'package:swiftuikit/swiftuikit.dart' show ScreenRadiusService;
 import 'package:swiftuikit/swiftuikit.dart';
@@ -13,11 +14,14 @@ import 'router/app_router.dart';
 //                 --dart-define=PERF=true (performance overlay)
 const _screen = String.fromEnvironment('SCREEN');
 const _perf = bool.fromEnvironment('PERF');
+// --dart-define=SLOW=10 slows every Flutter animation down (to compare frame by frame with a recording)
+const _slow = int.fromEnvironment('SLOW');
 // Engine blur prefilter of the glass, percent of the blur sigma (kit default 85). Lower = cheaper GPU, less anti-aliasing of thin features.
 const _pref = int.fromEnvironment('PREF', defaultValue: 85) / 100;
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  if (_slow > 1) timeDilation = _slow.toDouble();
   await preloadRavelUiKit();
   await ScreenRadiusService.instance.initialize();
   runApp(ShowcaseApp());

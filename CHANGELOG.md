@@ -2,6 +2,41 @@
 
 ### UI kit
 
+- `GlassSheet` with `origin`: it opens with the same droplet morph as the glass menu (the control collapses into a droplet that grows into the sheet with a spring, its
+  content squeezed and blurred, sharpening as it grows). Opening takes 460 ms. Closing plays the same path back (440 ms): the sheet collapses into a droplet, the droplet flows into the control. The droplet is about 3x the control and the control rides inside it (seen through the glass), as on a native toolbar button -> sheet (measured frame by frame).
+- `LiquidGlass.cornerScaleTR` / `cornerScaleBR` (and `uMelt.zw` in the shader): the top-right / bottom-right corner radius relative to the left ones, for plates that are not symmetric. The menu morph uses them (the native blob's top-right corner is tighter than the top-left one).
+- Menu morph (`showGlassMenu(origin:)`) now follows the measured native timeline (tools/native_morph_ref/MORPH_SPEC.md): one glass plate whose four edges have their own damped springs (the menu overshoots, its top dips and comes back), the control's picture fades in 55 ms, the rows are enlarged and blurred and sharpen from 100 ms, closing has its own springs and timings (opening 700 ms, closing 450 ms).
+- Menus and sheets with `origin`: the control no longer vanishes. A picture of it (`GlassSheetOriginController.capture`) rides inside the droplet, clipped to its shape and blurring out as the menu / sheet grows, and comes back with it, as the whole toolbar group does on native. The control's plate and the menu's are two plates of one `LiquidGlassGroup`, so the shader draws their smooth union (the droplet comes out of the button that was touched, `GlassSheetOriginController.lastTouch`) (the way `GlassEffectContainer` does) and the droplet pulls out of the control instead of a rectangle morphing. A menu closes as its opening played back (the same blob and motion curve, 380 ms), as measured on the native one.
+- Menus (`showGlassMenu`) answer a touch like dialogs: the panel is a glass plate that grows, stretches under the finger and lights up locally; the row under the finger is
+  highlighted and follows it, the one the finger is lifted over is chosen.
+- `showGlassMenu` / `GlassMenuButton` take `origin` (a `GlassSheetOriginController` on the control or on the whole group of buttons): the menu grows out of the
+  control's glass as a native one does (fitted frame by frame to a slowed simulator recording): the glass collapses into a droplet, the droplet moves and grows into the
+  menu with a spring and a little overshoot, its rows are in it from the start, shrunk and blurred, and sharpen as it grows. Icons are now leading, as in iOS 26.
+  `GlassSheetOriginController.hideForPresentation()` / `showAfterPresentation()` are public for such presenters.
+- Dialogs: the preferred action (`GlassAlertRole.preferred`) is a capsule filled with the tint and white text, as in a native alert; the whole card has the glass touch
+  response (grows on a press, stretches under a drag, lights up locally: `LiquidGlass.glowSigma`/`glowStrength`); the button under the finger is highlighted and follows it
+  (press one, drag to another, lift to activate that one); closing takes 240 ms like native; a title without a message is centred.
+- `LiquidGlass.opacity`: fades the whole plate (glass, shadow, flat fill, child) inside the glass pass. An `Opacity` widget around glass renders it
+  offscreen without a backdrop, so the plate vanished; this keeps the backdrop live. Dialog cards (`showGlassAlert`/`showGlassActionDialog`) use it.
+  Under a plain `Opacity`/`FadeTransition` ancestor a plate no longer vanishes: it draws the flat plate while the fade runs and cross-fades back to glass
+  in 160 ms once it is over.
+- `GlassSheet`: the iOS 26 resizable `.sheet`. At a partial detent (`GlassSheetDetent.medium`, `.fraction`, `.height`) it is a floating card of liquid
+  glass inset from the screen edges, with the drag indicator; dragged up it becomes an opaque full-width page at `.large`. The page behind
+  is not scaled, only dimmed in proportion to the height of the sheet. Content scroll hands off to the sheet. Three ways to use it:
+  `showGlassSheet(context, ...)`, `GlassSheetRoute` (router adapters `GlassSheetAutoRoute` for auto_route and `GlassSheetPage` for
+  go_router: the page widget is the content) and `GlassSheetPresenter` (inside a page, `isPresented` driven, with `modal: false` the page
+  stays usable). `GlassSheetController` moves it between detents. Native reference app in `tools/native_sheet_detents_ref`.
+  The sheet can grow out of a glass control (`GlassSheetOrigin` around the control, `origin:` on `showGlassSheet` / `GlassSheetRoute` /
+  `GlassSheetPresenter`): the card starts as the control's capsule or circle of liquid glass, grows into the sheet with its content scaled
+  in, and shrinks back on close, no `Hero`: the sheet's own geometry is animated. Release after a drag settles with a spring that keeps
+  the velocity of the finger. Text tracking of iOS (`iosTracking`) is applied to the kit's text styles; `GlassButtonSize.toolbar` added.
+- `showGlassAlert` / `showGlassActionDialog` (`GlassDialogRoute`): the iOS 26 `.alert` and `.confirmationDialog`. A card of liquid glass (320 pt, or
+  240 pt for the action dialog, radius 42) with a left-aligned title and message and glass capsule buttons: two share a row (cancel first),
+  more stack (cancel last), `GlassAlertRole.destructive` is red, `.preferred` semibold, `GlassAlertField` adds a text field. The alert
+  opens from 1.12x while it fades in and fades out, the page is dimmed by 20 %. The action dialog opens next to a `GlassSheetOrigin` control
+  or at the bottom, hides its cancel button and closes with a tap outside. Metrics measured on the native reference in
+  `tools/native_dialogs_ref`.
+
 - Merged the `ravel_ui_kit` package into swiftuikit: the iOS 26 style UI kit (progressive-blur `ChromeScaffold`, liquid glass
   shader plates, glass buttons / tab bar / segmented / slider / menu / text field, themed through `SwiftUiThemeData`) is now exported
   from `package:swiftuikit/swiftuikit.dart`. Call `preloadRavelUiKit()` once before `runApp`.

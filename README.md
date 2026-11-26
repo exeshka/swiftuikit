@@ -74,6 +74,19 @@ glass (`LiquidGlass`, `LiquidGlassGroup`, `GlassSurface`), glass buttons, tab ba
 field and a themed `SwiftUiApp`. It is exported from the same library; call `preloadRavelUiKit()` before `runApp` to load the
 shaders. A demo app is in `example_ui_kit/`.
 
+**Sheets** (`GlassSheet`, the iOS 26 `.sheet` with detents) work as a function, as a router page and inside a page:
+
+```dart
+// anywhere
+showGlassSheet(context, child: const Filters());
+
+// auto_route: the page widget is the content of the sheet
+GlassSheetAutoRoute(page: FiltersRoute.page, detents: [GlassSheetDetent.medium, GlassSheetDetent.large])
+
+// inside a page, driven by state
+GlassSheetPresenter(isPresented: _open, onDismissed: () => setState(() => _open = false), sheetChild: const Filters(), child: page)
+```
+
 ## Installation
 
 Install the current pub.dev release:
