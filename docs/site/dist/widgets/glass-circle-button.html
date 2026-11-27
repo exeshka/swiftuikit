@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="ru" data-theme="auto">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GlassCircleButton и кнопки баров · swiftuikit</title>
+<script>try{var t=localStorage.getItem('docs-theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="top">
+  <button class="menu" id="menu" aria-label="Меню">☰</button>
+  <a class="brand" href="../index.html"><span class="logo">◐</span> swiftuikit</a>
+  <div class="search"><input id="q" type="search" placeholder="Поиск виджетов  ( / )" autocomplete="off"><div id="results" hidden></div></div>
+  <button class="themebtn" id="theme" aria-label="Тема сайта" title="Тема сайта">◐</button>
+</header>
+<div class="layout">
+<nav class="side" id="side"><a class="navlink" href="../index.html">Главная</a>
+<div class="navhead">Гайды</div>
+<a class="navlink" href="../guides/01-quickstart.html">Быстрый старт</a>
+<a class="navlink" href="../guides/02-theme.html">Тема и цвета</a>
+<a class="navlink" href="../guides/03-glass-performance.html">Стекло и производительность</a>
+<a class="navlink" href="../guides/04-navigation-sheets.html">Навигация и листы</a>
+<a class="navlink" href="../guides/05-paging-headers.html">Пейджинг и заголовки</a>
+<div class="navhead"><a href="../widgets/index.html">Каталог виджетов</a></div>
+<div class="navgroup">Стекло и кнопки</div>
+<a class="navlink sub" href="../widgets/liquid-glass.html">LiquidGlass</a>
+<a class="navlink sub" href="../widgets/liquid-glass-group.html">LiquidGlassGroup и Presence</a>
+<a class="navlink sub" href="../widgets/glass-surface.html">GlassSurface</a>
+<a class="navlink sub" href="../widgets/glass-button.html">GlassButton</a>
+<a class="navlink sub on" href="../widgets/glass-circle-button.html">GlassCircleButton и кнопки баров</a>
+<a class="navlink sub" href="../widgets/glass-lens.html">GlassLens и ContentLens</a>
+<a class="navlink sub" href="../widgets/pressable-icon.html">Pressable и RavelIcon</a>
+<div class="navgroup">Бары и навигация</div>
+<a class="navlink sub" href="../widgets/chrome-scaffold.html">ChromeScaffold</a>
+<a class="navlink sub" href="../widgets/title-bar.html">TitleBar, LargeTitleHeader</a>
+<a class="navlink sub" href="../widgets/collapsible-bar.html">CollapsibleBar</a>
+<a class="navlink sub" href="../widgets/glass-tab-bar.html">GlassTabBar</a>
+<a class="navlink sub" href="../widgets/bottom-dock.html">BottomDock</a>
+<a class="navlink sub" href="../widgets/glass-toolbar-capsule.html">GlassToolbarCapsule</a>
+<a class="navlink sub" href="../widgets/glass-search-bar.html">GlassSearchBar</a>
+<a class="navlink sub" href="../widgets/glass-search-launcher.html">GlassSearchLauncher</a>
+<div class="navgroup">Оверлеи: листы, диалоги, меню</div>
+<a class="navlink sub" href="../widgets/glass-sheet.html">GlassSheet и showGlassSheet</a>
+<a class="navlink sub" href="../widgets/glass-alert.html">showGlassAlert и диалоги</a>
+<a class="navlink sub" href="../widgets/glass-menu.html">showGlassMenu и GlassMenuButton</a>
+<a class="navlink sub" href="../widgets/glass-selection-toolbar.html">GlassSelectionToolbar</a>
+<div class="navgroup">Формы и контролы</div>
+<a class="navlink sub" href="../widgets/glass-switch.html">GlassSwitch</a>
+<a class="navlink sub" href="../widgets/glass-slider.html">GlassSlider и GlassStepper</a>
+<a class="navlink sub" href="../widgets/glass-segmented.html">GlassSegmentedControl</a>
+<a class="navlink sub" href="../widgets/glass-scroll-segments.html">GlassScrollSegments</a>
+<a class="navlink sub" href="../widgets/glass-text-field.html">GlassTextField</a>
+<div class="navgroup">Списки и заголовки</div>
+<a class="navlink sub" href="../widgets/grouped-list.html">ListSection и GroupedRow</a>
+<a class="navlink sub" href="../widgets/swipe-action-row.html">SwipeActionRow и RavelRefreshControl</a>
+<a class="navlink sub" href="../widgets/list-row.html">ListRow и ListSectionTitle</a>
+<a class="navlink sub" href="../widgets/pinned-header.html">PinnedHeader и PinnedSection</a>
+<a class="navlink sub" href="../widgets/stretch-header.html">StretchHeader</a>
+<div class="navgroup">Каркас приложения и роутинг</div>
+<a class="navlink sub" href="../widgets/swift-ui-app.html">SwiftUiApp</a>
+<a class="navlink sub" href="../widgets/swift-ui-scaffold.html">SwiftUiScaffold, SwiftUiShell</a>
+<a class="navlink sub" href="../widgets/page-switcher.html">SwiftUiPageSwitcher</a>
+<a class="navlink sub" href="../widgets/swift-ui-drawer.html">SwiftUiDrawer</a>
+<a class="navlink sub" href="../widgets/routes.html">Маршруты и переходы</a>
+<div class="navgroup">Темы и утилиты</div>
+<a class="navlink sub" href="../widgets/theme-api.html">SwiftUiTheme и тема</a>
+<a class="navlink sub" href="../widgets/progressive-blur.html">ProgressiveBlur и ChromeStyle</a>
+<a class="navlink sub" href="../widgets/utils.html">Утилиты</a>
+<div class="navhead"><a href="../coverage.html">Покрытие</a></div></nav>
+<main><article><div class="crumb"><a href="../widgets/index.html">Каталог</a> / Стекло и кнопки</div>
+<h1>GlassCircleButton и кнопки баров</h1>
+<p class="lead">Круглая стеклянная кнопка для баров, а также назад, аватар и плавающая пилюля.</p>
+<h2 id="vid">Как выглядит</h2><div class="gallery"><figure><img class="shot-dark" src="../assets/img/page-dark.jpg" alt="Кнопки в баре" loading="lazy"><img class="shot-light" src="../assets/img/page-light.jpg" alt="Кнопки в баре" loading="lazy"><figcaption>Кнопки в баре</figcaption></figure><figure><img class="shot-dark" src="../assets/img/nav-bars-dark.jpg" alt="Назад и действия" loading="lazy"><img class="shot-light" src="../assets/img/nav-bars-light.jpg" alt="Назад и действия" loading="lazy"><figcaption>Назад и действия</figcaption></figure></div>
+<h2 id="что-это">Что это</h2>
+<ul><li><code>GlassCircleButton</code> — круглая кнопка (поиск, меню, плюс). <code>tint</code> — акцентная, <code>liquid: false</code> — плоская для списков.</li><li><code>GlassBackButton</code> — шеврон «назад»; без <code>onPressed</code> делает pop.</li><li><code>GlassAvatarButton</code> — круг с инициалами (аккаунт).</li><li><code>FloatingPillButton</code> — белая плавающая пилюля с иконкой и подписью («New chat»).</li></ul>
+<h2 id="пример">Пример</h2>
+<div class="code"><button class="copy" type="button" title="Копировать">Copy</button><pre><code><span class="tt">Row</span>(children: [
+  <span class="tk">const</span> <span class="tt">GlassBackButton</span>(),
+  <span class="tk">const</span> <span class="tt">Spacer</span>(),
+  <span class="tt">GlassCircleButton</span>(icon: <span class="tt">RavelIcon</span>(<span class="tt">RavelIconKind</span>.menu), semanticLabel: <span class="ts">&#x27;Menu&#x27;</span>, onPressed: () {}),
+  <span class="tt">GlassCircleButton</span>(icon: <span class="tt">RavelIcon</span>(<span class="tt">RavelIconKind</span>.plus), tint: <span class="tt">Colors</span>.blue, onPressed: () {}),
+  <span class="tt">GlassAvatarButton</span>(initials: <span class="ts">&#x27;AB&#x27;</span>, onPressed: () {}),
+])</code></pre></div>
+<h2 id="parametry">Параметры <small>(из dartdoc)</small></h2><details open><summary><code>GlassCircleButton</code></summary><div class="tablewrap"><table><thead><tr><th>Параметр</th><th>Тип</th><th>По умолчанию</th><th>Описание</th></tr></thead><tbody><tr><td><code>icon</code></td><td><code>Widget?</code></td><td></td><td>Any widget (a <code>RavelIcon</code>, an SVG, an <code>Icon</code>...): it gets the button's icon color and size through an <code>IconTheme</code>.</td></tr><tr><td><code>child</code></td><td><code>Widget?</code></td><td></td><td></td></tr><tr><td><code>onPressed</code></td><td><code>VoidCallback?</code></td><td></td><td></td></tr><tr><td><code>size</code></td><td><code>double?</code></td><td></td><td></td></tr><tr><td><code>semanticLabel</code></td><td><code>String?</code></td><td></td><td></td></tr><tr><td><code>blur</code></td><td><code>bool</code></td><td><code>false</code></td><td>Blur the backdrop behind the button (costly, see <code>GlassSurface.backdropBlur</code>).</td></tr><tr><td><code>liquid</code></td><td><code>bool?</code></td><td></td><td>Liquid glass shader on/off; null follows <code>SwiftUiThemeData.useLiquidGlass</code>. Turn it off for buttons repeated in lists (≈0.2 ms per plate).</td></tr><tr><td><code>interactive</code></td><td><code>bool</code></td><td><code>true</code></td><td>Native press response of liquid glass (spring scale, highlight, rubber band). The flat fallback keeps the small squish.</td></tr><tr><td><code>tint</code></td><td><code>Color?</code></td><td></td><td>Tinted glass (native <code>.glassEffect(.regular.tint(color))</code>), e.g. a blue primary action.</td></tr><tr><td><code>iconColor</code></td><td><code>Color?</code></td><td></td><td>Icon color; default is the theme's glass icon color (white on a dark tint).</td></tr></tbody></table></div></details><details><summary><code>GlassBackButton</code></summary><div class="tablewrap"><table><thead><tr><th>Параметр</th><th>Тип</th><th>По умолчанию</th><th>Описание</th></tr></thead><tbody><tr><td><code>onPressed</code></td><td><code>VoidCallback?</code></td><td></td><td></td></tr><tr><td><code>size</code></td><td><code>double?</code></td><td></td><td></td></tr><tr><td><code>liquid</code></td><td><code>bool?</code></td><td></td><td></td></tr><tr><td><code>semanticLabel</code></td><td><code>String</code></td><td><code>'Back'</code></td><td></td></tr></tbody></table></div></details><details><summary><code>GlassAvatarButton</code></summary><div class="tablewrap"><table><thead><tr><th>Параметр</th><th>Тип</th><th>По умолчанию</th><th>Описание</th></tr></thead><tbody><tr><td><code>initials</code></td><td><code>String</code></td><td><code>required</code></td><td></td></tr><tr><td><code>onPressed</code></td><td><code>VoidCallback?</code></td><td></td><td></td></tr><tr><td><code>accented</code></td><td><code>bool</code></td><td><code>false</code></td><td>Paint initials on an accent colored disc (ChatGPT style) instead of plain text on glass (Claude style).</td></tr><tr><td><code>size</code></td><td><code>double?</code></td><td></td><td></td></tr><tr><td><code>liquid</code></td><td><code>bool?</code></td><td></td><td></td></tr><tr><td><code>interactive</code></td><td><code>bool</code></td><td><code>true</code></td><td></td></tr></tbody></table></div></details><details><summary><code>FloatingPillButton</code></summary><div class="tablewrap"><table><thead><tr><th>Параметр</th><th>Тип</th><th>По умолчанию</th><th>Описание</th></tr></thead><tbody><tr><td><code>label</code></td><td><code>String</code></td><td><code>required</code></td><td></td></tr><tr><td><code>icon</code></td><td><code>Widget?</code></td><td></td><td>Any widget; it gets the pill's foreground color and size 24 through an <code>IconTheme</code>.</td></tr><tr><td><code>onPressed</code></td><td><code>VoidCallback?</code></td><td></td><td></td></tr></tbody></table></div></details>
+<p class="imp">Импорт: <code>import 'package:swiftuikit/swiftuikit.dart';</code></p></article></main>
+</div>
+<script>window.DOCS_ROOT="../";</script>
+<script src="../assets/search-index.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

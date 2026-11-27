@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="ru" data-theme="auto">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>swiftuikit · swiftuikit</title>
+<script>try{var t=localStorage.getItem('docs-theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<header class="top">
+  <button class="menu" id="menu" aria-label="Меню">☰</button>
+  <a class="brand" href="index.html"><span class="logo">◐</span> swiftuikit</a>
+  <div class="search"><input id="q" type="search" placeholder="Поиск виджетов  ( / )" autocomplete="off"><div id="results" hidden></div></div>
+  <button class="themebtn" id="theme" aria-label="Тема сайта" title="Тема сайта">◐</button>
+</header>
+<div class="layout">
+<nav class="side" id="side"><a class="navlink on" href="index.html">Главная</a>
+<div class="navhead">Гайды</div>
+<a class="navlink" href="guides/01-quickstart.html">Быстрый старт</a>
+<a class="navlink" href="guides/02-theme.html">Тема и цвета</a>
+<a class="navlink" href="guides/03-glass-performance.html">Стекло и производительность</a>
+<a class="navlink" href="guides/04-navigation-sheets.html">Навигация и листы</a>
+<a class="navlink" href="guides/05-paging-headers.html">Пейджинг и заголовки</a>
+<div class="navhead"><a href="widgets/index.html">Каталог виджетов</a></div>
+<div class="navgroup">Стекло и кнопки</div>
+<a class="navlink sub" href="widgets/liquid-glass.html">LiquidGlass</a>
+<a class="navlink sub" href="widgets/liquid-glass-group.html">LiquidGlassGroup и Presence</a>
+<a class="navlink sub" href="widgets/glass-surface.html">GlassSurface</a>
+<a class="navlink sub" href="widgets/glass-button.html">GlassButton</a>
+<a class="navlink sub" href="widgets/glass-circle-button.html">GlassCircleButton и кнопки баров</a>
+<a class="navlink sub" href="widgets/glass-lens.html">GlassLens и ContentLens</a>
+<a class="navlink sub" href="widgets/pressable-icon.html">Pressable и RavelIcon</a>
+<div class="navgroup">Бары и навигация</div>
+<a class="navlink sub" href="widgets/chrome-scaffold.html">ChromeScaffold</a>
+<a class="navlink sub" href="widgets/title-bar.html">TitleBar, LargeTitleHeader</a>
+<a class="navlink sub" href="widgets/collapsible-bar.html">CollapsibleBar</a>
+<a class="navlink sub" href="widgets/glass-tab-bar.html">GlassTabBar</a>
+<a class="navlink sub" href="widgets/bottom-dock.html">BottomDock</a>
+<a class="navlink sub" href="widgets/glass-toolbar-capsule.html">GlassToolbarCapsule</a>
+<a class="navlink sub" href="widgets/glass-search-bar.html">GlassSearchBar</a>
+<a class="navlink sub" href="widgets/glass-search-launcher.html">GlassSearchLauncher</a>
+<div class="navgroup">Оверлеи: листы, диалоги, меню</div>
+<a class="navlink sub" href="widgets/glass-sheet.html">GlassSheet и showGlassSheet</a>
+<a class="navlink sub" href="widgets/glass-alert.html">showGlassAlert и диалоги</a>
+<a class="navlink sub" href="widgets/glass-menu.html">showGlassMenu и GlassMenuButton</a>
+<a class="navlink sub" href="widgets/glass-selection-toolbar.html">GlassSelectionToolbar</a>
+<div class="navgroup">Формы и контролы</div>
+<a class="navlink sub" href="widgets/glass-switch.html">GlassSwitch</a>
+<a class="navlink sub" href="widgets/glass-slider.html">GlassSlider и GlassStepper</a>
+<a class="navlink sub" href="widgets/glass-segmented.html">GlassSegmentedControl</a>
+<a class="navlink sub" href="widgets/glass-scroll-segments.html">GlassScrollSegments</a>
+<a class="navlink sub" href="widgets/glass-text-field.html">GlassTextField</a>
+<div class="navgroup">Списки и заголовки</div>
+<a class="navlink sub" href="widgets/grouped-list.html">ListSection и GroupedRow</a>
+<a class="navlink sub" href="widgets/swipe-action-row.html">SwipeActionRow и RavelRefreshControl</a>
+<a class="navlink sub" href="widgets/list-row.html">ListRow и ListSectionTitle</a>
+<a class="navlink sub" href="widgets/pinned-header.html">PinnedHeader и PinnedSection</a>
+<a class="navlink sub" href="widgets/stretch-header.html">StretchHeader</a>
+<div class="navgroup">Каркас приложения и роутинг</div>
+<a class="navlink sub" href="widgets/swift-ui-app.html">SwiftUiApp</a>
+<a class="navlink sub" href="widgets/swift-ui-scaffold.html">SwiftUiScaffold, SwiftUiShell</a>
+<a class="navlink sub" href="widgets/page-switcher.html">SwiftUiPageSwitcher</a>
+<a class="navlink sub" href="widgets/swift-ui-drawer.html">SwiftUiDrawer</a>
+<a class="navlink sub" href="widgets/routes.html">Маршруты и переходы</a>
+<div class="navgroup">Темы и утилиты</div>
+<a class="navlink sub" href="widgets/theme-api.html">SwiftUiTheme и тема</a>
+<a class="navlink sub" href="widgets/progressive-blur.html">ProgressiveBlur и ChromeStyle</a>
+<a class="navlink sub" href="widgets/utils.html">Утилиты</a>
+<div class="navhead"><a href="coverage.html">Покрытие</a></div></nav>
+<main><article class="home"><h1>swiftuikit</h1><p class="lead">UI-кит для Flutter в стиле iOS 26. «Жидкое стекло» на шейдерах Impeller, прогрессивный блюр под барами, листы с детентами, нативные меню и диалоги.</p>
+<div class="gallery"><figure><img class="shot-dark" src="assets/img/buttons-dark.jpg" alt="Кнопки в стилях iOS 26" loading="lazy"><img class="shot-light" src="assets/img/buttons-light.jpg" alt="Кнопки в стилях iOS 26" loading="lazy"><figcaption>Кнопки в стилях iOS 26</figcaption></figure><figure><img class="shot-dark" src="assets/img/sheets-dark.jpg" alt="Листы и диалоги" loading="lazy"><img class="shot-light" src="assets/img/sheets-light.jpg" alt="Листы и диалоги" loading="lazy"><figcaption>Листы и диалоги</figcaption></figure><figure><img class="shot-dark" src="assets/img/controls-dark.jpg" alt="Контролы" loading="lazy"><img class="shot-light" src="assets/img/controls-light.jpg" alt="Контролы" loading="lazy"><figcaption>Контролы</figcaption></figure><figure><img class="shot-dark" src="assets/img/nav-bars-dark.jpg" alt="Большой заголовок" loading="lazy"><img class="shot-light" src="assets/img/nav-bars-light.jpg" alt="Большой заголовок" loading="lazy"><figcaption>Большой заголовок</figcaption></figure></div>
+<h2 id="что-это">Что это</h2>
+<p><code>swiftuikit</code> — набор виджетов, которые выглядят и ведут себя как iOS 26: стекло с преломлением на краю (<code>LiquidGlass</code>), бары, под которыми контент уходит в размытие (<code>ChromeScaffold</code>), плавающий таб-бар, листы (<code>GlassSheet</code>), меню и алерты. Размеры, пружины и затухания сняты с нативных приложений покадрово.</p>
+<blockquote>Стекло рисуется фрагментным шейдером на Impeller. На Flutter Web и без Impeller (<code>flutter test</code>) оно заменяется плоской подложкой, поэтому внешний вид в этой документации — реальные снимки с iOS-симулятора.</blockquote>
+<h2 id="установка">Установка</h2>
+<div class="code"><button class="copy" type="button" title="Копировать">Copy</button><pre><code>dependencies:
+  swiftuikit:
+    path: ../swiftuikit   # или git: url</code></pre></div>
+<div class="code"><button class="copy" type="button" title="Копировать">Copy</button><pre><code><span class="tk">import</span> <span class="ts">&#x27;package:swiftuikit/swiftuikit.dart&#x27;</span>;</code></pre></div>
+<h2 id="запуск-приложения">Запуск приложения</h2>
+<p>Шейдеры нужно загрузить до <code>runApp</code> — тогда первое стекло не мигает:</p>
+<div class="code"><button class="copy" type="button" title="Копировать">Copy</button><pre><code><span class="tt">Future</span>&lt;<span class="tk">void</span>&gt; main() <span class="tk">async</span> {
+  <span class="tt">WidgetsFlutterBinding</span>.ensureInitialized();
+  <span class="tk">await</span> preloadRavelUiKit();          <span class="tc">// ProgressiveBlur, LiquidGlass, ContentLens + прогрев клавиатуры iOS</span>
+  <span class="tk">await</span> <span class="tt">ScreenRadiusService</span>.instance.initialize(); <span class="tc">// радиус скругления экрана (для листов)</span>
+  runApp(<span class="tk">const</span> <span class="tt">MyApp</span>());
+}
+
+<span class="tk">class</span> <span class="tt">MyApp</span> <span class="tk">extends</span> <span class="tt">StatelessWidget</span> {
+  <span class="tk">const</span> <span class="tt">MyApp</span>({<span class="tk">super</span>.key});
+
+  @<span class="tk">override</span>
+  <span class="tt">Widget</span> build(<span class="tt">BuildContext</span> context) =&gt; <span class="tt">SwiftUiApp</span>(
+        themeMode: <span class="tt">ThemeMode</span>.system,
+        theme: <span class="tt">SwiftUiThemeData</span>.light(),
+        darkTheme: <span class="tt">SwiftUiThemeData</span>.dark(),
+        home: <span class="tk">const</span> <span class="tt">HomePage</span>(),
+      );
+}</code></pre></div>
+<h2 id="темы">Темы</h2>
+<p><code>SwiftUiThemeData</code> — это цвета, типографика, метрики, параметры стекла и эффект краёв баров. Читается через <code>SwiftUiTheme.of(context)</code>; подробности — в гайде «Тема и цвета».</p>
+<div class="code"><button class="copy" type="button" title="Копировать">Copy</button><pre><code><span class="tk">final</span> t = <span class="tt">SwiftUiTheme</span>.of(context);
+<span class="tt">Container</span>(color: t.colors.background, child: <span class="tt">Text</span>(<span class="ts">&#x27;Hi&#x27;</span>, style: t.typography.body));</code></pre></div>
+<p>Тема самого сайта переключается кнопкой ◐ справа сверху; скриншоты виджетов подбираются под неё.</p>
+<h2>Гайды</h2><div class="cards"><a class="card" href="guides/01-quickstart.html"><div class="ct"><b>Быстрый старт</b><span>От пустого проекта до страницы с большим заголовком, стеклянными кнопками и таб-баром.</span></div></a><a class="card" href="guides/02-theme.html"><div class="ct"><b>Тема и цвета</b><span>SwiftUiThemeData, семантические цвета в духе iOS, параметры шейдера стекла, переключение светлой и тёмной темы.</span></div></a><a class="card" href="guides/03-glass-performance.html"><div class="ct"><b>Стекло и производительность</b><span>Как устроен LiquidGlass, почему одна плита — это один проход по фону, и как держать 60/120 fps с LiquidGlassGroup.</span></div></a><a class="card" href="guides/04-navigation-sheets.html"><div class="ct"><b>Навигация и листы</b><span>Переходы страниц, листы с детентами, морф меню и листа из кнопки, диалоги, интеграция с auto_route и go_router.</span></div></a><a class="card" href="guides/05-paging-headers.html"><div class="ct"><b>Пейджинг и заголовки</b><span>Большие заголовки, сворачиваемые секции, липкие заголовки, горизонтальный пейджер списков и растягивающийся хедер.</span></div></a></div>
+<h2>Каталог</h2><div class="cards"><a class="card" href="widgets/index.html#-"><div class="ct"><b>Стекло и кнопки</b><span>LiquidGlass, LiquidGlassGroup и Presence, GlassSurface, GlassButton, GlassCircleButton и кнопки баров, GlassLens и ContentLens, Pressable и RavelIcon</span></div></a><a class="card" href="widgets/index.html#-"><div class="ct"><b>Бары и навигация</b><span>ChromeScaffold, TitleBar, LargeTitleHeader, CollapsibleBar, GlassTabBar, BottomDock, GlassToolbarCapsule, GlassSearchBar, GlassSearchLauncher</span></div></a><a class="card" href="widgets/index.html#-"><div class="ct"><b>Оверлеи: листы, диалоги, меню</b><span>GlassSheet и showGlassSheet, showGlassAlert и диалоги, showGlassMenu и GlassMenuButton, GlassSelectionToolbar</span></div></a><a class="card" href="widgets/index.html#-"><div class="ct"><b>Формы и контролы</b><span>GlassSwitch, GlassSlider и GlassStepper, GlassSegmentedControl, GlassScrollSegments, GlassTextField</span></div></a><a class="card" href="widgets/index.html#-"><div class="ct"><b>Списки и заголовки</b><span>ListSection и GroupedRow, SwipeActionRow и RavelRefreshControl, ListRow и ListSectionTitle, PinnedHeader и PinnedSection, StretchHeader</span></div></a><a class="card" href="widgets/index.html#-"><div class="ct"><b>Каркас приложения и роутинг</b><span>SwiftUiApp, SwiftUiScaffold, SwiftUiShell, SwiftUiPageSwitcher, SwiftUiDrawer, Маршруты и переходы</span></div></a><a class="card" href="widgets/index.html#-"><div class="ct"><b>Темы и утилиты</b><span>SwiftUiTheme и тема, ProgressiveBlur и ChromeStyle, Утилиты</span></div></a></div></article></main>
+</div>
+<script>window.DOCS_ROOT="";</script>
+<script src="assets/search-index.js"></script>
+<script src="assets/app.js"></script>
+</body>
+</html>

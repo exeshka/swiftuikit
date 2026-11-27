@@ -49,6 +49,8 @@ class LiquidGlass extends StatelessWidget {
     this.stretch = 1,
     this.cornerScaleTR = 1,
     this.cornerScaleBR = 1,
+    this.cornerScaleTL = 1,
+    this.cornerScaleBL = 1,
   });
 
   /// Circle: size × size with `cornerRadius == null` (fully round).
@@ -76,6 +78,8 @@ class LiquidGlass extends StatelessWidget {
     this.stretch = 1,
     this.cornerScaleTR = 1,
     this.cornerScaleBR = 1,
+    this.cornerScaleTL = 1,
+    this.cornerScaleBL = 1,
   }) : width = size,
        height = size,
        cornerRadius = null,
@@ -114,6 +118,8 @@ class LiquidGlass extends StatelessWidget {
   /// plate that is not symmetric (a native menu pulled out of a toolbar button) needs corners of its own.
   final double cornerScaleTR;
   final double cornerScaleBR;
+  final double cornerScaleTL;
+  final double cornerScaleBL;
 
   /// Multiplier of the drag response (how far the plate stretches toward the finger and narrows across). 1: as measured on native
   /// glass buttons, which a big plate such as a dialog barely shows; raise it there.
@@ -321,6 +327,8 @@ class LiquidGlass extends StatelessWidget {
       glowStrength: glowStrength,
       cornerScaleTR: cornerScaleTR,
       cornerScaleBR: cornerScaleBR,
+      cornerScaleTL: cornerScaleTL,
+      cornerScaleBL: cornerScaleBL,
       stretch: stretch,
       child: content,
     );
@@ -473,6 +481,8 @@ class _LiquidGlassRender extends SingleChildRenderObjectWidget {
     this.stretch = 1,
     this.cornerScaleTR = 1,
     this.cornerScaleBR = 1,
+    this.cornerScaleTL = 1,
+    this.cornerScaleBL = 1,
     super.child,
   });
 
@@ -496,6 +506,8 @@ class _LiquidGlassRender extends SingleChildRenderObjectWidget {
   /// plate that is not symmetric (a native menu pulled out of a toolbar button) needs corners of its own.
   final double cornerScaleTR;
   final double cornerScaleBR;
+  final double cornerScaleTL;
+  final double cornerScaleBL;
   final double stretch;
   final double spread; // 0..1: how far the press highlight has spread over the plate (latched once a drag starts)
 
@@ -548,6 +560,8 @@ class _PlateGeom {
     this.radiusBottom = -1,
     this.trScale = 1,
     this.brScale = 1,
+    this.tlScale = 1,
+    this.blScale = 1,
   ]);
   final Rect rect; // logical, owner-local
   final double radius; // logical
@@ -565,6 +579,8 @@ class _PlateGeom {
   radiusBottom; // radius of the bottom corners (logical); < 0: same as [radius]
   final double trScale;
   final double brScale;
+  final double tlScale;
+  final double blScale;
   bool melt; // takes part in the smooth union of the pass (see RenderLiquidGlassGroup._meltSet)
 }
 
@@ -586,6 +602,7 @@ class _GlassPass {
   static const int oTints = oBlur + 1;
   static const int oFade = oTints + 4 * maxPlates;
   static const int oMelt = oFade + 1;
+  static const int oCorners2 = oMelt + 4 * maxPlates;
   final ui.FragmentProgram program;
   ui.FragmentShader? _shader;
   List<RRect>? _shadowRRects;
@@ -662,6 +679,8 @@ class _GlassPass {
             plates[i].radiusBottom,
             plates[i].trScale,
             plates[i].brScale,
+            plates[i].tlScale,
+            plates[i].blScale,
           ),
       ],
     );
@@ -741,6 +760,8 @@ class _GlassSpec {
         p.radiusBottom,
         p.trScale,
         p.brScale,
+        p.tlScale,
+        p.blScale,
       ],
     ];
   }
@@ -869,6 +890,8 @@ class _GlassBackdropLayer extends BackdropFilterLayer {
       );
       sh.setFloat(_GlassPass.oMelt + i * 4 + 2, p.trScale);
       sh.setFloat(_GlassPass.oMelt + i * 4 + 3, p.brScale);
+      sh.setFloat(_GlassPass.oCorners2 + i * 4, p.tlScale);
+      sh.setFloat(_GlassPass.oCorners2 + i * 4 + 1, p.blScale);
     }
     final o = _GlassPass.oScalars;
     sh.setFloat(o, st.refraction);
@@ -1155,21 +1178,27 @@ class RenderLiquidGlass extends RenderProxyBox {
                 k,
       _w.cornerScaleTR,
       _w.cornerScaleBR,
+      _w.cornerScaleTL,
+      _w.cornerScaleBL,
     );
   }
 
   /// The plate's outline: a rounded rectangle, with its own radius at the bottom corners when it has one.
   static RRect _outline(_PlateGeom g, Offset shift) {
     final r = g.rect.shift(shift);
-    if (g.radiusBottom < 0 && g.trScale == 1 && g.brScale == 1) {
+    if (g.radiusBottom < 0 &&
+        g.trScale == 1 &&
+        g.brScale == 1 &&
+        g.tlScale == 1 &&
+        g.blScale == 1) {
       return RRect.fromRectAndRadius(r, Radius.circular(g.radius));
     }
     final rb = g.radiusBottom < 0 ? g.radius : g.radiusBottom;
     return RRect.fromRectAndCorners(
       r,
-      topLeft: Radius.circular(g.radius),
+      topLeft: Radius.circular(g.radius * g.tlScale),
       topRight: Radius.circular(g.radius * g.trScale),
-      bottomLeft: Radius.circular(rb),
+      bottomLeft: Radius.circular(rb * g.blScale),
       bottomRight: Radius.circular(rb * g.brScale),
     );
   }

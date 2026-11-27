@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="ru" data-theme="auto">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SwiftUiTheme и тема · swiftuikit</title>
+<script>try{var t=localStorage.getItem('docs-theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="top">
+  <button class="menu" id="menu" aria-label="Меню">☰</button>
+  <a class="brand" href="../index.html"><span class="logo">◐</span> swiftuikit</a>
+  <div class="search"><input id="q" type="search" placeholder="Поиск виджетов  ( / )" autocomplete="off"><div id="results" hidden></div></div>
+  <button class="themebtn" id="theme" aria-label="Тема сайта" title="Тема сайта">◐</button>
+</header>
+<div class="layout">
+<nav class="side" id="side"><a class="navlink" href="../index.html">Главная</a>
+<div class="navhead">Гайды</div>
+<a class="navlink" href="../guides/01-quickstart.html">Быстрый старт</a>
+<a class="navlink" href="../guides/02-theme.html">Тема и цвета</a>
+<a class="navlink" href="../guides/03-glass-performance.html">Стекло и производительность</a>
+<a class="navlink" href="../guides/04-navigation-sheets.html">Навигация и листы</a>
+<a class="navlink" href="../guides/05-paging-headers.html">Пейджинг и заголовки</a>
+<div class="navhead"><a href="../widgets/index.html">Каталог виджетов</a></div>
+<div class="navgroup">Стекло и кнопки</div>
+<a class="navlink sub" href="../widgets/liquid-glass.html">LiquidGlass</a>
+<a class="navlink sub" href="../widgets/liquid-glass-group.html">LiquidGlassGroup и Presence</a>
+<a class="navlink sub" href="../widgets/glass-surface.html">GlassSurface</a>
+<a class="navlink sub" href="../widgets/glass-button.html">GlassButton</a>
+<a class="navlink sub" href="../widgets/glass-circle-button.html">GlassCircleButton и кнопки баров</a>
+<a class="navlink sub" href="../widgets/glass-lens.html">GlassLens и ContentLens</a>
+<a class="navlink sub" href="../widgets/pressable-icon.html">Pressable и RavelIcon</a>
+<div class="navgroup">Бары и навигация</div>
+<a class="navlink sub" href="../widgets/chrome-scaffold.html">ChromeScaffold</a>
+<a class="navlink sub" href="../widgets/title-bar.html">TitleBar, LargeTitleHeader</a>
+<a class="navlink sub" href="../widgets/collapsible-bar.html">CollapsibleBar</a>
+<a class="navlink sub" href="../widgets/glass-tab-bar.html">GlassTabBar</a>
+<a class="navlink sub" href="../widgets/bottom-dock.html">BottomDock</a>
+<a class="navlink sub" href="../widgets/glass-toolbar-capsule.html">GlassToolbarCapsule</a>
+<a class="navlink sub" href="../widgets/glass-search-bar.html">GlassSearchBar</a>
+<a class="navlink sub" href="../widgets/glass-search-launcher.html">GlassSearchLauncher</a>
+<div class="navgroup">Оверлеи: листы, диалоги, меню</div>
+<a class="navlink sub" href="../widgets/glass-sheet.html">GlassSheet и showGlassSheet</a>
+<a class="navlink sub" href="../widgets/glass-alert.html">showGlassAlert и диалоги</a>
+<a class="navlink sub" href="../widgets/glass-menu.html">showGlassMenu и GlassMenuButton</a>
+<a class="navlink sub" href="../widgets/glass-selection-toolbar.html">GlassSelectionToolbar</a>
+<div class="navgroup">Формы и контролы</div>
+<a class="navlink sub" href="../widgets/glass-switch.html">GlassSwitch</a>
+<a class="navlink sub" href="../widgets/glass-slider.html">GlassSlider и GlassStepper</a>
+<a class="navlink sub" href="../widgets/glass-segmented.html">GlassSegmentedControl</a>
+<a class="navlink sub" href="../widgets/glass-scroll-segments.html">GlassScrollSegments</a>
+<a class="navlink sub" href="../widgets/glass-text-field.html">GlassTextField</a>
+<div class="navgroup">Списки и заголовки</div>
+<a class="navlink sub" href="../widgets/grouped-list.html">ListSection и GroupedRow</a>
+<a class="navlink sub" href="../widgets/swipe-action-row.html">SwipeActionRow и RavelRefreshControl</a>
+<a class="navlink sub" href="../widgets/list-row.html">ListRow и ListSectionTitle</a>
+<a class="navlink sub" href="../widgets/pinned-header.html">PinnedHeader и PinnedSection</a>
+<a class="navlink sub" href="../widgets/stretch-header.html">StretchHeader</a>
+<div class="navgroup">Каркас приложения и роутинг</div>
+<a class="navlink sub" href="../widgets/swift-ui-app.html">SwiftUiApp</a>
+<a class="navlink sub" href="../widgets/swift-ui-scaffold.html">SwiftUiScaffold, SwiftUiShell</a>
+<a class="navlink sub" href="../widgets/page-switcher.html">SwiftUiPageSwitcher</a>
+<a class="navlink sub" href="../widgets/swift-ui-drawer.html">SwiftUiDrawer</a>
+<a class="navlink sub" href="../widgets/routes.html">Маршруты и переходы</a>
+<div class="navgroup">Темы и утилиты</div>
+<a class="navlink sub on" href="../widgets/theme-api.html">SwiftUiTheme и тема</a>
+<a class="navlink sub" href="../widgets/progressive-blur.html">ProgressiveBlur и ChromeStyle</a>
+<a class="navlink sub" href="../widgets/utils.html">Утилиты</a>
+<div class="navhead"><a href="../coverage.html">Покрытие</a></div></nav>
+<main><article><div class="crumb"><a href="../widgets/index.html">Каталог</a> / Темы и утилиты</div>
+<h1>SwiftUiTheme и тема</h1>
+<p class="lead">Чтение темы, цвета, типографика, метрики и параметры стекла.</p>
+<h2 id="vid">Как выглядит</h2><div class="gallery"><figure><img class="shot-dark" src="../assets/img/components-dark.jpg" alt="Светлая и тёмная" loading="lazy"><img class="shot-light" src="../assets/img/components-light.jpg" alt="Светлая и тёмная" loading="lazy"><figcaption>Светлая и тёмная</figcaption></figure></div>
+<h2 id="что-это">Что это</h2>
+<p><code>SwiftUiTheme.of(context)</code> отдаёт <code>SwiftUiThemeData</code>. Подробно — в гайде «Тема и цвета».</p>
+<div class="code"><button class="copy" type="button" title="Копировать">Copy</button><pre><code><span class="tk">final</span> t = <span class="tt">SwiftUiTheme</span>.of(context);
+<span class="tt">Text</span>(<span class="ts">&#x27;Hi&#x27;</span>, style: t.typography.body.copyWith(color: t.colors.foregroundSecondary));</code></pre></div>
+<h2 id="parametry">Параметры <small>(из dartdoc)</small></h2><details open><summary><code>SwiftUiThemeData</code></summary><div class="tablewrap"><table><thead><tr><th>Параметр</th><th>Тип</th><th>По умолчанию</th><th>Описание</th></tr></thead><tbody><tr><td><code>brightness</code></td><td><code>Brightness</code></td><td><code>required</code></td><td></td></tr><tr><td><code>colors</code></td><td><code>SwiftUiColors</code></td><td><code>required</code></td><td></td></tr><tr><td><code>typography</code></td><td><code>SwiftUiTypography</code></td><td><code>required</code></td><td></td></tr><tr><td><code>metrics</code></td><td><code>SwiftUiMetrics</code></td><td><code>required</code></td><td></td></tr><tr><td><code>glass</code></td><td><code>SwiftUiGlassTheme</code></td><td><code>required</code></td><td></td></tr><tr><td><code>chrome</code></td><td><code>SwiftUiChromeTheme</code></td><td><code>required</code></td><td></td></tr><tr><td><code>adaptive</code></td><td><code>SwiftUiAdaptiveTheme</code></td><td><code>const SwiftUiAdaptiveTheme()</code></td><td></td></tr></tbody></table></div></details><details><summary><code>SwiftUiColors</code></summary><div class="tablewrap"><table><thead><tr><th>Параметр</th><th>Тип</th><th>По умолчанию</th><th>Описание</th></tr></thead><tbody><tr><td><code>background</code></td><td><code>Color</code></td><td><code>required</code></td><td>The page background.</td></tr><tr><td><code>foreground</code></td><td><code>Color</code></td><td><code>required</code></td><td>The primary label (text, icons).</td></tr><tr><td><code>foregroundSecondary</code></td><td><code>Color</code></td><td><code>required</code></td><td></td></tr><tr><td><code>foregroundTertiary</code></td><td><code>Color</code></td><td><code>required</code></td><td></td></tr><tr><td><code>separator</code></td><td><code>Color</code></td><td><code>required</code></td><td></td></tr><tr><td><code>accent</code></td><td><code>Color</code></td><td><code>required</code></td><td>The tint: the colour of prominent controls.</td></tr><tr><td><code>onAccent</code></td><td><code>Color</code></td><td><code>required</code></td><td>What sits on the <code>accent</code>.</td></tr><tr><td><code>pillFill</code></td><td><code>Color</code></td><td><code>required</code></td><td>The floating pill button (the opaque one that stands out of the glass).</td></tr><tr><td><code>pillForeground</code></td><td><code>Color</code></td><td><code>required</code></td><td></td></tr><tr><td><code>pillShadow</code></td><td><code>Color</code></td><td><code>required</code></td><td></td></tr></tbody></table></div></details><details><summary><code>SwiftUiTypography</code></summary><div class="tablewrap"><table><thead><tr><th>Параметр</th><th>Тип</th><th>По умолчанию</th><th>Описание</th></tr></thead><tbody><tr><td><code>largeTitle</code></td><td><code>TextStyle</code></td><td><code>required</code></td><td></td></tr><tr><td><code>title</code></td><td><code>TextStyle</code></td><td><code>required</code></td><td></td></tr><tr><td><code>body</code></td><td><code>TextStyle</code></td><td><code>required</code></td><td></td></tr><tr><td><code>caption</code></td><td><code>TextStyle</code></td><td><code>required</code></td><td></td></tr><tr><td><code>serifTitle</code></td><td><code>TextStyle</code></td><td><code>required</code></td><td></td></tr></tbody></table></div></details><details><summary><code>SwiftUiMetrics</code></summary><div class="tablewrap"><table><thead><tr><th>Параметр</th><th>Тип</th><th>По умолчанию</th><th>Описание</th></tr></thead><tbody><tr><td><code>circleButtonSize</code></td><td><code>double</code></td><td><code>44</code></td><td></td></tr><tr><td><code>avatarSize</code></td><td><code>double</code></td><td><code>48</code></td><td></td></tr><tr><td><code>pillHeight</code></td><td><code>double</code></td><td><code>48</code></td><td></td></tr><tr><td><code>barHeight</code></td><td><code>double</code></td><td><code>52</code></td><td>Height of a navigation bar.</td></tr><tr><td><code>pageInset</code></td><td><code>double</code></td><td><code>20</code></td><td>Horizontal page margin.</td></tr><tr><td><code>rowHeight</code></td><td><code>double</code></td><td><code>49</code></td><td></td></tr><tr><td><code>pillRadius</code></td><td><code>double</code></td><td><code>999</code></td><td></td></tr><tr><td><code>cardRadius</code></td><td><code>double</code></td><td><code>28</code></td><td></td></tr></tbody></table></div></details><details><summary><code>SwiftUiGlassTheme</code></summary><div class="tablewrap"><table><thead><tr><th>Параметр</th><th>Тип</th><th>По умолчанию</th><th>Описание</th></tr></thead><tbody><tr><td><code>glassFill</code></td><td><code>Color</code></td><td><code>required</code></td><td></td></tr><tr><td><code>glassBorderLight</code></td><td><code>Color</code></td><td><code>required</code></td><td></td></tr><tr><td><code>glassBorderDark</code></td><td><code>Color</code></td><td><code>required</code></td><td></td></tr><tr><td><code>glassShadow</code></td><td><code>Color</code></td><td><code>required</code></td><td></td></tr><tr><td><code>glassIcon</code></td><td><code>Color</code></td><td><code>required</code></td><td></td></tr><tr><td><code>glassSigma</code></td><td><code>double</code></td><td><code>required</code></td><td>Sigma of the flat glass surfaces (buttons).</td></tr><tr><td><code>liquidBezel</code></td><td><code>double</code></td><td><code>required</code></td><td>Bezel width in logical px where light bends.</td></tr><tr><td><code>liquidRefraction</code></td><td><code>double</code></td><td><code>required</code></td><td>Rim displacement multiplier (1 = native-like: the rim zone shows the content from <code>liquidBezel</code> deep).</td></tr><tr><td><code>liquidBlur</code></td><td><code>double</code></td><td><code>required</code></td><td>Gaussian sigma (logical px) of the blur under the plate.</td></tr><tr><td><code>liquidSaturation</code></td><td><code>double</code></td><td><code>required</code></td><td></td></tr><tr><td><code>liquidDispersion</code></td><td><code>double</code></td><td><code>required</code></td><td></td></tr><tr><td><code>liquidMagnify</code></td><td><code>double</code></td><td><code>required</code></td><td>&lt; 1 magnifies the middle of the plate a little.</td></tr><tr><td><code>liquidHdr</code></td><td><code>double</code></td><td><code>required</code></td><td>Peak brightness of the press highlight and rim, in SDR-white units. 1.0 = SDR only.</td></tr><tr><td><code>liquidPrefilter</code></td><td><code>double</code></td><td><code>required</code></td><td>Share of the blur done by an engine blur pass before the shader (0..1). The shader blurs with 40 taps, which aliases thin features (1 px lines, text strokes); a prefilter of about half the sigma removes that for the price of one extra pass per plate or group.</td></tr><tr><td><code>liquidSpecular</code></td><td><code>double</code></td><td><code>required</code></td><td></td></tr><tr><td><code>liquidGlow</code></td><td><code>double</code></td><td><code>required</code></td><td></td></tr><tr><td><code>liquidToneLift</code></td><td><code>double</code></td><td><code>required</code></td><td>Luminance tone map of the glass interior: out = lift + gain * in (fitted to native glass on a gray ramp). Identity: lift 0, gain 1.</td></tr><tr><td><code>liquidToneGain</code></td><td><code>double</code></td><td><code>required</code></td><td></td></tr><tr><td><code>liquidTint</code></td><td><code>Color</code></td><td><code>required</code></td><td>Tint laid over the refracted backdrop (alpha = amount).</td></tr><tr><td><code>useLiquidGlass</code></td><td><code>bool</code></td><td><code>required</code></td><td>Glass buttons/plates use the liquid glass shader (when the renderer supports it) instead of the flat glass painter.</td></tr></tbody></table></div></details><details><summary><code>SwiftUiChromeTheme</code></summary><div class="tablewrap"><table><thead><tr><th>Параметр</th><th>Тип</th><th>По умолчанию</th><th>Описание</th></tr></thead><tbody><tr><td><code>top</code></td><td><code>ChromeStyle</code></td><td><code>const ChromeStyle.soft()</code></td><td>The style of the top / bottom edge.</td></tr><tr><td><code>bottom</code></td><td><code>ChromeStyle</code></td><td><code>const ChromeStyle.soft()</code></td><td></td></tr><tr><td><code>blurTint</code></td><td><code>Color</code></td><td><code>required</code></td><td>The scrim colour of the blur styles.</td></tr><tr><td><code>blurSigma</code></td><td><code>double</code></td><td><code>10</code></td><td>Max sigma of the progressive blur at the very screen edge.</td></tr><tr><td><code>blurExtra</code></td><td><code>double</code></td><td><code>36</code></td><td>How far (logical px) the zone extends past the last bar.</td></tr><tr><td><code>tintOpacity</code></td><td><code>double</code></td><td><code>0.35</code></td><td>Opacity of the scrim laid over the zone (the styles that need a stronger one than the masked blur's 0.12).</td></tr><tr><td><code>bottomBarSafeAreaShare</code></td><td><code>double</code></td><td><code>0.3</code></td><td>0..1: the share of the bottom safe area (the home indicator) kept below the bottom bar. 1 lifts the bar by the whole inset, 0 presses it to the very edge.</td></tr><tr><td><code>topEdgeRamp</code></td><td><code>double</code></td><td><code>16</code></td><td>Scroll distance (logical px) over which the top edge effect fades in once the content starts to move under the bar. At rest (nothing under the bar yet) there is no effect, so the first rows are not blurred or dimmed; like the scroll edge effect of iOS 26.</td></tr></tbody></table></div></details><details><summary><code>SwiftUiAdaptiveTheme</code></summary><div class="tablewrap"><table><thead><tr><th>Параметр</th><th>Тип</th><th>По умолчанию</th><th>Описание</th></tr></thead><tbody><tr><td><code>regularWidth</code></td><td><code>double</code></td><td><code>600</code></td><td>A window at least this wide has the regular horizontal size class (the outer display of a foldable, 466 pt, is compact; its inner display, about 669 pt, is regular).</td></tr><tr><td><code>regularHeight</code></td><td><code>double</code></td><td><code>500</code></td><td>A window at least this tall has the regular vertical size class (a phone in portrait is regular, in landscape compact).</td></tr><tr><td><code>readableWidth</code></td><td><code>double</code></td><td><code>672</code></td><td>The comfortable width of text and rows on a wide window (like the readable content guide of iOS).</td></tr></tbody></table></div></details>
+<p class="imp">Импорт: <code>import 'package:swiftuikit/swiftuikit.dart';</code></p></article></main>
+</div>
+<script>window.DOCS_ROOT="../";</script>
+<script src="../assets/search-index.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

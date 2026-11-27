@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="ru" data-theme="auto">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GlassSearchBar · swiftuikit</title>
+<script>try{var t=localStorage.getItem('docs-theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="top">
+  <button class="menu" id="menu" aria-label="Меню">☰</button>
+  <a class="brand" href="../index.html"><span class="logo">◐</span> swiftuikit</a>
+  <div class="search"><input id="q" type="search" placeholder="Поиск виджетов  ( / )" autocomplete="off"><div id="results" hidden></div></div>
+  <button class="themebtn" id="theme" aria-label="Тема сайта" title="Тема сайта">◐</button>
+</header>
+<div class="layout">
+<nav class="side" id="side"><a class="navlink" href="../index.html">Главная</a>
+<div class="navhead">Гайды</div>
+<a class="navlink" href="../guides/01-quickstart.html">Быстрый старт</a>
+<a class="navlink" href="../guides/02-theme.html">Тема и цвета</a>
+<a class="navlink" href="../guides/03-glass-performance.html">Стекло и производительность</a>
+<a class="navlink" href="../guides/04-navigation-sheets.html">Навигация и листы</a>
+<a class="navlink" href="../guides/05-paging-headers.html">Пейджинг и заголовки</a>
+<div class="navhead"><a href="../widgets/index.html">Каталог виджетов</a></div>
+<div class="navgroup">Стекло и кнопки</div>
+<a class="navlink sub" href="../widgets/liquid-glass.html">LiquidGlass</a>
+<a class="navlink sub" href="../widgets/liquid-glass-group.html">LiquidGlassGroup и Presence</a>
+<a class="navlink sub" href="../widgets/glass-surface.html">GlassSurface</a>
+<a class="navlink sub" href="../widgets/glass-button.html">GlassButton</a>
+<a class="navlink sub" href="../widgets/glass-circle-button.html">GlassCircleButton и кнопки баров</a>
+<a class="navlink sub" href="../widgets/glass-lens.html">GlassLens и ContentLens</a>
+<a class="navlink sub" href="../widgets/pressable-icon.html">Pressable и RavelIcon</a>
+<div class="navgroup">Бары и навигация</div>
+<a class="navlink sub" href="../widgets/chrome-scaffold.html">ChromeScaffold</a>
+<a class="navlink sub" href="../widgets/title-bar.html">TitleBar, LargeTitleHeader</a>
+<a class="navlink sub" href="../widgets/collapsible-bar.html">CollapsibleBar</a>
+<a class="navlink sub" href="../widgets/glass-tab-bar.html">GlassTabBar</a>
+<a class="navlink sub" href="../widgets/bottom-dock.html">BottomDock</a>
+<a class="navlink sub" href="../widgets/glass-toolbar-capsule.html">GlassToolbarCapsule</a>
+<a class="navlink sub on" href="../widgets/glass-search-bar.html">GlassSearchBar</a>
+<a class="navlink sub" href="../widgets/glass-search-launcher.html">GlassSearchLauncher</a>
+<div class="navgroup">Оверлеи: листы, диалоги, меню</div>
+<a class="navlink sub" href="../widgets/glass-sheet.html">GlassSheet и showGlassSheet</a>
+<a class="navlink sub" href="../widgets/glass-alert.html">showGlassAlert и диалоги</a>
+<a class="navlink sub" href="../widgets/glass-menu.html">showGlassMenu и GlassMenuButton</a>
+<a class="navlink sub" href="../widgets/glass-selection-toolbar.html">GlassSelectionToolbar</a>
+<div class="navgroup">Формы и контролы</div>
+<a class="navlink sub" href="../widgets/glass-switch.html">GlassSwitch</a>
+<a class="navlink sub" href="../widgets/glass-slider.html">GlassSlider и GlassStepper</a>
+<a class="navlink sub" href="../widgets/glass-segmented.html">GlassSegmentedControl</a>
+<a class="navlink sub" href="../widgets/glass-scroll-segments.html">GlassScrollSegments</a>
+<a class="navlink sub" href="../widgets/glass-text-field.html">GlassTextField</a>
+<div class="navgroup">Списки и заголовки</div>
+<a class="navlink sub" href="../widgets/grouped-list.html">ListSection и GroupedRow</a>
+<a class="navlink sub" href="../widgets/swipe-action-row.html">SwipeActionRow и RavelRefreshControl</a>
+<a class="navlink sub" href="../widgets/list-row.html">ListRow и ListSectionTitle</a>
+<a class="navlink sub" href="../widgets/pinned-header.html">PinnedHeader и PinnedSection</a>
+<a class="navlink sub" href="../widgets/stretch-header.html">StretchHeader</a>
+<div class="navgroup">Каркас приложения и роутинг</div>
+<a class="navlink sub" href="../widgets/swift-ui-app.html">SwiftUiApp</a>
+<a class="navlink sub" href="../widgets/swift-ui-scaffold.html">SwiftUiScaffold, SwiftUiShell</a>
+<a class="navlink sub" href="../widgets/page-switcher.html">SwiftUiPageSwitcher</a>
+<a class="navlink sub" href="../widgets/swift-ui-drawer.html">SwiftUiDrawer</a>
+<a class="navlink sub" href="../widgets/routes.html">Маршруты и переходы</a>
+<div class="navgroup">Темы и утилиты</div>
+<a class="navlink sub" href="../widgets/theme-api.html">SwiftUiTheme и тема</a>
+<a class="navlink sub" href="../widgets/progressive-blur.html">ProgressiveBlur и ChromeStyle</a>
+<a class="navlink sub" href="../widgets/utils.html">Утилиты</a>
+<div class="navhead"><a href="../coverage.html">Покрытие</a></div></nav>
+<main><article><div class="crumb"><a href="../widgets/index.html">Каталог</a> / Бары и навигация</div>
+<h1>GlassSearchBar</h1>
+<p class="lead">Поле поиска iOS 26: стеклянная капсула с лупой, очисткой и выезжающей «Cancel».</p>
+<h2 id="vid">Как выглядит</h2><div class="gallery"><figure><img class="shot-dark" src="../assets/img/controls-dark.jpg" alt="Поле поиска" loading="lazy"><img class="shot-light" src="../assets/img/controls-light.jpg" alt="Поле поиска" loading="lazy"><figcaption>Поле поиска</figcaption></figure><figure><img class="shot-dark" src="../assets/img/telegram-dark.jpg" alt="Поиск в мессенджере" loading="lazy"><img class="shot-light" src="../assets/img/telegram-light.jpg" alt="Поиск в мессенджере" loading="lazy"><figcaption>Поиск в мессенджере</figcaption></figure></div>
+<h2 id="что-это">Что это</h2>
+<p>Редактируемое поле. <code>cancelAsButton: true</code> — стеклянная круглая кнопка с крестиком (как в мессенджерах), <code>liquid: false</code> — плоское поле одной краской (дешевле), <code>fadeWithSection</code> — для использования внутри <code>CollapsibleBar</code>.</p>
+<div class="code"><button class="copy" type="button" title="Копировать">Copy</button><pre><code><span class="tt">GlassSearchBar</span>(
+  hintText: <span class="ts">&#x27;Search&#x27;</span>,
+  onChanged: (q) =&gt; setState(() =&gt; query = q),
+  onCancel: () =&gt; setState(() =&gt; query = <span class="ts">&#x27;&#x27;</span>),
+)</code></pre></div>
+<h2 id="parametry">Параметры <small>(из dartdoc)</small></h2><details open><summary><code>GlassSearchBar</code></summary><div class="tablewrap"><table><thead><tr><th>Параметр</th><th>Тип</th><th>По умолчанию</th><th>Описание</th></tr></thead><tbody><tr><td><code>controller</code></td><td><code>TextEditingController?</code></td><td></td><td></td></tr><tr><td><code>focusNode</code></td><td><code>FocusNode?</code></td><td></td><td></td></tr><tr><td><code>hintText</code></td><td><code>String</code></td><td><code>'Search'</code></td><td></td></tr><tr><td><code>cancelLabel</code></td><td><code>String</code></td><td><code>'Cancel'</code></td><td></td></tr><tr><td><code>onChanged</code></td><td><code>ValueChanged&lt;String&gt;?</code></td><td></td><td></td></tr><tr><td><code>onSubmitted</code></td><td><code>ValueChanged&lt;String&gt;?</code></td><td></td><td></td></tr><tr><td><code>onCancel</code></td><td><code>VoidCallback?</code></td><td></td><td>Called after Cancel cleared the text and dropped the focus.</td></tr><tr><td><code>height</code></td><td><code>double</code></td><td><code>44</code></td><td></td></tr><tr><td><code>cancelAsButton</code></td><td><code>bool</code></td><td><code>false</code></td><td>true: the cancel control is a liquid glass round button with a cross (the messenger look) instead of the text <code>cancelLabel</code>.</td></tr><tr><td><code>alwaysShowCancel</code></td><td><code>bool</code></td><td><code>false</code></td><td>true: the cancel control stays while the field is not focused too (a search page that is open whatever the focus is).</td></tr><tr><td><code>liquid</code></td><td><code>bool</code></td><td><code>true</code></td><td>true (default): the field is a glass plate. false: a plain container of one colour (<code>fill</code>, default: the glass tint flattened onto the page background), like the search field of the native large-title apps.</td></tr><tr><td><code>fill</code></td><td><code>Color?</code></td><td></td><td></td></tr><tr><td><code>cancelLiquid</code></td><td><code>bool</code></td><td><code>true</code></td><td>With <code>cancelAsButton</code>: true (default) a liquid glass circle, false a plain circle of the field's colour (a flat field with a flat button, or any mix: plain field + glass button is <code>liquid: false, cancelLiquid: true</code>).</td></tr><tr><td><code>fadeWithSection</code></td><td><code>bool</code></td><td><code>true</code></td><td>Inside a collapsing <code>CollapsibleBar</code> section: the icon and the hint shrink and fade out as it closes while the field's container stays solid.</td></tr></tbody></table></div></details>
+<p class="imp">Импорт: <code>import 'package:swiftuikit/swiftuikit.dart';</code></p></article></main>
+</div>
+<script>window.DOCS_ROOT="../";</script>
+<script src="../assets/search-index.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

@@ -254,7 +254,10 @@ class _LargeTitleHeaderState extends State<LargeTitleHeader> {
     // not clamped: pulling down (negative offset) takes the large title along with the content
     final o = _offset;
     final large = (1 - (o - 20) / 60).clamp(0.0, 1.0);
-    final showSmall = !_isLarge || o > 72;
+    // the inline title follows the offset like the large one (no timed fade: after a change of direction a timed fade kept the
+    // small title for 250 ms while the large one was already back: both showed at once). It appears as the large title has gone
+    // (opacity 0 at 80).
+    final small = !_isLarge ? 1.0 : ((o - 66) / 18).clamp(0.0, 1.0);
     final total = _bar + (l - math.max(o, 0)).clamp(0.0, l);
     final secondary = t.typography.caption.copyWith(fontSize: 13, height: 1.15);
     final smallTitle = t.typography.title.copyWith(
@@ -286,12 +289,7 @@ class _LargeTitleHeaderState extends State<LargeTitleHeader> {
             ),
         ],
       );
-      return AnimatedOpacity(
-        opacity: showSmall ? 1 : 0,
-        duration: const Duration(milliseconds: 250),
-        curve: Curves.easeOut,
-        child: column,
-      );
+      return Opacity(opacity: small, child: column);
     }
 
     // The glass group wraps ONLY the bar row: its backdrop pass is painted before its children, so everything painted

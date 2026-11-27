@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="ru" data-theme="auto">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SwiftUiScaffold, SwiftUiShell · swiftuikit</title>
+<script>try{var t=localStorage.getItem('docs-theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="top">
+  <button class="menu" id="menu" aria-label="Меню">☰</button>
+  <a class="brand" href="../index.html"><span class="logo">◐</span> swiftuikit</a>
+  <div class="search"><input id="q" type="search" placeholder="Поиск виджетов  ( / )" autocomplete="off"><div id="results" hidden></div></div>
+  <button class="themebtn" id="theme" aria-label="Тема сайта" title="Тема сайта">◐</button>
+</header>
+<div class="layout">
+<nav class="side" id="side"><a class="navlink" href="../index.html">Главная</a>
+<div class="navhead">Гайды</div>
+<a class="navlink" href="../guides/01-quickstart.html">Быстрый старт</a>
+<a class="navlink" href="../guides/02-theme.html">Тема и цвета</a>
+<a class="navlink" href="../guides/03-glass-performance.html">Стекло и производительность</a>
+<a class="navlink" href="../guides/04-navigation-sheets.html">Навигация и листы</a>
+<a class="navlink" href="../guides/05-paging-headers.html">Пейджинг и заголовки</a>
+<div class="navhead"><a href="../widgets/index.html">Каталог виджетов</a></div>
+<div class="navgroup">Стекло и кнопки</div>
+<a class="navlink sub" href="../widgets/liquid-glass.html">LiquidGlass</a>
+<a class="navlink sub" href="../widgets/liquid-glass-group.html">LiquidGlassGroup и Presence</a>
+<a class="navlink sub" href="../widgets/glass-surface.html">GlassSurface</a>
+<a class="navlink sub" href="../widgets/glass-button.html">GlassButton</a>
+<a class="navlink sub" href="../widgets/glass-circle-button.html">GlassCircleButton и кнопки баров</a>
+<a class="navlink sub" href="../widgets/glass-lens.html">GlassLens и ContentLens</a>
+<a class="navlink sub" href="../widgets/pressable-icon.html">Pressable и RavelIcon</a>
+<div class="navgroup">Бары и навигация</div>
+<a class="navlink sub" href="../widgets/chrome-scaffold.html">ChromeScaffold</a>
+<a class="navlink sub" href="../widgets/title-bar.html">TitleBar, LargeTitleHeader</a>
+<a class="navlink sub" href="../widgets/collapsible-bar.html">CollapsibleBar</a>
+<a class="navlink sub" href="../widgets/glass-tab-bar.html">GlassTabBar</a>
+<a class="navlink sub" href="../widgets/bottom-dock.html">BottomDock</a>
+<a class="navlink sub" href="../widgets/glass-toolbar-capsule.html">GlassToolbarCapsule</a>
+<a class="navlink sub" href="../widgets/glass-search-bar.html">GlassSearchBar</a>
+<a class="navlink sub" href="../widgets/glass-search-launcher.html">GlassSearchLauncher</a>
+<div class="navgroup">Оверлеи: листы, диалоги, меню</div>
+<a class="navlink sub" href="../widgets/glass-sheet.html">GlassSheet и showGlassSheet</a>
+<a class="navlink sub" href="../widgets/glass-alert.html">showGlassAlert и диалоги</a>
+<a class="navlink sub" href="../widgets/glass-menu.html">showGlassMenu и GlassMenuButton</a>
+<a class="navlink sub" href="../widgets/glass-selection-toolbar.html">GlassSelectionToolbar</a>
+<div class="navgroup">Формы и контролы</div>
+<a class="navlink sub" href="../widgets/glass-switch.html">GlassSwitch</a>
+<a class="navlink sub" href="../widgets/glass-slider.html">GlassSlider и GlassStepper</a>
+<a class="navlink sub" href="../widgets/glass-segmented.html">GlassSegmentedControl</a>
+<a class="navlink sub" href="../widgets/glass-scroll-segments.html">GlassScrollSegments</a>
+<a class="navlink sub" href="../widgets/glass-text-field.html">GlassTextField</a>
+<div class="navgroup">Списки и заголовки</div>
+<a class="navlink sub" href="../widgets/grouped-list.html">ListSection и GroupedRow</a>
+<a class="navlink sub" href="../widgets/swipe-action-row.html">SwipeActionRow и RavelRefreshControl</a>
+<a class="navlink sub" href="../widgets/list-row.html">ListRow и ListSectionTitle</a>
+<a class="navlink sub" href="../widgets/pinned-header.html">PinnedHeader и PinnedSection</a>
+<a class="navlink sub" href="../widgets/stretch-header.html">StretchHeader</a>
+<div class="navgroup">Каркас приложения и роутинг</div>
+<a class="navlink sub" href="../widgets/swift-ui-app.html">SwiftUiApp</a>
+<a class="navlink sub on" href="../widgets/swift-ui-scaffold.html">SwiftUiScaffold, SwiftUiShell</a>
+<a class="navlink sub" href="../widgets/page-switcher.html">SwiftUiPageSwitcher</a>
+<a class="navlink sub" href="../widgets/swift-ui-drawer.html">SwiftUiDrawer</a>
+<a class="navlink sub" href="../widgets/routes.html">Маршруты и переходы</a>
+<div class="navgroup">Темы и утилиты</div>
+<a class="navlink sub" href="../widgets/theme-api.html">SwiftUiTheme и тема</a>
+<a class="navlink sub" href="../widgets/progressive-blur.html">ProgressiveBlur и ChromeStyle</a>
+<a class="navlink sub" href="../widgets/utils.html">Утилиты</a>
+<div class="navhead"><a href="../coverage.html">Покрытие</a></div></nav>
+<main><article><div class="crumb"><a href="../widgets/index.html">Каталог</a> / Каркас приложения и роутинг</div>
+<h1>SwiftUiScaffold, SwiftUiShell</h1>
+<p class="lead">Страница с нативной раскладкой iOS 26 и оболочка с таб-баром, который не перерисовывается при смене страниц.</p>
+<h2 id="vid">Как выглядит</h2><div class="gallery"><figure><img class="shot-dark" src="../assets/img/inbox-dark.jpg" alt="Три страницы" loading="lazy"><img class="shot-light" src="../assets/img/inbox-light.jpg" alt="Три страницы" loading="lazy"><figcaption>Три страницы</figcaption></figure></div>
+<h2 id="что-это">Что это</h2>
+<ul><li><code>SwiftUiScaffold</code> — страница: <code>title</code>, <code>actions</code>, <code>body</code>, <code>bottomBar</code>. Внутри <code>ChromeScaffold</code>, эффект краёв берётся из темы.</li><li><code>SwiftUiShell</code> — часть приложения, которая остаётся при смене страниц: бар (таб-бар) поверх <code>body</code>; страницы — независимые экраны со своим скроллом.</li></ul>
+<div class="code"><button class="copy" type="button" title="Копировать">Copy</button><pre><code><span class="tt">SwiftUiShell</span>(
+  bottomBar: <span class="tt">GlassTabBar</span>(selectedIndex: i, onSelected: setTab, tabs: tabs),
+  body: <span class="tt">SwiftUiPageSwitcher</span>(index: i, children: [<span class="tk">for</span> (<span class="tk">final</span> p <span class="tk">in</span> pages) p]),
+)</code></pre></div>
+<h2 id="parametry">Параметры <small>(из dartdoc)</small></h2><details open><summary><code>SwiftUiScaffold</code></summary><div class="tablewrap"><table><thead><tr><th>Параметр</th><th>Тип</th><th>По умолчанию</th><th>Описание</th></tr></thead><tbody><tr><td><code>title</code></td><td><code>String?</code></td><td></td><td>The title of the default header.</td></tr><tr><td><code>subtitle</code></td><td><code>String?</code></td><td></td><td></td></tr><tr><td><code>titleStyle</code></td><td><code>NavTitleStyle</code></td><td><code>NavTitleStyle.large</code></td><td></td></tr><tr><td><code>leading</code></td><td><code>Widget?</code></td><td></td><td>The leading widget of the default header (the back button is implied when null).</td></tr><tr><td><code>actions</code></td><td><code>List&lt;Widget&gt;</code></td><td><code>const []</code></td><td>The trailing widgets of the default header.</td></tr><tr><td><code>automaticallyImplyLeading</code></td><td><code>bool</code></td><td><code>true</code></td><td></td></tr><tr><td><code>onBack</code></td><td><code>VoidCallback?</code></td><td></td><td></td></tr><tr><td><code>topBar</code></td><td><code>Widget?</code></td><td></td><td>A header of your own.</td></tr><tr><td><code>topBarBuilder</code></td><td><code>—</code></td><td></td><td></td></tr><tr><td><code>wrapTopBar</code></td><td><code>bool</code></td><td><code>true</code></td><td>Wrap a custom bar in a <code>ChromeBar</code> (false for a bar that registers itself).</td></tr><tr><td><code>body</code></td><td><code>Widget?</code></td><td></td><td></td></tr><tr><td><code>bodyBuilder</code></td><td><code>—</code></td><td></td><td></td></tr><tr><td><code>bottomBar</code></td><td><code>Widget?</code></td><td></td><td>Placed as it is (a <code>ChromeBar</code> on the bottom edge, or a <code>BottomDock</code>).</td></tr><tr><td><code>overlay</code></td><td><code>Widget?</code></td><td></td><td></td></tr><tr><td><code>controller</code></td><td><code>ChromeController?</code></td><td></td><td></td></tr><tr><td><code>backgroundColor</code></td><td><code>Color?</code></td><td></td><td></td></tr><tr><td><code>topChrome</code></td><td><code>ChromeStyle?</code></td><td></td><td>See <code>ChromeScaffold.topChrome</code> / <code>ChromeScaffold.bottomChrome</code>.</td></tr><tr><td><code>bottomChrome</code></td><td><code>ChromeStyle?</code></td><td></td><td></td></tr><tr><td><code>bottomBlur</code></td><td><code>bool</code></td><td><code>true</code></td><td></td></tr><tr><td><code>bottomBarSafeAreaShare</code></td><td><code>double?</code></td><td></td><td></td></tr><tr><td><code>snapLargeTitle</code></td><td><code>bool</code></td><td><code>true</code></td><td></td></tr><tr><td><code>blockZoneTouches</code></td><td><code>bool</code></td><td><code>false</code></td><td></td></tr><tr><td><code>freezeUnderRoute</code></td><td><code>bool</code></td><td><code>false</code></td><td></td></tr><tr><td><code>scrollDepth</code></td><td><code>int</code></td><td><code>0</code></td><td></td></tr></tbody></table></div></details><details><summary><code>SwiftUiShell</code></summary><div class="tablewrap"><table><thead><tr><th>Параметр</th><th>Тип</th><th>По умолчанию</th><th>Описание</th></tr></thead><tbody><tr><td><code>body</code></td><td><code>Widget</code></td><td><code>required</code></td><td></td></tr><tr><td><code>bottomBar</code></td><td><code>Widget?</code></td><td></td><td>Placed over the bottom of <code>body</code>. A glass tab bar, or anything.</td></tr><tr><td><code>hideBarWithKeyboard</code></td><td><code>bool</code></td><td><code>true</code></td><td>Slide the bar away while the keyboard is up.</td></tr><tr><td><code>bottomBarSafeAreaShare</code></td><td><code>double?</code></td><td></td><td>0..1: the share of the bottom safe area (the home indicator) kept below the bar (null: <code>SwiftUiChromeTheme.bottomBarSafeAreaShare</code>).</td></tr></tbody></table></div></details><details><summary><code>SwiftUiShellScope</code></summary><div class="tablewrap"><table><thead><tr><th>Параметр</th><th>Тип</th><th>По умолчанию</th><th>Описание</th></tr></thead><tbody><tr><td><code>bottomInset</code></td><td><code>double</code></td><td><code>required</code></td><td></td></tr><tr><td><code>child</code></td><td><code>—</code></td><td><code>required</code></td><td></td></tr></tbody></table></div></details>
+<p class="imp">Импорт: <code>import 'package:swiftuikit/swiftuikit.dart';</code></p></article></main>
+</div>
+<script>window.DOCS_ROOT="../";</script>
+<script src="../assets/search-index.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

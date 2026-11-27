@@ -25,15 +25,42 @@ struct Page: View {
     }
 }
 
+// Launch args: "light" (light theme), "five" (5 tabs instead of 3), "min" (tabBarMinimizeBehavior .onScrollDown).
+let args = CommandLine.arguments
 struct Root: View {
     @State private var tab = 0
     var body: some View {
-        TabView(selection: $tab) {
+        let tv0 = TabView(selection: $tab) {
             Tab("Inbox", systemImage: "tray", value: 0) { Page(title: "Inbox", hue: 0.58) }
             Tab("Tasks", systemImage: "checklist", value: 1) { Page(title: "Tasks", hue: 0.05) }
             Tab("Settings", systemImage: "gearshape", value: 2) { Page(title: "Settings", hue: 0.35) }
+            if args.contains("five") {
+                Tab("Map", systemImage: "map", value: 3) { Page(title: "Map", hue: 0.8) }
+                Tab("Profile", systemImage: "person", value: 4) { Page(title: "Profile", hue: 0.15) }
+            }
         }
-        .preferredColorScheme(.dark)
+        .preferredColorScheme(args.contains("light") ? .light : .dark)
+        // "acc": tabViewBottomAccessory (a mini player); inline placement shows the compact version only
+        let tv = args.contains("acc") ? AnyView(tv0.tabViewBottomAccessory { Player() }) : AnyView(tv0)
+        if args.contains("min") { tv.tabBarMinimizeBehavior(.onScrollDown) } else { tv }
+    }
+}
+
+struct Player: View {
+    @Environment(\.tabViewBottomAccessoryPlacement) var placement
+    var body: some View {
+        HStack(spacing: 12) {
+            Image(systemName: "music.note").frame(width: 32, height: 32)
+            if placement != .inline {
+                VStack(alignment: .leading, spacing: 0) {
+                    Text("Now Playing").font(.subheadline).bold()
+                    Text("Artist").font(.caption).foregroundStyle(.secondary)
+                }
+                Spacer()
+            } else { Text("Playing").font(.subheadline); Spacer() }
+            Image(systemName: "play.fill")
+            if placement != .inline { Image(systemName: "forward.fill") }
+        }.padding(.horizontal, 12)
     }
 }
 

@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="ru" data-theme="auto">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GlassLens и ContentLens · swiftuikit</title>
+<script>try{var t=localStorage.getItem('docs-theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="top">
+  <button class="menu" id="menu" aria-label="Меню">☰</button>
+  <a class="brand" href="../index.html"><span class="logo">◐</span> swiftuikit</a>
+  <div class="search"><input id="q" type="search" placeholder="Поиск виджетов  ( / )" autocomplete="off"><div id="results" hidden></div></div>
+  <button class="themebtn" id="theme" aria-label="Тема сайта" title="Тема сайта">◐</button>
+</header>
+<div class="layout">
+<nav class="side" id="side"><a class="navlink" href="../index.html">Главная</a>
+<div class="navhead">Гайды</div>
+<a class="navlink" href="../guides/01-quickstart.html">Быстрый старт</a>
+<a class="navlink" href="../guides/02-theme.html">Тема и цвета</a>
+<a class="navlink" href="../guides/03-glass-performance.html">Стекло и производительность</a>
+<a class="navlink" href="../guides/04-navigation-sheets.html">Навигация и листы</a>
+<a class="navlink" href="../guides/05-paging-headers.html">Пейджинг и заголовки</a>
+<div class="navhead"><a href="../widgets/index.html">Каталог виджетов</a></div>
+<div class="navgroup">Стекло и кнопки</div>
+<a class="navlink sub" href="../widgets/liquid-glass.html">LiquidGlass</a>
+<a class="navlink sub" href="../widgets/liquid-glass-group.html">LiquidGlassGroup и Presence</a>
+<a class="navlink sub" href="../widgets/glass-surface.html">GlassSurface</a>
+<a class="navlink sub" href="../widgets/glass-button.html">GlassButton</a>
+<a class="navlink sub" href="../widgets/glass-circle-button.html">GlassCircleButton и кнопки баров</a>
+<a class="navlink sub on" href="../widgets/glass-lens.html">GlassLens и ContentLens</a>
+<a class="navlink sub" href="../widgets/pressable-icon.html">Pressable и RavelIcon</a>
+<div class="navgroup">Бары и навигация</div>
+<a class="navlink sub" href="../widgets/chrome-scaffold.html">ChromeScaffold</a>
+<a class="navlink sub" href="../widgets/title-bar.html">TitleBar, LargeTitleHeader</a>
+<a class="navlink sub" href="../widgets/collapsible-bar.html">CollapsibleBar</a>
+<a class="navlink sub" href="../widgets/glass-tab-bar.html">GlassTabBar</a>
+<a class="navlink sub" href="../widgets/bottom-dock.html">BottomDock</a>
+<a class="navlink sub" href="../widgets/glass-toolbar-capsule.html">GlassToolbarCapsule</a>
+<a class="navlink sub" href="../widgets/glass-search-bar.html">GlassSearchBar</a>
+<a class="navlink sub" href="../widgets/glass-search-launcher.html">GlassSearchLauncher</a>
+<div class="navgroup">Оверлеи: листы, диалоги, меню</div>
+<a class="navlink sub" href="../widgets/glass-sheet.html">GlassSheet и showGlassSheet</a>
+<a class="navlink sub" href="../widgets/glass-alert.html">showGlassAlert и диалоги</a>
+<a class="navlink sub" href="../widgets/glass-menu.html">showGlassMenu и GlassMenuButton</a>
+<a class="navlink sub" href="../widgets/glass-selection-toolbar.html">GlassSelectionToolbar</a>
+<div class="navgroup">Формы и контролы</div>
+<a class="navlink sub" href="../widgets/glass-switch.html">GlassSwitch</a>
+<a class="navlink sub" href="../widgets/glass-slider.html">GlassSlider и GlassStepper</a>
+<a class="navlink sub" href="../widgets/glass-segmented.html">GlassSegmentedControl</a>
+<a class="navlink sub" href="../widgets/glass-scroll-segments.html">GlassScrollSegments</a>
+<a class="navlink sub" href="../widgets/glass-text-field.html">GlassTextField</a>
+<div class="navgroup">Списки и заголовки</div>
+<a class="navlink sub" href="../widgets/grouped-list.html">ListSection и GroupedRow</a>
+<a class="navlink sub" href="../widgets/swipe-action-row.html">SwipeActionRow и RavelRefreshControl</a>
+<a class="navlink sub" href="../widgets/list-row.html">ListRow и ListSectionTitle</a>
+<a class="navlink sub" href="../widgets/pinned-header.html">PinnedHeader и PinnedSection</a>
+<a class="navlink sub" href="../widgets/stretch-header.html">StretchHeader</a>
+<div class="navgroup">Каркас приложения и роутинг</div>
+<a class="navlink sub" href="../widgets/swift-ui-app.html">SwiftUiApp</a>
+<a class="navlink sub" href="../widgets/swift-ui-scaffold.html">SwiftUiScaffold, SwiftUiShell</a>
+<a class="navlink sub" href="../widgets/page-switcher.html">SwiftUiPageSwitcher</a>
+<a class="navlink sub" href="../widgets/swift-ui-drawer.html">SwiftUiDrawer</a>
+<a class="navlink sub" href="../widgets/routes.html">Маршруты и переходы</a>
+<div class="navgroup">Темы и утилиты</div>
+<a class="navlink sub" href="../widgets/theme-api.html">SwiftUiTheme и тема</a>
+<a class="navlink sub" href="../widgets/progressive-blur.html">ProgressiveBlur и ChromeStyle</a>
+<a class="navlink sub" href="../widgets/utils.html">Утилиты</a>
+<div class="navhead"><a href="../coverage.html">Покрытие</a></div></nav>
+<main><article><div class="crumb"><a href="../widgets/index.html">Каталог</a> / Стекло и кнопки</div>
+<h1>GlassLens и ContentLens</h1>
+<p class="lead">Линза «пузыря» под пальцем и краевая линза поверх собственного контента.</p>
+<h2 id="vid">Как выглядит</h2><div class="gallery"><figure><img class="shot-dark" src="../assets/img/switch-dark.jpg" alt="Линза у переключателя" loading="lazy"><img class="shot-light" src="../assets/img/switch-light.jpg" alt="Линза у переключателя" loading="lazy"><figcaption>Линза у переключателя</figcaption></figure></div>
+<h2 id="что-это">Что это</h2>
+<ul><li><code>GlassLens</code> — стеклянный «пузырь», в который превращается ползунок при нажатии (switch, segmented, slider). Обычно используется самими контролами.</li><li><code>ContentLens</code> — искажение края <strong>собственного</strong> контента: то, что у ободка, подтягивается из глубины по нормали. Нужен для эффекта линзы поверх картинки/виджета без фонового размытия.</li></ul>
+<div class="code"><button class="copy" type="button" title="Копировать">Copy</button><pre><code><span class="tt">ContentLens</span>(
+  radii: <span class="tt">BorderRadius</span>.circular(<span class="tn">28</span>),
+  bezel: <span class="tn">18</span>,
+  strength: <span class="tn">1</span>,
+  child: <span class="tt">Image</span>.asset(<span class="ts">&#x27;assets/photo.jpg&#x27;</span>, width: <span class="tn">200</span>, height: <span class="tn">120</span>, fit: <span class="tt">BoxFit</span>.cover),
+)</code></pre></div>
+<h2 id="parametry">Параметры <small>(из dartdoc)</small></h2><details open><summary><code>GlassLens</code></summary><div class="tablewrap"><table><thead><tr><th>Параметр</th><th>Тип</th><th>По умолчанию</th><th>Описание</th></tr></thead><tbody><tr><td><code>width</code></td><td><code>double</code></td><td><code>required</code></td><td></td></tr><tr><td><code>height</code></td><td><code>double</code></td><td><code>required</code></td><td></td></tr><tr><td><code>shadowColor</code></td><td><code>Color?</code></td><td></td><td></td></tr><tr><td><code>cornerRadius</code></td><td><code>double?</code></td><td></td><td>null: fully round.</td></tr><tr><td><code>blur</code></td><td><code>double</code></td><td><code>0.5</code></td><td>Blur of the glass interior (soft backdrops need more to avoid aliased refracted edges).</td></tr><tr><td><code>toneLift</code></td><td><code>double?</code></td><td></td><td>See <code>LiquidGlass.toneLift</code>.</td></tr><tr><td><code>shadowScale</code></td><td><code>double</code></td><td><code>1</code></td><td>Multiplies the shadow strength (a light backdrop wants a softer one).</td></tr><tr><td><code>shadowOpacity</code></td><td><code>double</code></td><td><code>1</code></td><td>0..1, fades the shadow only (the glass is drawn as is): lets it vanish before the lens does while the thumb shrinks back.</td></tr><tr><td><code>magnify</code></td><td><code>double</code></td><td><code>magnifyDefault</code></td><td>Scale of what is seen through the lens centre (&gt;1 minifies); 1 gives no inner edge.</td></tr><tr><td><code>bezelWidth</code></td><td><code>double</code></td><td><code>bezel</code></td><td></td></tr><tr><td><code>refractionStrength</code></td><td><code>double</code></td><td><code>refraction</code></td><td>How strongly the rim bends what is behind it (a lens over a high-contrast backdrop, like a bar's edge, wants less).</td></tr></tbody></table></div></details><details><summary><code>ContentLens</code></summary><div class="tablewrap"><table><thead><tr><th>Параметр</th><th>Тип</th><th>По умолчанию</th><th>Описание</th></tr></thead><tbody><tr><td><code>radii</code></td><td><code>BorderRadius</code></td><td><code>required</code></td><td></td></tr><tr><td><code>child</code></td><td><code>Widget</code></td><td><code>required</code></td><td></td></tr><tr><td><code>bezel</code></td><td><code>double</code></td><td><code>14</code></td><td></td></tr><tr><td><code>strength</code></td><td><code>double</code></td><td><code>1</code></td><td></td></tr></tbody></table></div></details>
+<p class="imp">Импорт: <code>import 'package:swiftuikit/swiftuikit.dart';</code></p></article></main>
+</div>
+<script>window.DOCS_ROOT="../";</script>
+<script src="../assets/search-index.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

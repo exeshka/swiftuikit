@@ -21,7 +21,11 @@ class GlassLens extends StatelessWidget {
     this.magnify = magnifyDefault,
     this.bezelWidth = bezel,
     this.refractionStrength = refraction,
+    this.specularStrength = specular,
   });
+
+  /// Brightness of the rim's hairline highlight.
+  final double specularStrength;
 
   /// How strongly the rim bends what is behind it (a lens over a high-contrast backdrop, like a bar's edge, wants less).
   final double refractionStrength;
@@ -116,7 +120,7 @@ class GlassLens extends StatelessWidget {
                   t.copyWith(
                     glass: t.glass.copyWith(
                       liquidMagnify: magnify,
-                      liquidSpecular: specular,
+                      liquidSpecular: specularStrength,
                     ),
                   ),
                 ],

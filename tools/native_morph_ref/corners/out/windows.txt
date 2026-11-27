@@ -1,0 +1,5 @@
+tail applied by the code: true
+open all: 0.981  0.981  0.983  0.998  (code, code+tail, proposed, ceiling)
+open 15-40 (8 frames): 0.894  0.894  0.902  0.996
+close all: 0.930  0.930  0.936  0.995  (code, code+tail, proposed, ceiling)
+close 100-230 (57 frames): 0.912  0.912  0.932  0.991

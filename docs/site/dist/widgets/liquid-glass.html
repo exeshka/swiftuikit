@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="ru" data-theme="auto">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LiquidGlass · swiftuikit</title>
+<script>try{var t=localStorage.getItem('docs-theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="top">
+  <button class="menu" id="menu" aria-label="Меню">☰</button>
+  <a class="brand" href="../index.html"><span class="logo">◐</span> swiftuikit</a>
+  <div class="search"><input id="q" type="search" placeholder="Поиск виджетов  ( / )" autocomplete="off"><div id="results" hidden></div></div>
+  <button class="themebtn" id="theme" aria-label="Тема сайта" title="Тема сайта">◐</button>
+</header>
+<div class="layout">
+<nav class="side" id="side"><a class="navlink" href="../index.html">Главная</a>
+<div class="navhead">Гайды</div>
+<a class="navlink" href="../guides/01-quickstart.html">Быстрый старт</a>
+<a class="navlink" href="../guides/02-theme.html">Тема и цвета</a>
+<a class="navlink" href="../guides/03-glass-performance.html">Стекло и производительность</a>
+<a class="navlink" href="../guides/04-navigation-sheets.html">Навигация и листы</a>
+<a class="navlink" href="../guides/05-paging-headers.html">Пейджинг и заголовки</a>
+<div class="navhead"><a href="../widgets/index.html">Каталог виджетов</a></div>
+<div class="navgroup">Стекло и кнопки</div>
+<a class="navlink sub on" href="../widgets/liquid-glass.html">LiquidGlass</a>
+<a class="navlink sub" href="../widgets/liquid-glass-group.html">LiquidGlassGroup и Presence</a>
+<a class="navlink sub" href="../widgets/glass-surface.html">GlassSurface</a>
+<a class="navlink sub" href="../widgets/glass-button.html">GlassButton</a>
+<a class="navlink sub" href="../widgets/glass-circle-button.html">GlassCircleButton и кнопки баров</a>
+<a class="navlink sub" href="../widgets/glass-lens.html">GlassLens и ContentLens</a>
+<a class="navlink sub" href="../widgets/pressable-icon.html">Pressable и RavelIcon</a>
+<div class="navgroup">Бары и навигация</div>
+<a class="navlink sub" href="../widgets/chrome-scaffold.html">ChromeScaffold</a>
+<a class="navlink sub" href="../widgets/title-bar.html">TitleBar, LargeTitleHeader</a>
+<a class="navlink sub" href="../widgets/collapsible-bar.html">CollapsibleBar</a>
+<a class="navlink sub" href="../widgets/glass-tab-bar.html">GlassTabBar</a>
+<a class="navlink sub" href="../widgets/bottom-dock.html">BottomDock</a>
+<a class="navlink sub" href="../widgets/glass-toolbar-capsule.html">GlassToolbarCapsule</a>
+<a class="navlink sub" href="../widgets/glass-search-bar.html">GlassSearchBar</a>
+<a class="navlink sub" href="../widgets/glass-search-launcher.html">GlassSearchLauncher</a>
+<div class="navgroup">Оверлеи: листы, диалоги, меню</div>
+<a class="navlink sub" href="../widgets/glass-sheet.html">GlassSheet и showGlassSheet</a>
+<a class="navlink sub" href="../widgets/glass-alert.html">showGlassAlert и диалоги</a>
+<a class="navlink sub" href="../widgets/glass-menu.html">showGlassMenu и GlassMenuButton</a>
+<a class="navlink sub" href="../widgets/glass-selection-toolbar.html">GlassSelectionToolbar</a>
+<div class="navgroup">Формы и контролы</div>
+<a class="navlink sub" href="../widgets/glass-switch.html">GlassSwitch</a>
+<a class="navlink sub" href="../widgets/glass-slider.html">GlassSlider и GlassStepper</a>
+<a class="navlink sub" href="../widgets/glass-segmented.html">GlassSegmentedControl</a>
+<a class="navlink sub" href="../widgets/glass-scroll-segments.html">GlassScrollSegments</a>
+<a class="navlink sub" href="../widgets/glass-text-field.html">GlassTextField</a>
+<div class="navgroup">Списки и заголовки</div>
+<a class="navlink sub" href="../widgets/grouped-list.html">ListSection и GroupedRow</a>
+<a class="navlink sub" href="../widgets/swipe-action-row.html">SwipeActionRow и RavelRefreshControl</a>
+<a class="navlink sub" href="../widgets/list-row.html">ListRow и ListSectionTitle</a>
+<a class="navlink sub" href="../widgets/pinned-header.html">PinnedHeader и PinnedSection</a>
+<a class="navlink sub" href="../widgets/stretch-header.html">StretchHeader</a>
+<div class="navgroup">Каркас приложения и роутинг</div>
+<a class="navlink sub" href="../widgets/swift-ui-app.html">SwiftUiApp</a>
+<a class="navlink sub" href="../widgets/swift-ui-scaffold.html">SwiftUiScaffold, SwiftUiShell</a>
+<a class="navlink sub" href="../widgets/page-switcher.html">SwiftUiPageSwitcher</a>
+<a class="navlink sub" href="../widgets/swift-ui-drawer.html">SwiftUiDrawer</a>
+<a class="navlink sub" href="../widgets/routes.html">Маршруты и переходы</a>
+<div class="navgroup">Темы и утилиты</div>
+<a class="navlink sub" href="../widgets/theme-api.html">SwiftUiTheme и тема</a>
+<a class="navlink sub" href="../widgets/progressive-blur.html">ProgressiveBlur и ChromeStyle</a>
+<a class="navlink sub" href="../widgets/utils.html">Утилиты</a>
+<div class="navhead"><a href="../coverage.html">Покрытие</a></div></nav>
+<main><article><div class="crumb"><a href="../widgets/index.html">Каталог</a> / Стекло и кнопки</div>
+<h1>LiquidGlass</h1>
+<p class="lead">Плита «жидкого стекла» iOS 26: преломление на ободке, размытие, дисперсия, блик — одним шейдером.</p>
+<h2 id="vid">Как выглядит</h2><div class="gallery"><figure><img class="shot-dark" src="../assets/img/liquid-dark.jpg" alt="Стекло над фоном" loading="lazy"><img class="shot-light" src="../assets/img/liquid-light.jpg" alt="Стекло над фоном" loading="lazy"><figcaption>Стекло над фоном</figcaption></figure><figure><img class="shot-dark" src="../assets/img/liquid-grid-dark.jpg" alt="Плиты на сетке" loading="lazy"><img class="shot-light" src="../assets/img/liquid-grid-light.jpg" alt="Плиты на сетке" loading="lazy"><figcaption>Плиты на сетке</figcaption></figure></div>
+<h2 id="что-это">Что это</h2>
+<p>Базовый строительный блок кита. Фон под плитой преломляется на ободке выпуклой «подушки» (в середине спокойно), слегка размывается, раскладывается по каналам, подкрашивается и подсвечивается бликом. Всё — один фрагментный шейдер и один проход по фону.</p>
+<h2 id="когда-использовать">Когда использовать</h2>
+<p>Для нескольких заметных элементов: кнопки баров, пилюля, плавающий тулбар, лист. Для строк списка — <code>GlassSurface(liquid: false)</code> или <code>flat: true</code>. Группы плит — в <code>LiquidGlassGroup</code> (см. гайд «Стекло и производительность»).</p>
+<h2 id="минимальный-пример">Минимальный пример</h2>
+<div class="code"><button class="copy" type="button" title="Копировать">Copy</button><pre><code><span class="tt">LiquidGlass</span>(
+  width: <span class="tn">160</span>,
+  height: <span class="tn">56</span>,
+  interactive: <span class="tk">true</span>,                 <span class="tc">// пружина, подсветка под пальцем, «резинка»</span>
+  child: <span class="tk">const</span> <span class="tt">Center</span>(child: <span class="tt">Text</span>(<span class="ts">&#x27;Glass&#x27;</span>)),
+)</code></pre></div>
+<h2 id="варианты">Варианты</h2>
+<div class="code"><button class="copy" type="button" title="Копировать">Copy</button><pre><code><span class="tt">LiquidGlass</span>(clear: <span class="tk">true</span>, width: <span class="tn">120</span>, height: <span class="tn">120</span>, cornerRadius: <span class="tn">36</span>, child: <span class="tk">const</span> <span class="tt">SizedBox</span>()); <span class="tc">// Glass.clear</span>
+<span class="tt">LiquidGlass</span>(tint: <span class="tk">const</span> <span class="tt">Color</span>(0x660A84FF), width: <span class="tn">140</span>, height: <span class="tn">52</span>, child: <span class="tk">const</span> <span class="tt">SizedBox</span>()); <span class="tc">// тонированное</span>
+<span class="tt">LiquidGlass</span>(flat: <span class="tk">true</span>, interactive: <span class="tk">true</span>, width: <span class="tn">140</span>, height: <span class="tn">52</span>, child: <span class="tk">const</span> <span class="tt">SizedBox</span>()); <span class="tc">// без шейдера, тот же отклик</span></code></pre></div>
+<p><code>opacity</code> — прозрачность всей плиты вместо <code>Opacity</code> (который сломал бы шейдер); <code>presence</code> (0..1) — рост из точки / схлопывание, см. <code>LiquidGlassPresence</code>.</p>
+<h2 id="parametry">Параметры <small>(из dartdoc)</small></h2><details open><summary><code>LiquidGlass</code></summary><div class="tablewrap"><table><thead><tr><th>Параметр</th><th>Тип</th><th>По умолчанию</th><th>Описание</th></tr></thead><tbody><tr><td><code>child</code></td><td><code>Widget?</code></td><td></td><td></td></tr><tr><td><code>cornerRadius</code></td><td><code>double?</code></td><td></td><td>null: fully round ends (stadium / circle).</td></tr><tr><td><code>bottomCornerRadius</code></td><td><code>double?</code></td><td></td><td>A different radius for the two bottom corners (the top ones keep <code>cornerRadius</code>); null: the same. A sheet is round at the bottom like the screen and has its own radius at the top.</td></tr><tr><td><code>width</code></td><td><code>double?</code></td><td></td><td></td></tr><tr><td><code>height</code></td><td><code>double?</code></td><td></td><td></td></tr><tr><td><code>shadow</code></td><td><code>bool</code></td><td><code>true</code></td><td></td></tr><tr><td><code>tint</code></td><td><code>Color?</code></td><td></td><td></td></tr><tr><td><code>bezel</code></td><td><code>double?</code></td><td></td><td></td></tr><tr><td><code>refraction</code></td><td><code>double?</code></td><td></td><td></td></tr><tr><td><code>clear</code></td><td><code>bool</code></td><td><code>false</code></td><td>SwiftUI's <code>Glass.clear</code>: almost no blur (~1.6 pt), no desaturation, a flat +0.08 luminance lift and no shadow, same rim lens. Same in light and dark.</td></tr><tr><td><code>presence</code></td><td><code>double</code></td><td><code>1</code></td><td>0..1: the plate grows from / shrinks into a point (SwiftUI's <code>glassEffectTransition(.matchedGeometry/.materialize)</code> look: inside a <code>LiquidGlassGroup</code> with <code>spacing</code> the vanishing plate stays melted to its neighbour while it shrinks). Normally driven by…</td></tr><tr><td><code>presenceOrigin</code></td><td><code>Offset</code></td><td><code>Offset.zero</code></td><td>Pivot of the presence scale, as an offset (logical px) from the plate's center. Point it at the neighbour the plate should melt into (e.g.</td></tr><tr><td><code>interactive</code></td><td><code>bool</code></td><td><code>false</code></td><td>SwiftUI's <code>.interactive()</code> / <code>buttonStyle(.glass)</code> press response, fitted to frames of the native effect (60 fps recording of a simulator touch): on touch-down the plate springs to 1.05x (peak 1.052 after ~0.18 s, rests at ~1.047) and the whole plate gets a…</td></tr><tr><td><code>highQuality</code></td><td><code>bool</code></td><td><code>false</code></td><td>Adds an engine blur prefilter (<code>SwiftUiThemeData.liquidPrefilter</code>) to a plate that is NOT inside a <code>LiquidGlassGroup</code>. Thin features under the glass (1 px lines, small text) then blur as smoothly as in native glass instead of showing sampling noise, but it…</td></tr><tr><td><code>blur</code></td><td><code>double?</code></td><td></td><td>Overrides the blur sigma (pt) of the plate: 1.6 for <code>clear</code>, <code>SwiftUiThemeData.liquidBlur</code> otherwise.</td></tr><tr><td><code>toneLift</code></td><td><code>double?</code></td><td></td><td>Overrides the brightness lift of a <code>clear</code> plate (0.078 by default; on a light backdrop that lifts a light gray to white).</td></tr><tr><td><code>flat</code></td><td><code>bool</code></td><td><code>false</code></td><td>A FLAT plate with the same interaction as the glass: no shader (works everywhere), one solid colour without rim or shadow, but the same press response with <code>interactive</code>: the spring grow, the highlight, the stretch under a drag. This is the look of `liquid:…</td></tr><tr><td><code>flatFade</code></td><td><code>Duration?</code></td><td></td><td>How long the glass takes to melt back into the flat plate when <code>flat</code> turns true. Null (default): at once, which is what the app switcher snapshot needs and what native glass does (a visible flash).</td></tr><tr><td><code>glassFade</code></td><td><code>Duration</code></td><td><code>const Duration(milliseconds: 260)</code></td><td>How long the glass takes to fade in over the flat plate.</td></tr><tr><td><code>opacity</code></td><td><code>double</code></td><td><code>1</code></td><td>0..1: how transparent the whole plate is (glass, shadow, flat fill and child together). Use this instead of an <code>Opacity</code> widget: that one renders its subtree into an offscreen layer, where the glass has no backdrop to refract and the plate turns into a flat…</td></tr><tr><td><code>glowSigma</code></td><td><code>double?</code></td><td></td><td>Gaussian sigma (pt) of the press highlight around the finger. Null: fitted to the plate's size (a big plate lights up as a whole, a small one around the finger).</td></tr><tr><td><code>glowStrength</code></td><td><code>double</code></td><td><code>1</code></td><td>Multiplier of the press highlight's brightness (1: as measured on native glass).</td></tr><tr><td><code>stretch</code></td><td><code>double</code></td><td><code>1</code></td><td>Multiplier of the drag response (how far the plate stretches toward the finger and narrows across). 1: as measured on native glass buttons, which a big plate such as a dialog barely shows; raise it there.</td></tr><tr><td><code>cornerScaleTR</code></td><td><code>double</code></td><td><code>1</code></td><td>Scales the radius of the top-right / bottom-right corner relative to the left ones (1: all corners alike). A morphing plate that is not symmetric (a native menu pulled out of a toolbar button) needs corners of its own.</td></tr><tr><td><code>cornerScaleBR</code></td><td><code>double</code></td><td><code>1</code></td><td></td></tr><tr><td><code>cornerScaleTL</code></td><td><code>double</code></td><td><code>1</code></td><td></td></tr><tr><td><code>cornerScaleBL</code></td><td><code>double</code></td><td><code>1</code></td><td></td></tr></tbody></table></div></details>
+<p class="imp">Импорт: <code>import 'package:swiftuikit/swiftuikit.dart';</code></p></article></main>
+</div>
+<script>window.DOCS_ROOT="../";</script>
+<script src="../assets/search-index.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

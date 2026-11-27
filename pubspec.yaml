@@ -33,6 +33,7 @@ flutter:
   shaders:
     - shaders/variable_blur.frag
     - shaders/liquid_glass.frag
+    - shaders/content_lens.frag
 
   # To add assets to your package, add an assets section, like this:
 

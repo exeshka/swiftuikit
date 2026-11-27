@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="ru" data-theme="auto">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GlassButton · swiftuikit</title>
+<script>try{var t=localStorage.getItem('docs-theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="top">
+  <button class="menu" id="menu" aria-label="Меню">☰</button>
+  <a class="brand" href="../index.html"><span class="logo">◐</span> swiftuikit</a>
+  <div class="search"><input id="q" type="search" placeholder="Поиск виджетов  ( / )" autocomplete="off"><div id="results" hidden></div></div>
+  <button class="themebtn" id="theme" aria-label="Тема сайта" title="Тема сайта">◐</button>
+</header>
+<div class="layout">
+<nav class="side" id="side"><a class="navlink" href="../index.html">Главная</a>
+<div class="navhead">Гайды</div>
+<a class="navlink" href="../guides/01-quickstart.html">Быстрый старт</a>
+<a class="navlink" href="../guides/02-theme.html">Тема и цвета</a>
+<a class="navlink" href="../guides/03-glass-performance.html">Стекло и производительность</a>
+<a class="navlink" href="../guides/04-navigation-sheets.html">Навигация и листы</a>
+<a class="navlink" href="../guides/05-paging-headers.html">Пейджинг и заголовки</a>
+<div class="navhead"><a href="../widgets/index.html">Каталог виджетов</a></div>
+<div class="navgroup">Стекло и кнопки</div>
+<a class="navlink sub" href="../widgets/liquid-glass.html">LiquidGlass</a>
+<a class="navlink sub" href="../widgets/liquid-glass-group.html">LiquidGlassGroup и Presence</a>
+<a class="navlink sub" href="../widgets/glass-surface.html">GlassSurface</a>
+<a class="navlink sub on" href="../widgets/glass-button.html">GlassButton</a>
+<a class="navlink sub" href="../widgets/glass-circle-button.html">GlassCircleButton и кнопки баров</a>
+<a class="navlink sub" href="../widgets/glass-lens.html">GlassLens и ContentLens</a>
+<a class="navlink sub" href="../widgets/pressable-icon.html">Pressable и RavelIcon</a>
+<div class="navgroup">Бары и навигация</div>
+<a class="navlink sub" href="../widgets/chrome-scaffold.html">ChromeScaffold</a>
+<a class="navlink sub" href="../widgets/title-bar.html">TitleBar, LargeTitleHeader</a>
+<a class="navlink sub" href="../widgets/collapsible-bar.html">CollapsibleBar</a>
+<a class="navlink sub" href="../widgets/glass-tab-bar.html">GlassTabBar</a>
+<a class="navlink sub" href="../widgets/bottom-dock.html">BottomDock</a>
+<a class="navlink sub" href="../widgets/glass-toolbar-capsule.html">GlassToolbarCapsule</a>
+<a class="navlink sub" href="../widgets/glass-search-bar.html">GlassSearchBar</a>
+<a class="navlink sub" href="../widgets/glass-search-launcher.html">GlassSearchLauncher</a>
+<div class="navgroup">Оверлеи: листы, диалоги, меню</div>
+<a class="navlink sub" href="../widgets/glass-sheet.html">GlassSheet и showGlassSheet</a>
+<a class="navlink sub" href="../widgets/glass-alert.html">showGlassAlert и диалоги</a>
+<a class="navlink sub" href="../widgets/glass-menu.html">showGlassMenu и GlassMenuButton</a>
+<a class="navlink sub" href="../widgets/glass-selection-toolbar.html">GlassSelectionToolbar</a>
+<div class="navgroup">Формы и контролы</div>
+<a class="navlink sub" href="../widgets/glass-switch.html">GlassSwitch</a>
+<a class="navlink sub" href="../widgets/glass-slider.html">GlassSlider и GlassStepper</a>
+<a class="navlink sub" href="../widgets/glass-segmented.html">GlassSegmentedControl</a>
+<a class="navlink sub" href="../widgets/glass-scroll-segments.html">GlassScrollSegments</a>
+<a class="navlink sub" href="../widgets/glass-text-field.html">GlassTextField</a>
+<div class="navgroup">Списки и заголовки</div>
+<a class="navlink sub" href="../widgets/grouped-list.html">ListSection и GroupedRow</a>
+<a class="navlink sub" href="../widgets/swipe-action-row.html">SwipeActionRow и RavelRefreshControl</a>
+<a class="navlink sub" href="../widgets/list-row.html">ListRow и ListSectionTitle</a>
+<a class="navlink sub" href="../widgets/pinned-header.html">PinnedHeader и PinnedSection</a>
+<a class="navlink sub" href="../widgets/stretch-header.html">StretchHeader</a>
+<div class="navgroup">Каркас приложения и роутинг</div>
+<a class="navlink sub" href="../widgets/swift-ui-app.html">SwiftUiApp</a>
+<a class="navlink sub" href="../widgets/swift-ui-scaffold.html">SwiftUiScaffold, SwiftUiShell</a>
+<a class="navlink sub" href="../widgets/page-switcher.html">SwiftUiPageSwitcher</a>
+<a class="navlink sub" href="../widgets/swift-ui-drawer.html">SwiftUiDrawer</a>
+<a class="navlink sub" href="../widgets/routes.html">Маршруты и переходы</a>
+<div class="navgroup">Темы и утилиты</div>
+<a class="navlink sub" href="../widgets/theme-api.html">SwiftUiTheme и тема</a>
+<a class="navlink sub" href="../widgets/progressive-blur.html">ProgressiveBlur и ChromeStyle</a>
+<a class="navlink sub" href="../widgets/utils.html">Утилиты</a>
+<div class="navhead"><a href="../coverage.html">Покрытие</a></div></nav>
+<main><article><div class="crumb"><a href="../widgets/index.html">Каталог</a> / Стекло и кнопки</div>
+<h1>GlassButton</h1>
+<p class="lead">Кнопка iOS 26: стили glass, glassProminent, bordered, borderedProminent, borderless, plain и 5 размеров.</p>
+<h2 id="vid">Как выглядит</h2><div class="gallery"><figure><img class="shot-dark" src="../assets/img/buttons-dark.jpg" alt="Все стили и размеры" loading="lazy"><img class="shot-light" src="../assets/img/buttons-light.jpg" alt="Все стили и размеры" loading="lazy"><figcaption>Все стили и размеры</figcaption></figure></div>
+<h2 id="что-это">Что это</h2>
+<p>Аналог SwiftUI <code>Button</code> с <code>.buttonStyle(...)</code>, <code>.controlSize(...)</code> и <code>.buttonBorderShape(...)</code>; размеры и цвета измерены на iOS 26.5. Стеклянные стили — это <code>LiquidGlass</code> с нативным откликом на нажатие.</p>
+<h2 id="когда-использовать">Когда использовать</h2>
+<p>Любые текстовые/иконочные действия: основная кнопка, вторичная, на всю ширину, деструктивная.</p>
+<h2 id="пример">Пример</h2>
+<div class="code"><button class="copy" type="button" title="Копировать">Copy</button><pre><code><span class="tt">GlassButton</span>(
+  label: <span class="ts">&#x27;Продолжить&#x27;</span>,
+  style: <span class="tt">GlassButtonStyle</span>.glassProminent,
+  size: <span class="tt">GlassButtonSize</span>.large,
+  expand: <span class="tk">true</span>,
+  onPressed: () {},
+)
+
+<span class="tt">GlassButton</span>.circle(icon: <span class="tt">RavelIcon</span>(<span class="tt">RavelIconKind</span>.search), onPressed: () {})
+<span class="tt">GlassButton</span>(label: <span class="ts">&#x27;Удалить&#x27;</span>, destructive: <span class="tk">true</span>, style: <span class="tt">GlassButtonStyle</span>.bordered, onPressed: () {})</code></pre></div>
+<p><code>onPressed: null</code> — выключенная кнопка. <code>glassProminent</code> в покое — плоская тонированная заливка, под пальцем превращается в стекло и плавно возвращается.</p>
+<h2 id="parametry">Параметры <small>(из dartdoc)</small></h2><details open><summary><code>GlassButton</code></summary><div class="tablewrap"><table><thead><tr><th>Параметр</th><th>Тип</th><th>По умолчанию</th><th>Описание</th></tr></thead><tbody><tr><td><code>label</code></td><td><code>String?</code></td><td></td><td>The title. <code>icon</code> and <code>label</code> together make <code>Label(title, systemImage:)</code>.</td></tr><tr><td><code>icon</code></td><td><code>Widget?</code></td><td></td><td>Any widget (a <code>RavelIcon</code>, an SVG, an <code>Icon</code>): it gets the button's foreground colour and size through an <code>IconTheme</code>.</td></tr><tr><td><code>child</code></td><td><code>Widget?</code></td><td></td><td>A fully custom label (it replaces <code>label</code> and <code>icon</code>); wrap its text in the foreground colour yourself.</td></tr><tr><td><code>onPressed</code></td><td><code>VoidCallback?</code></td><td></td><td>Null: disabled.</td></tr><tr><td><code>style</code></td><td><code>GlassButtonStyle</code></td><td><code>GlassButtonStyle.glass</code></td><td></td></tr><tr><td><code>size</code></td><td><code>GlassButtonSize</code></td><td><code>GlassButtonSize.regular</code></td><td></td></tr><tr><td><code>tint</code></td><td><code>Color?</code></td><td></td><td><code>.tint(color)</code>: the accent of the style. Null: the theme accent.</td></tr><tr><td><code>destructive</code></td><td><code>bool</code></td><td><code>false</code></td><td><code>role: .destructive</code>: the tint is the system red.</td></tr><tr><td><code>expand</code></td><td><code>bool</code></td><td><code>false</code></td><td>The button takes the whole width (<code>.frame(maxWidth: .infinity)</code>).</td></tr><tr><td><code>liquid</code></td><td><code>bool?</code></td><td></td><td>Liquid glass shader on/off for the glass styles; null follows the theme.</td></tr><tr><td><code>glassOnPress</code></td><td><code>bool</code></td><td><code>true</code></td><td><code>GlassButtonStyle.glassProminent</code> only. true (default): the button rests as a flat tinted fill and turns into liquid glass while it is pressed, melting smoothly back into the fill on release (no flash).</td></tr><tr><td><code>semanticLabel</code></td><td><code>String?</code></td><td></td><td></td></tr></tbody></table></div></details>
+<p class="imp">Импорт: <code>import 'package:swiftuikit/swiftuikit.dart';</code></p></article></main>
+</div>
+<script>window.DOCS_ROOT="../";</script>
+<script src="../assets/search-index.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

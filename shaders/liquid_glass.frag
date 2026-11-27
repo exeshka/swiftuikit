@@ -34,6 +34,7 @@ uniform float uBlur;              // gaussian blur sigma in texture px (0: none)
 uniform vec4 uTints[MAX_PLATES];  // per-plate tint rgba (blended across merged plates)
 uniform float uFade;              // 0..1: how much of the glass is shown (the flat plate under it shows through the rest)
 uniform vec4 uMelt[MAX_PLATES];   // per plate: y = radius of the bottom corners in px (-1: same as the top ones); x = 1 when the plate melts with a neighbour it interacts with (smooth union, radius uMorphK), 0 = stays a shape of its own
+uniform vec4 uCorners2[MAX_PLATES]; // per plate: x / y scale the top-left / bottom-left corner radius (0: unset = 1)
 uniform sampler2D uTex;
 
 out vec4 fragColor;
@@ -235,7 +236,10 @@ void main() {
     // uMelt.z / uMelt.w scale the top-right / bottom-right corner (0: unset = 1): a morphing plate need not be symmetric
     float sTR = uMelt[i].z > 0.0 ? uMelt[i].z : 1.0;
     float sBR = uMelt[i].w > 0.0 ? uMelt[i].w : 1.0;
-    float r = p.y > 0.0 ? (p.x > 0.0 ? rBottom * sBR : rBottom) : (p.x > 0.0 ? rTop * sTR : rTop);
+    float sTL = uCorners2[i].x > 0.0 ? uCorners2[i].x : 1.0;
+    float sBL = uCorners2[i].y > 0.0 ? uCorners2[i].y : 1.0;
+    float r = p.y > 0.0 ? (p.x > 0.0 ? rBottom * sBR : rBottom * sBL) : (p.x > 0.0 ? rTop * sTR : rTop * sTL);
+    r = min(r, min(h.x, h.y));
     vec2 q = abs(p) - (h - vec2(r));
     float di;
     vec2 ni;

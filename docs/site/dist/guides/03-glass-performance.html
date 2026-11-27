@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="ru" data-theme="auto">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Стекло и производительность · swiftuikit</title>
+<script>try{var t=localStorage.getItem('docs-theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="top">
+  <button class="menu" id="menu" aria-label="Меню">☰</button>
+  <a class="brand" href="../index.html"><span class="logo">◐</span> swiftuikit</a>
+  <div class="search"><input id="q" type="search" placeholder="Поиск виджетов  ( / )" autocomplete="off"><div id="results" hidden></div></div>
+  <button class="themebtn" id="theme" aria-label="Тема сайта" title="Тема сайта">◐</button>
+</header>
+<div class="layout">
+<nav class="side" id="side"><a class="navlink" href="../index.html">Главная</a>
+<div class="navhead">Гайды</div>
+<a class="navlink" href="../guides/01-quickstart.html">Быстрый старт</a>
+<a class="navlink" href="../guides/02-theme.html">Тема и цвета</a>
+<a class="navlink on" href="../guides/03-glass-performance.html">Стекло и производительность</a>
+<a class="navlink" href="../guides/04-navigation-sheets.html">Навигация и листы</a>
+<a class="navlink" href="../guides/05-paging-headers.html">Пейджинг и заголовки</a>
+<div class="navhead"><a href="../widgets/index.html">Каталог виджетов</a></div>
+<div class="navgroup">Стекло и кнопки</div>
+<a class="navlink sub" href="../widgets/liquid-glass.html">LiquidGlass</a>
+<a class="navlink sub" href="../widgets/liquid-glass-group.html">LiquidGlassGroup и Presence</a>
+<a class="navlink sub" href="../widgets/glass-surface.html">GlassSurface</a>
+<a class="navlink sub" href="../widgets/glass-button.html">GlassButton</a>
+<a class="navlink sub" href="../widgets/glass-circle-button.html">GlassCircleButton и кнопки баров</a>
+<a class="navlink sub" href="../widgets/glass-lens.html">GlassLens и ContentLens</a>
+<a class="navlink sub" href="../widgets/pressable-icon.html">Pressable и RavelIcon</a>
+<div class="navgroup">Бары и навигация</div>
+<a class="navlink sub" href="../widgets/chrome-scaffold.html">ChromeScaffold</a>
+<a class="navlink sub" href="../widgets/title-bar.html">TitleBar, LargeTitleHeader</a>
+<a class="navlink sub" href="../widgets/collapsible-bar.html">CollapsibleBar</a>
+<a class="navlink sub" href="../widgets/glass-tab-bar.html">GlassTabBar</a>
+<a class="navlink sub" href="../widgets/bottom-dock.html">BottomDock</a>
+<a class="navlink sub" href="../widgets/glass-toolbar-capsule.html">GlassToolbarCapsule</a>
+<a class="navlink sub" href="../widgets/glass-search-bar.html">GlassSearchBar</a>
+<a class="navlink sub" href="../widgets/glass-search-launcher.html">GlassSearchLauncher</a>
+<div class="navgroup">Оверлеи: листы, диалоги, меню</div>
+<a class="navlink sub" href="../widgets/glass-sheet.html">GlassSheet и showGlassSheet</a>
+<a class="navlink sub" href="../widgets/glass-alert.html">showGlassAlert и диалоги</a>
+<a class="navlink sub" href="../widgets/glass-menu.html">showGlassMenu и GlassMenuButton</a>
+<a class="navlink sub" href="../widgets/glass-selection-toolbar.html">GlassSelectionToolbar</a>
+<div class="navgroup">Формы и контролы</div>
+<a class="navlink sub" href="../widgets/glass-switch.html">GlassSwitch</a>
+<a class="navlink sub" href="../widgets/glass-slider.html">GlassSlider и GlassStepper</a>
+<a class="navlink sub" href="../widgets/glass-segmented.html">GlassSegmentedControl</a>
+<a class="navlink sub" href="../widgets/glass-scroll-segments.html">GlassScrollSegments</a>
+<a class="navlink sub" href="../widgets/glass-text-field.html">GlassTextField</a>
+<div class="navgroup">Списки и заголовки</div>
+<a class="navlink sub" href="../widgets/grouped-list.html">ListSection и GroupedRow</a>
+<a class="navlink sub" href="../widgets/swipe-action-row.html">SwipeActionRow и RavelRefreshControl</a>
+<a class="navlink sub" href="../widgets/list-row.html">ListRow и ListSectionTitle</a>
+<a class="navlink sub" href="../widgets/pinned-header.html">PinnedHeader и PinnedSection</a>
+<a class="navlink sub" href="../widgets/stretch-header.html">StretchHeader</a>
+<div class="navgroup">Каркас приложения и роутинг</div>
+<a class="navlink sub" href="../widgets/swift-ui-app.html">SwiftUiApp</a>
+<a class="navlink sub" href="../widgets/swift-ui-scaffold.html">SwiftUiScaffold, SwiftUiShell</a>
+<a class="navlink sub" href="../widgets/page-switcher.html">SwiftUiPageSwitcher</a>
+<a class="navlink sub" href="../widgets/swift-ui-drawer.html">SwiftUiDrawer</a>
+<a class="navlink sub" href="../widgets/routes.html">Маршруты и переходы</a>
+<div class="navgroup">Темы и утилиты</div>
+<a class="navlink sub" href="../widgets/theme-api.html">SwiftUiTheme и тема</a>
+<a class="navlink sub" href="../widgets/progressive-blur.html">ProgressiveBlur и ChromeStyle</a>
+<a class="navlink sub" href="../widgets/utils.html">Утилиты</a>
+<div class="navhead"><a href="../coverage.html">Покрытие</a></div></nav>
+<main><article><h1>Стекло и производительность</h1><p class="lead">Как устроен LiquidGlass, почему одна плита — это один проход по фону, и как держать 60/120 fps с LiquidGlassGroup.</p><div class="gallery"><figure><img class="shot-dark" src="../assets/img/liquid-dark.jpg" alt="Стекло над насыщенным фоном" loading="lazy"><img class="shot-light" src="../assets/img/liquid-light.jpg" alt="Стекло над насыщенным фоном" loading="lazy"><figcaption>Стекло над насыщенным фоном</figcaption></figure><figure><img class="shot-dark" src="../assets/img/liquid-morph-dark.jpg" alt="Слияние пластин в группе" loading="lazy"><img class="shot-light" src="../assets/img/liquid-morph-light.jpg" alt="Слияние пластин в группе" loading="lazy"><figcaption>Слияние пластин в группе</figcaption></figure></div><h2 id="цена">Цена</h2>
+<p>Каждая <code>LiquidGlass</code> плита — один офскрин-проход: размытие фона движком + шейдер (преломление на ободке, дисперсия, блик, тень). Это ~0.2 мс на плиту, поэтому стекло — для нескольких заметных элементов (кнопки бара, пилюля, плавающий тулбар), а не для строк списка.</p>
+<h2 id="правила">Правила</h2>
+<ol><li><strong>Группируйте.</strong> Плиты в <code>LiquidGlassGroup</code> делят один проход (до 8). <code>ChromeBar</code>, <code>LargeTitleHeader</code>, <code>CollapsibleBar</code> уже оборачивают бар в группу — кнопки бара стоят как одна.</li><li><strong>Повторяющееся — плоским.</strong> У кнопок в списке ставьте <code>liquid: false</code>: плоская плита рисуется одним примитивом и сохраняет отклик на нажатие.</li><li><strong>Не оборачивайте в <code>Opacity</code>.</strong> Плита не должна быть внутри собственного офскрин-слоя; для прозрачности есть <code>LiquidGlass.opacity</code>, для появления — <code>LiquidGlassPresence</code>.</li><li><strong>Тяжёлое поддерево</strong> под непрозрачным слоем можно «усыпить» через <code>LiquidGlassSuspend(suspended: true)</code>.</li><li><strong><code>highQuality</code></strong> добавляет префильтр размытия для тонких деталей под стеклом — только где это видно.</li></ol>
+<h2 id="слияние-плит">Слияние плит</h2>
+<p><code>LiquidGlassGroup(spacing: 40)</code>: плиты ближе 40 pt сливаются в одну форму, пока одна из них нажата, появляется или исчезает — как <code>GlassEffectContainer(spacing:)</code> в SwiftUI.</p>
+<div class="code"><button class="copy" type="button" title="Копировать">Copy</button><pre><code><span class="tt">LiquidGlassGroup</span>(
+  spacing: <span class="tn">40</span>,
+  child: <span class="tt">Row</span>(children: [
+    <span class="tt">LiquidGlass</span>(width: <span class="tn">60</span>, height: <span class="tn">60</span>, interactive: <span class="tk">true</span>, child: <span class="tt">Icon</span>(<span class="tt">Icons</span>.add)),
+    <span class="tt">LiquidGlass</span>(width: <span class="tn">60</span>, height: <span class="tn">60</span>, interactive: <span class="tk">true</span>, child: <span class="tt">Icon</span>(<span class="tt">Icons</span>.edit)),
+  ]),
+)</code></pre></div>
+<h2 id="появление-и-исчезновение">Появление и исчезновение</h2>
+<div class="code"><button class="copy" type="button" title="Копировать">Copy</button><pre><code><span class="tt">LiquidGlassPresence</span>(
+  show: visible,
+  builder: (context, presence) =&gt; <span class="tt">LiquidGlass</span>(presence: presence, width: <span class="tn">80</span>, height: <span class="tn">80</span>, child: <span class="tk">const</span> <span class="tt">SizedBox</span>()),
+)</code></pre></div>
+<h2 id="если-шейдеров-нет">Если шейдеров нет</h2>
+<p>Web, <code>flutter test</code> и устройства без Impeller получают плоскую <code>GlassSurface</code> — внешний вид деградирует, а поведение остаётся прежним.</p></article></main>
+</div>
+<script>window.DOCS_ROOT="../";</script>
+<script src="../assets/search-index.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

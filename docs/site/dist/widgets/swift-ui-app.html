@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="ru" data-theme="auto">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SwiftUiApp · swiftuikit</title>
+<script>try{var t=localStorage.getItem('docs-theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="top">
+  <button class="menu" id="menu" aria-label="Меню">☰</button>
+  <a class="brand" href="../index.html"><span class="logo">◐</span> swiftuikit</a>
+  <div class="search"><input id="q" type="search" placeholder="Поиск виджетов  ( / )" autocomplete="off"><div id="results" hidden></div></div>
+  <button class="themebtn" id="theme" aria-label="Тема сайта" title="Тема сайта">◐</button>
+</header>
+<div class="layout">
+<nav class="side" id="side"><a class="navlink" href="../index.html">Главная</a>
+<div class="navhead">Гайды</div>
+<a class="navlink" href="../guides/01-quickstart.html">Быстрый старт</a>
+<a class="navlink" href="../guides/02-theme.html">Тема и цвета</a>
+<a class="navlink" href="../guides/03-glass-performance.html">Стекло и производительность</a>
+<a class="navlink" href="../guides/04-navigation-sheets.html">Навигация и листы</a>
+<a class="navlink" href="../guides/05-paging-headers.html">Пейджинг и заголовки</a>
+<div class="navhead"><a href="../widgets/index.html">Каталог виджетов</a></div>
+<div class="navgroup">Стекло и кнопки</div>
+<a class="navlink sub" href="../widgets/liquid-glass.html">LiquidGlass</a>
+<a class="navlink sub" href="../widgets/liquid-glass-group.html">LiquidGlassGroup и Presence</a>
+<a class="navlink sub" href="../widgets/glass-surface.html">GlassSurface</a>
+<a class="navlink sub" href="../widgets/glass-button.html">GlassButton</a>
+<a class="navlink sub" href="../widgets/glass-circle-button.html">GlassCircleButton и кнопки баров</a>
+<a class="navlink sub" href="../widgets/glass-lens.html">GlassLens и ContentLens</a>
+<a class="navlink sub" href="../widgets/pressable-icon.html">Pressable и RavelIcon</a>
+<div class="navgroup">Бары и навигация</div>
+<a class="navlink sub" href="../widgets/chrome-scaffold.html">ChromeScaffold</a>
+<a class="navlink sub" href="../widgets/title-bar.html">TitleBar, LargeTitleHeader</a>
+<a class="navlink sub" href="../widgets/collapsible-bar.html">CollapsibleBar</a>
+<a class="navlink sub" href="../widgets/glass-tab-bar.html">GlassTabBar</a>
+<a class="navlink sub" href="../widgets/bottom-dock.html">BottomDock</a>
+<a class="navlink sub" href="../widgets/glass-toolbar-capsule.html">GlassToolbarCapsule</a>
+<a class="navlink sub" href="../widgets/glass-search-bar.html">GlassSearchBar</a>
+<a class="navlink sub" href="../widgets/glass-search-launcher.html">GlassSearchLauncher</a>
+<div class="navgroup">Оверлеи: листы, диалоги, меню</div>
+<a class="navlink sub" href="../widgets/glass-sheet.html">GlassSheet и showGlassSheet</a>
+<a class="navlink sub" href="../widgets/glass-alert.html">showGlassAlert и диалоги</a>
+<a class="navlink sub" href="../widgets/glass-menu.html">showGlassMenu и GlassMenuButton</a>
+<a class="navlink sub" href="../widgets/glass-selection-toolbar.html">GlassSelectionToolbar</a>
+<div class="navgroup">Формы и контролы</div>
+<a class="navlink sub" href="../widgets/glass-switch.html">GlassSwitch</a>
+<a class="navlink sub" href="../widgets/glass-slider.html">GlassSlider и GlassStepper</a>
+<a class="navlink sub" href="../widgets/glass-segmented.html">GlassSegmentedControl</a>
+<a class="navlink sub" href="../widgets/glass-scroll-segments.html">GlassScrollSegments</a>
+<a class="navlink sub" href="../widgets/glass-text-field.html">GlassTextField</a>
+<div class="navgroup">Списки и заголовки</div>
+<a class="navlink sub" href="../widgets/grouped-list.html">ListSection и GroupedRow</a>
+<a class="navlink sub" href="../widgets/swipe-action-row.html">SwipeActionRow и RavelRefreshControl</a>
+<a class="navlink sub" href="../widgets/list-row.html">ListRow и ListSectionTitle</a>
+<a class="navlink sub" href="../widgets/pinned-header.html">PinnedHeader и PinnedSection</a>
+<a class="navlink sub" href="../widgets/stretch-header.html">StretchHeader</a>
+<div class="navgroup">Каркас приложения и роутинг</div>
+<a class="navlink sub on" href="../widgets/swift-ui-app.html">SwiftUiApp</a>
+<a class="navlink sub" href="../widgets/swift-ui-scaffold.html">SwiftUiScaffold, SwiftUiShell</a>
+<a class="navlink sub" href="../widgets/page-switcher.html">SwiftUiPageSwitcher</a>
+<a class="navlink sub" href="../widgets/swift-ui-drawer.html">SwiftUiDrawer</a>
+<a class="navlink sub" href="../widgets/routes.html">Маршруты и переходы</a>
+<div class="navgroup">Темы и утилиты</div>
+<a class="navlink sub" href="../widgets/theme-api.html">SwiftUiTheme и тема</a>
+<a class="navlink sub" href="../widgets/progressive-blur.html">ProgressiveBlur и ChromeStyle</a>
+<a class="navlink sub" href="../widgets/utils.html">Утилиты</a>
+<div class="navhead"><a href="../coverage.html">Покрытие</a></div></nav>
+<main><article><div class="crumb"><a href="../widgets/index.html">Каталог</a> / Каркас приложения и роутинг</div>
+<h1>SwiftUiApp</h1>
+<p class="lead">Корень приложения в стиле кита: тема, навигатор или router, прогрев GPU.</p>
+<h2 id="vid">Как выглядит</h2><div class="gallery"><figure><img class="shot-dark" src="../assets/img/buttons-dark.jpg" alt="Приложение-пример" loading="lazy"><img class="shot-light" src="../assets/img/buttons-light.jpg" alt="Приложение-пример" loading="lazy"><figcaption>Приложение-пример</figcaption></figure></div>
+<h2 id="что-это">Что это</h2>
+<p>Аналог <code>MaterialApp</code> с <code>SwiftUiThemeData</code> вместо <code>ThemeData</code>. Поддерживает <code>home</code>/<code>routes</code> и <code>SwiftUiApp.router(routerConfig:)</code>. <code>themeMode</code> — Flutter-ный <code>ThemeMode</code>, реэкспортируется китом.</p>
+<div class="code"><button class="copy" type="button" title="Копировать">Copy</button><pre><code><span class="tt">SwiftUiApp</span>.router(
+  themeMode: <span class="tt">ThemeMode</span>.system,
+  theme: <span class="tt">SwiftUiThemeData</span>.light(),
+  darkTheme: <span class="tt">SwiftUiThemeData</span>.dark(),
+  routerConfig: router,
+)</code></pre></div>
+<h2 id="parametry">Параметры <small>(из dartdoc)</small></h2><details open><summary><code>SwiftUiApp</code></summary><div class="tablewrap"><table><thead><tr><th>Параметр</th><th>Тип</th><th>По умолчанию</th><th>Описание</th></tr></thead><tbody><tr><td><code>theme</code></td><td><code>SwiftUiThemeData?</code></td><td></td><td>The theme in light mode (null: <code>SwiftUiThemeData.light</code>).</td></tr><tr><td><code>darkTheme</code></td><td><code>SwiftUiThemeData?</code></td><td></td><td>The theme in dark mode (null: <code>SwiftUiThemeData.dark</code>).</td></tr><tr><td><code>themeMode</code></td><td><code>ThemeMode</code></td><td><code>ThemeMode.system</code></td><td>Which of the two is used; <code>ThemeMode.system</code> follows the platform brightness.</td></tr><tr><td><code>warmUp</code></td><td><code>bool</code></td><td><code>true</code></td><td>Compile the kit's GPU pipelines under the first frames (see <code>RavelWarmUp</code>).</td></tr><tr><td><code>navigatorKey</code></td><td><code>GlobalKey&lt;NavigatorState&gt;?</code></td><td></td><td></td></tr><tr><td><code>scaffoldMessengerKey</code></td><td><code>GlobalKey&lt;ScaffoldMessengerState&gt;?</code></td><td></td><td></td></tr><tr><td><code>home</code></td><td><code>Widget?</code></td><td></td><td></td></tr><tr><td><code>routes</code></td><td><code>Map&lt;String, WidgetBuilder&gt;</code></td><td><code>const &lt;String, WidgetBuilder&gt;{}</code></td><td></td></tr><tr><td><code>initialRoute</code></td><td><code>String?</code></td><td></td><td></td></tr><tr><td><code>onGenerateRoute</code></td><td><code>RouteFactory?</code></td><td></td><td></td></tr><tr><td><code>onGenerateInitialRoutes</code></td><td><code>InitialRouteListFactory?</code></td><td></td><td></td></tr><tr><td><code>onUnknownRoute</code></td><td><code>RouteFactory?</code></td><td></td><td></td></tr><tr><td><code>navigatorObservers</code></td><td><code>List&lt;NavigatorObserver&gt;</code></td><td><code>const &lt;NavigatorObserver&gt;[]</code></td><td></td></tr><tr><td><code>builder</code></td><td><code>TransitionBuilder?</code></td><td></td><td>Wraps the navigator (or the router's content). The kit's own wrapper (the warm-up) sits above it.</td></tr><tr><td><code>title</code></td><td><code>String</code></td><td><code>''</code></td><td></td></tr><tr><td><code>onGenerateTitle</code></td><td><code>GenerateAppTitle?</code></td><td></td><td></td></tr><tr><td><code>color</code></td><td><code>Color?</code></td><td></td><td></td></tr><tr><td><code>locale</code></td><td><code>Locale?</code></td><td></td><td></td></tr><tr><td><code>localizationsDelegates</code></td><td><code>Iterable&lt;LocalizationsDelegate&lt;dynamic&gt;&gt;?</code></td><td></td><td></td></tr><tr><td><code>localeListResolutionCallback</code></td><td><code>LocaleListResolutionCallback?</code></td><td></td><td></td></tr><tr><td><code>localeResolutionCallback</code></td><td><code>LocaleResolutionCallback?</code></td><td></td><td></td></tr><tr><td><code>supportedLocales</code></td><td><code>Iterable&lt;Locale&gt;</code></td><td><code>const &lt;Locale&gt;[Locale('en', 'US')]</code></td><td></td></tr><tr><td><code>showPerformanceOverlay</code></td><td><code>bool</code></td><td><code>false</code></td><td></td></tr><tr><td><code>showSemanticsDebugger</code></td><td><code>bool</code></td><td><code>false</code></td><td></td></tr><tr><td><code>debugShowCheckedModeBanner</code></td><td><code>bool</code></td><td><code>true</code></td><td></td></tr><tr><td><code>shortcuts</code></td><td><code>Map&lt;ShortcutActivator, Intent&gt;?</code></td><td></td><td></td></tr><tr><td><code>actions</code></td><td><code>Map&lt;Type, Action&lt;Intent&gt;&gt;?</code></td><td></td><td></td></tr><tr><td><code>restorationScopeId</code></td><td><code>String?</code></td><td></td><td></td></tr><tr><td><code>scrollBehavior</code></td><td><code>ScrollBehavior?</code></td><td></td><td></td></tr></tbody></table></div></details>
+<p class="imp">Импорт: <code>import 'package:swiftuikit/swiftuikit.dart';</code></p></article></main>
+</div>
+<script>window.DOCS_ROOT="../";</script>
+<script src="../assets/search-index.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

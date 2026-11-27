@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="ru" data-theme="auto">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GlassSheet и showGlassSheet · swiftuikit</title>
+<script>try{var t=localStorage.getItem('docs-theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="top">
+  <button class="menu" id="menu" aria-label="Меню">☰</button>
+  <a class="brand" href="../index.html"><span class="logo">◐</span> swiftuikit</a>
+  <div class="search"><input id="q" type="search" placeholder="Поиск виджетов  ( / )" autocomplete="off"><div id="results" hidden></div></div>
+  <button class="themebtn" id="theme" aria-label="Тема сайта" title="Тема сайта">◐</button>
+</header>
+<div class="layout">
+<nav class="side" id="side"><a class="navlink" href="../index.html">Главная</a>
+<div class="navhead">Гайды</div>
+<a class="navlink" href="../guides/01-quickstart.html">Быстрый старт</a>
+<a class="navlink" href="../guides/02-theme.html">Тема и цвета</a>
+<a class="navlink" href="../guides/03-glass-performance.html">Стекло и производительность</a>
+<a class="navlink" href="../guides/04-navigation-sheets.html">Навигация и листы</a>
+<a class="navlink" href="../guides/05-paging-headers.html">Пейджинг и заголовки</a>
+<div class="navhead"><a href="../widgets/index.html">Каталог виджетов</a></div>
+<div class="navgroup">Стекло и кнопки</div>
+<a class="navlink sub" href="../widgets/liquid-glass.html">LiquidGlass</a>
+<a class="navlink sub" href="../widgets/liquid-glass-group.html">LiquidGlassGroup и Presence</a>
+<a class="navlink sub" href="../widgets/glass-surface.html">GlassSurface</a>
+<a class="navlink sub" href="../widgets/glass-button.html">GlassButton</a>
+<a class="navlink sub" href="../widgets/glass-circle-button.html">GlassCircleButton и кнопки баров</a>
+<a class="navlink sub" href="../widgets/glass-lens.html">GlassLens и ContentLens</a>
+<a class="navlink sub" href="../widgets/pressable-icon.html">Pressable и RavelIcon</a>
+<div class="navgroup">Бары и навигация</div>
+<a class="navlink sub" href="../widgets/chrome-scaffold.html">ChromeScaffold</a>
+<a class="navlink sub" href="../widgets/title-bar.html">TitleBar, LargeTitleHeader</a>
+<a class="navlink sub" href="../widgets/collapsible-bar.html">CollapsibleBar</a>
+<a class="navlink sub" href="../widgets/glass-tab-bar.html">GlassTabBar</a>
+<a class="navlink sub" href="../widgets/bottom-dock.html">BottomDock</a>
+<a class="navlink sub" href="../widgets/glass-toolbar-capsule.html">GlassToolbarCapsule</a>
+<a class="navlink sub" href="../widgets/glass-search-bar.html">GlassSearchBar</a>
+<a class="navlink sub" href="../widgets/glass-search-launcher.html">GlassSearchLauncher</a>
+<div class="navgroup">Оверлеи: листы, диалоги, меню</div>
+<a class="navlink sub on" href="../widgets/glass-sheet.html">GlassSheet и showGlassSheet</a>
+<a class="navlink sub" href="../widgets/glass-alert.html">showGlassAlert и диалоги</a>
+<a class="navlink sub" href="../widgets/glass-menu.html">showGlassMenu и GlassMenuButton</a>
+<a class="navlink sub" href="../widgets/glass-selection-toolbar.html">GlassSelectionToolbar</a>
+<div class="navgroup">Формы и контролы</div>
+<a class="navlink sub" href="../widgets/glass-switch.html">GlassSwitch</a>
+<a class="navlink sub" href="../widgets/glass-slider.html">GlassSlider и GlassStepper</a>
+<a class="navlink sub" href="../widgets/glass-segmented.html">GlassSegmentedControl</a>
+<a class="navlink sub" href="../widgets/glass-scroll-segments.html">GlassScrollSegments</a>
+<a class="navlink sub" href="../widgets/glass-text-field.html">GlassTextField</a>
+<div class="navgroup">Списки и заголовки</div>
+<a class="navlink sub" href="../widgets/grouped-list.html">ListSection и GroupedRow</a>
+<a class="navlink sub" href="../widgets/swipe-action-row.html">SwipeActionRow и RavelRefreshControl</a>
+<a class="navlink sub" href="../widgets/list-row.html">ListRow и ListSectionTitle</a>
+<a class="navlink sub" href="../widgets/pinned-header.html">PinnedHeader и PinnedSection</a>
+<a class="navlink sub" href="../widgets/stretch-header.html">StretchHeader</a>
+<div class="navgroup">Каркас приложения и роутинг</div>
+<a class="navlink sub" href="../widgets/swift-ui-app.html">SwiftUiApp</a>
+<a class="navlink sub" href="../widgets/swift-ui-scaffold.html">SwiftUiScaffold, SwiftUiShell</a>
+<a class="navlink sub" href="../widgets/page-switcher.html">SwiftUiPageSwitcher</a>
+<a class="navlink sub" href="../widgets/swift-ui-drawer.html">SwiftUiDrawer</a>
+<a class="navlink sub" href="../widgets/routes.html">Маршруты и переходы</a>
+<div class="navgroup">Темы и утилиты</div>
+<a class="navlink sub" href="../widgets/theme-api.html">SwiftUiTheme и тема</a>
+<a class="navlink sub" href="../widgets/progressive-blur.html">ProgressiveBlur и ChromeStyle</a>
+<a class="navlink sub" href="../widgets/utils.html">Утилиты</a>
+<div class="navhead"><a href="../coverage.html">Покрытие</a></div></nav>
+<main><article><div class="crumb"><a href="../widgets/index.html">Каталог</a> / Оверлеи: листы, диалоги, меню</div>
+<h1>GlassSheet и showGlassSheet</h1>
+<p class="lead">Лист iOS 26 с детентами: стекло на частичных высотах, непрозрачный на large; морф из кнопки.</p>
+<h2 id="vid">Как выглядит</h2><div class="gallery"><figure><img class="shot-dark" src="../assets/img/sheet-open-dark.jpg" alt="Лист на детенте medium" loading="lazy"><img class="shot-light" src="../assets/img/sheet-open-dark.jpg" alt="Лист на детенте medium" loading="lazy"><figcaption>Лист на детенте medium</figcaption></figure><figure><img class="shot-dark" src="../assets/img/sheets-dark.jpg" alt="Страница листов примера" loading="lazy"><img class="shot-light" src="../assets/img/sheets-light.jpg" alt="Страница листов примера" loading="lazy"><figcaption>Страница листов примера</figcaption></figure><figure><video src="../assets/img/morph-demo.mp4" autoplay loop muted playsinline controls></video><figcaption>Лист и меню вырастают из кнопок</figcaption></figure></div>
+<h2 id="что-это">Что это</h2>
+<p><code>.sheet</code> из SwiftUI с <code>presentationDetents</code>. Тащится вниз для закрытия, содержимое скроллится после достижения полной высоты.</p>
+<p>Три способа показать:</p>
+<ul><li><code>showGlassSheet(context, child: ...)</code> — из любого колбэка;</li><li><code>GlassSheetPresenter(isPresented:, sheetChild:, child: page)</code> — как <code>.sheet(isPresented:)</code>;</li><li>роутер: <code>GlassSheetAutoRoute</code> (auto_route) / <code>GlassSheetPage</code> (go_router).</li></ul>
+<h2 id="пример">Пример</h2>
+<div class="code"><button class="copy" type="button" title="Копировать">Copy</button><pre><code><span class="tk">final</span> ctrl = <span class="tt">GlassSheetController</span>();
+
+<span class="tk">await</span> showGlassSheet&lt;<span class="tk">void</span>&gt;(
+  context,
+  controller: ctrl,
+  detents: <span class="tk">const</span> [<span class="tt">GlassSheetDetent</span>.fraction(<span class="tn">0.4</span>), <span class="tt">GlassSheetDetent</span>.medium, <span class="tt">GlassSheetDetent</span>.large],
+  initialDetent: <span class="tt">GlassSheetDetent</span>.medium,
+  builder: (context, scroll) =&gt; <span class="tt">ListView</span>(controller: scroll, children: <span class="tk">const</span> [<span class="tt">ListRow</span>(title: <span class="ts">&#x27;One&#x27;</span>), <span class="tt">ListRow</span>(title: <span class="ts">&#x27;Two&#x27;</span>)]),
+);</code></pre></div>
+<p>Детенты: <code>medium</code>, <code>large</code>, <code>fraction(f)</code>, <code>height(h)</code>. <code>dismissible: false</code> — нельзя закрыть; <code>modal: false</code> — страница под листом остаётся доступной.</p>
+<h2 id="морф-из-кнопки">Морф из кнопки</h2>
+<div class="code"><button class="copy" type="button" title="Копировать">Copy</button><pre><code><span class="tk">final</span> origin = <span class="tt">GlassSheetOriginController</span>();
+
+<span class="tt">GlassSheetOrigin</span>(
+  controller: origin,
+  child: <span class="tt">GlassButton</span>(
+    label: <span class="ts">&#x27;Открыть&#x27;</span>,
+    onPressed: () =&gt; showGlassSheet&lt;<span class="tk">void</span>&gt;(context, origin: origin, child: <span class="tk">const</span> <span class="tt">MyContent</span>()),
+  ),
+)</code></pre></div>
+<p>Кнопка скрывается, лист начинается её формой (капсула/круг стекла), вырастает в карточку и при закрытии сжимается обратно. Подробнее — в гайде «Навигация и листы».</p>
+<h2 id="parametry">Параметры <small>(из dartdoc)</small></h2><details open><summary><code>GlassSheet</code></summary><div class="tablewrap"><table><thead><tr><th>Параметр</th><th>Тип</th><th>По умолчанию</th><th>Описание</th></tr></thead><tbody><tr><td><code>child</code></td><td><code>Widget?</code></td><td></td><td>The content. By default it sits in a scroll view that the sheet drags (so dragging the content moves the sheet and, once it is full, scrolls).</td></tr><tr><td><code>builder</code></td><td><code>GlassSheetBuilder?</code></td><td></td><td>The content as a builder that receives the scroll controller of the sheet (give it to your <code>ListView</code>).</td></tr><tr><td><code>present</code></td><td><code>Animation&lt;double&gt;</code></td><td><code>required</code></td><td>0 (out of sight) .. 1 (in place): the slide in and out, driven by the owner.</td></tr><tr><td><code>onDismissed</code></td><td><code>VoidCallback?</code></td><td></td><td>The user closed the sheet (dragged it down, tapped outside, <code>GlassSheetController.dismiss</code>). The owner removes it.</td></tr><tr><td><code>detents</code></td><td><code>List&lt;GlassSheetDetent&gt;</code></td><td><code>const [GlassSheetDetent.medium, GlassSheetDetent.large]</code></td><td>The heights the sheet rests at, smallest to largest in any order.</td></tr><tr><td><code>initialDetent</code></td><td><code>GlassSheetDetent?</code></td><td></td><td>Where it opens; the first of <code>detents</code> when null.</td></tr><tr><td><code>controller</code></td><td><code>GlassSheetController?</code></td><td></td><td></td></tr><tr><td><code>dismissible</code></td><td><code>bool</code></td><td><code>true</code></td><td>false: it cannot be dragged away or dismissed by a tap outside; it rests at its smallest detent at the least.</td></tr><tr><td><code>modal</code></td><td><code>bool</code></td><td><code>true</code></td><td>true: a dim barrier covers the page and swallows its touches. false: the page behind stays usable around the sheet.</td></tr><tr><td><code>showGrabber</code></td><td><code>bool</code></td><td><code>true</code></td><td>The drag indicator (<code>presentationDragIndicator(.visible)</code>).</td></tr><tr><td><code>scrollable</code></td><td><code>bool</code></td><td><code>true</code></td><td>See <code>child</code>.</td></tr><tr><td><code>backgroundColor</code></td><td><code>Color?</code></td><td></td><td>The page colour of the opaque (large) sheet. Null: the native system background of the theme.</td></tr><tr><td><code>dimColor</code></td><td><code>Color</code></td><td><code>const Color(0x52000000)</code></td><td>The dim of the page behind at the largest detent; it grows with the height of the sheet.</td></tr><tr><td><code>liquid</code></td><td><code>bool?</code></td><td></td><td>Liquid glass at the partial detents. null: the theme setting (and the shader support).</td></tr><tr><td><code>topGap</code></td><td><code>double?</code></td><td></td><td>The gap between the top of the largest sheet and the top of the area. Null: the status bar inset (native: the large sheet starts right under it).</td></tr><tr><td><code>cornerRadius</code></td><td><code>double?</code></td><td></td><td>One radius for all four corners. Null (default): native.</td></tr><tr><td><code>inset</code></td><td><code>double</code></td><td><code>8</code></td><td>The margin of the floating card from the sides and the bottom of the screen.</td></tr><tr><td><code>origin</code></td><td><code>GlassSheetOriginController?</code></td><td></td><td>The control the sheet grows out of (and shrinks back into): see <code>GlassSheetOrigin</code>. Null: the sheet slides up from the bottom.</td></tr></tbody></table></div></details><details><summary><code>GlassSheetPresenter</code></summary><div class="tablewrap"><table><thead><tr><th>Параметр</th><th>Тип</th><th>По умолчанию</th><th>Описание</th></tr></thead><tbody><tr><td><code>child</code></td><td><code>Widget</code></td><td><code>required</code></td><td>The page.</td></tr><tr><td><code>isPresented</code></td><td><code>bool</code></td><td><code>required</code></td><td></td></tr><tr><td><code>onDismissed</code></td><td><code>VoidCallback?</code></td><td></td><td>The user closed the sheet: set <code>isPresented</code> to false.</td></tr><tr><td><code>sheet</code></td><td><code>GlassSheetBuilder?</code></td><td></td><td>The content of the sheet as a builder that gets the scroll controller of the sheet.</td></tr><tr><td><code>sheetChild</code></td><td><code>Widget?</code></td><td></td><td>The content of the sheet as a widget.</td></tr><tr><td><code>detents</code></td><td><code>List&lt;GlassSheetDetent&gt;</code></td><td><code>const [GlassSheetDetent.medium, GlassSheetDetent.large]</code></td><td></td></tr><tr><td><code>initialDetent</code></td><td><code>GlassSheetDetent?</code></td><td></td><td></td></tr><tr><td><code>controller</code></td><td><code>GlassSheetController?</code></td><td></td><td></td></tr><tr><td><code>dismissible</code></td><td><code>bool</code></td><td><code>true</code></td><td></td></tr><tr><td><code>modal</code></td><td><code>bool</code></td><td><code>true</code></td><td></td></tr><tr><td><code>showGrabber</code></td><td><code>bool</code></td><td><code>true</code></td><td></td></tr><tr><td><code>scrollable</code></td><td><code>bool</code></td><td><code>true</code></td><td></td></tr><tr><td><code>backgroundColor</code></td><td><code>Color?</code></td><td></td><td></td></tr><tr><td><code>dimColor</code></td><td><code>Color</code></td><td><code>const Color(0x52000000)</code></td><td></td></tr><tr><td><code>liquid</code></td><td><code>bool?</code></td><td></td><td></td></tr><tr><td><code>topGap</code></td><td><code>double?</code></td><td></td><td></td></tr><tr><td><code>cornerRadius</code></td><td><code>double?</code></td><td></td><td></td></tr><tr><td><code>inset</code></td><td><code>double</code></td><td><code>8</code></td><td></td></tr><tr><td><code>origin</code></td><td><code>GlassSheetOriginController?</code></td><td></td><td>The control the sheet grows out of, see <code>GlassSheetOrigin</code>.</td></tr></tbody></table></div></details>
+<p class="imp">Импорт: <code>import 'package:swiftuikit/swiftuikit.dart';</code></p></article></main>
+</div>
+<script>window.DOCS_ROOT="../";</script>
+<script src="../assets/search-index.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

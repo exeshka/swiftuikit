@@ -52,6 +52,8 @@ class SegmentVisuals {
     double magnify = 1.0,
     bool lens = true,
     bool rest = true,
+    bool lightBand = true,
+    double specular = GlassLens.specular,
   }) {
     final w = width + (growWidth ?? growW) * k;
     final h = height + (growHeight ?? growH) * k;
@@ -69,6 +71,7 @@ class SegmentVisuals {
             blur: lensBlur,
             magnify: magnify,
             refractionStrength: refraction,
+            specularStrength: specular,
             bezelWidth: bezel,
             toneLift: t.isDark ? darkToneLift : -0.045,
             shadowScale: t.isDark ? 1 : 0.5,
@@ -76,7 +79,7 @@ class SegmentVisuals {
           ),
         ),
       // native: through the lower part of the lens the (white) page below the track shows as a bright band
-      if (lens && k > 0.02 && !t.isDark)
+      if (lens && lightBand && k > 0.02 && !t.isDark)
         Positioned(
           left: lensLeft,
           top: lensTop,

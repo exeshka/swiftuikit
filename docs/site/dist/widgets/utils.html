@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="ru" data-theme="auto">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Утилиты · swiftuikit</title>
+<script>try{var t=localStorage.getItem('docs-theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="top">
+  <button class="menu" id="menu" aria-label="Меню">☰</button>
+  <a class="brand" href="../index.html"><span class="logo">◐</span> swiftuikit</a>
+  <div class="search"><input id="q" type="search" placeholder="Поиск виджетов  ( / )" autocomplete="off"><div id="results" hidden></div></div>
+  <button class="themebtn" id="theme" aria-label="Тема сайта" title="Тема сайта">◐</button>
+</header>
+<div class="layout">
+<nav class="side" id="side"><a class="navlink" href="../index.html">Главная</a>
+<div class="navhead">Гайды</div>
+<a class="navlink" href="../guides/01-quickstart.html">Быстрый старт</a>
+<a class="navlink" href="../guides/02-theme.html">Тема и цвета</a>
+<a class="navlink" href="../guides/03-glass-performance.html">Стекло и производительность</a>
+<a class="navlink" href="../guides/04-navigation-sheets.html">Навигация и листы</a>
+<a class="navlink" href="../guides/05-paging-headers.html">Пейджинг и заголовки</a>
+<div class="navhead"><a href="../widgets/index.html">Каталог виджетов</a></div>
+<div class="navgroup">Стекло и кнопки</div>
+<a class="navlink sub" href="../widgets/liquid-glass.html">LiquidGlass</a>
+<a class="navlink sub" href="../widgets/liquid-glass-group.html">LiquidGlassGroup и Presence</a>
+<a class="navlink sub" href="../widgets/glass-surface.html">GlassSurface</a>
+<a class="navlink sub" href="../widgets/glass-button.html">GlassButton</a>
+<a class="navlink sub" href="../widgets/glass-circle-button.html">GlassCircleButton и кнопки баров</a>
+<a class="navlink sub" href="../widgets/glass-lens.html">GlassLens и ContentLens</a>
+<a class="navlink sub" href="../widgets/pressable-icon.html">Pressable и RavelIcon</a>
+<div class="navgroup">Бары и навигация</div>
+<a class="navlink sub" href="../widgets/chrome-scaffold.html">ChromeScaffold</a>
+<a class="navlink sub" href="../widgets/title-bar.html">TitleBar, LargeTitleHeader</a>
+<a class="navlink sub" href="../widgets/collapsible-bar.html">CollapsibleBar</a>
+<a class="navlink sub" href="../widgets/glass-tab-bar.html">GlassTabBar</a>
+<a class="navlink sub" href="../widgets/bottom-dock.html">BottomDock</a>
+<a class="navlink sub" href="../widgets/glass-toolbar-capsule.html">GlassToolbarCapsule</a>
+<a class="navlink sub" href="../widgets/glass-search-bar.html">GlassSearchBar</a>
+<a class="navlink sub" href="../widgets/glass-search-launcher.html">GlassSearchLauncher</a>
+<div class="navgroup">Оверлеи: листы, диалоги, меню</div>
+<a class="navlink sub" href="../widgets/glass-sheet.html">GlassSheet и showGlassSheet</a>
+<a class="navlink sub" href="../widgets/glass-alert.html">showGlassAlert и диалоги</a>
+<a class="navlink sub" href="../widgets/glass-menu.html">showGlassMenu и GlassMenuButton</a>
+<a class="navlink sub" href="../widgets/glass-selection-toolbar.html">GlassSelectionToolbar</a>
+<div class="navgroup">Формы и контролы</div>
+<a class="navlink sub" href="../widgets/glass-switch.html">GlassSwitch</a>
+<a class="navlink sub" href="../widgets/glass-slider.html">GlassSlider и GlassStepper</a>
+<a class="navlink sub" href="../widgets/glass-segmented.html">GlassSegmentedControl</a>
+<a class="navlink sub" href="../widgets/glass-scroll-segments.html">GlassScrollSegments</a>
+<a class="navlink sub" href="../widgets/glass-text-field.html">GlassTextField</a>
+<div class="navgroup">Списки и заголовки</div>
+<a class="navlink sub" href="../widgets/grouped-list.html">ListSection и GroupedRow</a>
+<a class="navlink sub" href="../widgets/swipe-action-row.html">SwipeActionRow и RavelRefreshControl</a>
+<a class="navlink sub" href="../widgets/list-row.html">ListRow и ListSectionTitle</a>
+<a class="navlink sub" href="../widgets/pinned-header.html">PinnedHeader и PinnedSection</a>
+<a class="navlink sub" href="../widgets/stretch-header.html">StretchHeader</a>
+<div class="navgroup">Каркас приложения и роутинг</div>
+<a class="navlink sub" href="../widgets/swift-ui-app.html">SwiftUiApp</a>
+<a class="navlink sub" href="../widgets/swift-ui-scaffold.html">SwiftUiScaffold, SwiftUiShell</a>
+<a class="navlink sub" href="../widgets/page-switcher.html">SwiftUiPageSwitcher</a>
+<a class="navlink sub" href="../widgets/swift-ui-drawer.html">SwiftUiDrawer</a>
+<a class="navlink sub" href="../widgets/routes.html">Маршруты и переходы</a>
+<div class="navgroup">Темы и утилиты</div>
+<a class="navlink sub" href="../widgets/theme-api.html">SwiftUiTheme и тема</a>
+<a class="navlink sub" href="../widgets/progressive-blur.html">ProgressiveBlur и ChromeStyle</a>
+<a class="navlink sub on" href="../widgets/utils.html">Утилиты</a>
+<div class="navhead"><a href="../coverage.html">Покрытие</a></div></nav>
+<main><article><div class="crumb"><a href="../widgets/index.html">Каталог</a> / Темы и утилиты</div>
+<h1>Утилиты</h1>
+<p class="lead">Прогрев шейдеров, заморозка страницы под переходом, радиус экрана, анимация числа, адаптивное окно.</p>
+<h2 id="vid">Как выглядит</h2><div class="gallery"><figure><img class="shot-dark" src="../assets/img/components-dark.jpg" alt="Компоненты" loading="lazy"><img class="shot-light" src="../assets/img/components-light.jpg" alt="Компоненты" loading="lazy"><figcaption>Компоненты</figcaption></figure></div>
+<h2 id="что-это">Что это</h2>
+<ul><li><code>preloadRavelUiKit()</code> — загрузить все шейдеры до <code>runApp</code>.</li><li><code>RavelWarmUp</code> — компилирует GPU-пайплайны под первыми кадрами (включено в <code>SwiftUiApp</code>).</li><li><code>FreezeUnderRoute</code> — заменяет страницу её снимком, пока над ней идёт переход: каждый <code>BackdropFilter</code> стоит ~1 мс на кадре.</li><li><code>ScreenRadiusService</code> — физический радиус скругления экрана (для листов).</li><li><code>SwiftText</code> — посимвольная анимация цифр, как <code>.contentTransition(.numericText())</code>.</li><li><code>SwiftUiWindowInfo</code> / <code>SwiftUiWindowScope</code> — размер окна, size classes (compact/regular), зарезервированные области (сгиб складного).</li><li><code>SnappingScrollPhysics</code> — физика с пружинным доводом к позициям.</li></ul>
+<div class="code"><button class="copy" type="button" title="Копировать">Copy</button><pre><code><span class="tt">SwiftText</span>(<span class="ts">&#x27;${count}&#x27;</span>, style: <span class="tk">const</span> <span class="tt">TextStyle</span>(fontSize: <span class="tn">48</span>), duration: <span class="tk">const</span> <span class="tt">Duration</span>(milliseconds: <span class="tn">400</span>))</code></pre></div>
+<h2 id="parametry">Параметры <small>(из dartdoc)</small></h2><details open><summary><code>RavelWarmUp</code></summary><div class="tablewrap"><table><thead><tr><th>Параметр</th><th>Тип</th><th>По умолчанию</th><th>Описание</th></tr></thead><tbody><tr><td><code>child</code></td><td><code>Widget</code></td><td><code>required</code></td><td></td></tr></tbody></table></div></details><details><summary><code>FreezeUnderRoute</code></summary><div class="tablewrap"><table><thead><tr><th>Параметр</th><th>Тип</th><th>По умолчанию</th><th>Описание</th></tr></thead><tbody><tr><td><code>child</code></td><td><code>Widget</code></td><td><code>required</code></td><td></td></tr><tr><td><code>enabled</code></td><td><code>bool</code></td><td><code>true</code></td><td>false: the page stays live under a transition (no snapshot).</td></tr></tbody></table></div></details><details><summary><code>SwiftUiWindowInfo</code></summary><div class="tablewrap"><table><thead><tr><th>Параметр</th><th>Тип</th><th>По умолчанию</th><th>Описание</th></tr></thead><tbody><tr><td><code>size</code></td><td><code>Size</code></td><td><code>required</code></td><td></td></tr><tr><td><code>horizontal</code></td><td><code>SwiftUiSizeClass</code></td><td><code>required</code></td><td></td></tr><tr><td><code>vertical</code></td><td><code>SwiftUiSizeClass</code></td><td><code>required</code></td><td></td></tr><tr><td><code>reservedRegions</code></td><td><code>List&lt;SwiftUiReservedRegion&gt;</code></td><td><code>const []</code></td><td></td></tr></tbody></table></div></details><details><summary><code>SwiftUiWindowScope</code></summary><div class="tablewrap"><table><thead><tr><th>Параметр</th><th>Тип</th><th>По умолчанию</th><th>Описание</th></tr></thead><tbody><tr><td><code>reservedRegions</code></td><td><code>List&lt;SwiftUiReservedRegion&gt;</code></td><td><code>required</code></td><td></td></tr><tr><td><code>child</code></td><td><code>—</code></td><td><code>required</code></td><td></td></tr></tbody></table></div></details><details><summary><code>SnappingScrollPhysics</code></summary><div class="tablewrap"><table><thead><tr><th>Параметр</th><th>Тип</th><th>По умолчанию</th><th>Описание</th></tr></thead><tbody><tr><td><code>snapPoints</code></td><td><code>List&lt;double&gt;</code></td><td><code>required</code></td><td></td></tr><tr><td><code>springConfig</code></td><td><code>SnapSpringConfig</code></td><td><code>SnapSpringConfig.smooth</code></td><td></td></tr><tr><td><code>flingVelocityThreshold</code></td><td><code>double?</code></td><td></td><td></td></tr><tr><td><code>snapThreshold</code></td><td><code>double</code></td><td><code>0.5</code></td><td></td></tr><tr><td><code>minSnapRange</code></td><td><code>double?</code></td><td></td><td></td></tr><tr><td><code>maxSnapRange</code></td><td><code>double?</code></td><td></td><td></td></tr><tr><td><code>enabled</code></td><td><code>bool</code></td><td><code>true</code></td><td></td></tr><tr><td><code>parent</code></td><td><code>—</code></td><td></td><td></td></tr></tbody></table></div></details>
+<p class="imp">Импорт: <code>import 'package:swiftuikit/swiftuikit.dart';</code></p></article></main>
+</div>
+<script>window.DOCS_ROOT="../";</script>
+<script src="../assets/search-index.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

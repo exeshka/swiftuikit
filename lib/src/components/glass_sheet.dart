@@ -242,6 +242,8 @@ class _GlassSheetState extends State<GlassSheet>
   final _areaKey = GlobalKey();
   // the content moves between wrappers while the sheet grows out of a control: the key keeps its state
   final _contentKey = GlobalKey();
+  double? _reverseFrom;
+  Rect? _chaseFrom;
   double _container = 0;
   List<double> _extents = const [];
   double _maxExtent = 1;
@@ -558,14 +560,27 @@ class _GlassSheetState extends State<GlassSheet>
                                 animation: widget.present,
                                 child: scrolling,
                                 builder: (context, content) {
-                                  // The control becomes a droplet, the droplet grows into the sheet (and back when it closes).
+                                  // A glass button becomes the sheet as the native one does (tools/native_morph_ref/MORPH_SPEC.md, 10): no
+                                  // separate droplet, the four edges of one plate follow their own springs from the button's edges to the
+                                  // sheet's, the button's picture fades out in the middle of it, the content is a miniature of the final
+                                  // layout (scaled by the plate's width) that sharpens, closing has its own springs.
                                   final v = widget.present.value.clamp(
                                     0.0,
                                     1.0,
                                   );
-                                  final closing =
+                                  final reversing =
                                       widget.present.status ==
                                       AnimationStatus.reverse;
+                                  if (reversing) {
+                                    _reverseFrom ??= v;
+                                  } else {
+                                    _reverseFrom = null;
+                                    _chaseFrom = null;
+                                  }
+                                  final chasing =
+                                      reversing &&
+                                      (_reverseFrom ?? 1) < _kSheetChaseBelow;
+                                  final closing = reversing && !chasing;
                                   final finalRect = Rect.fromLTWH(
                                     inset,
                                     0,
@@ -587,124 +602,254 @@ class _GlassSheetState extends State<GlassSheet>
                                       -areaOffset.dy - h * (1 - e),
                                     ),
                                   );
+                                  final dBtn = from.shortestSide;
+                                  Rect openRect(double tau) => Rect.fromLTRB(
+                                    _sheetEdge(
+                                      25.2,
+                                      0.02,
+                                      0.0161,
+                                      0.78,
+                                      tau,
+                                      from.left,
+                                      finalRect.left,
+                                    ),
+                                    _sheetEdge(
+                                      6.7,
+                                      -0.02,
+                                      0.0157,
+                                      0.78,
+                                      tau,
+                                      from.top,
+                                      finalRect.top,
+                                    ),
+                                    _sheetEdge(
+                                      27.0,
+                                      0.03,
+                                      0.0162,
+                                      0.78,
+                                      tau,
+                                      from.right,
+                                      finalRect.right,
+                                    ),
+                                    _sheetEdge(
+                                      20.7,
+                                      -0.04 * dBtn,
+                                      0.0164,
+                                      0.72,
+                                      tau,
+                                      from.bottom,
+                                      finalRect.bottom,
+                                    ),
+                                  );
+                                  // closing: the springs run to the button; what is left at the end of the timeline is closed by a smooth step
+                                  Rect closeRaw(double tau) => Rect.fromLTRB(
+                                    _sheetEdge(
+                                      0,
+                                      0.155,
+                                      0.0186,
+                                      0.78,
+                                      tau,
+                                      finalRect.left,
+                                      from.left,
+                                    ),
+                                    _sheetEdge(
+                                      0,
+                                      0.09,
+                                      0.0123,
+                                      0.59,
+                                      tau,
+                                      finalRect.top,
+                                      from.top,
+                                    ),
+                                    _sheetEdge(
+                                      0,
+                                      -0.145,
+                                      0.0186,
+                                      0.78,
+                                      tau,
+                                      finalRect.right,
+                                      from.right,
+                                    ),
+                                    _sheetEdge(
+                                      14.5,
+                                      -2.24,
+                                      0.0150,
+                                      0.48,
+                                      tau,
+                                      finalRect.bottom,
+                                      from.bottom,
+                                    ),
+                                  );
                                   Rect cur;
                                   double tr;
                                   double br;
-                                  // The droplet path, the same both ways (closing is the opening played back with its own timing):
-                                  // control <-> round droplet at its centre (k), droplet <-> sheet (gw, height lags width).
-                                  // Measured on a native toolbar button -> sheet (slowed simulator, frame by frame): the droplet is about 3x
-                                  // the control and sits a third of the way towards the sheet; the two halves of the way take the same time.
-                                  const split = 0.25;
-                                  final d = math.min(
-                                    from.shortestSide * 2.9,
-                                    finalRect.width * 0.85,
-                                  );
-                                  final drop = Rect.fromCenter(
-                                    center: Offset.lerp(
-                                      from.center,
-                                      finalRect.center,
-                                      0.3,
-                                    )!,
-                                    width: d,
-                                    height: d,
-                                  );
-                                  final double gw;
-                                  final double k;
-                                  if (closing) {
-                                    final s = 1 - v;
-                                    const span = 0.5;
-                                    if (s < span) {
-                                      gw =
-                                          1 -
-                                          Curves.easeInOutCubic.transform(
-                                            s / span,
-                                          );
-                                      k = 1;
-                                    } else {
-                                      gw = 0;
-                                      k =
-                                          1 -
-                                          Curves.easeInOut.transform(
-                                            ((s - span) / 0.42).clamp(0.0, 1.0),
-                                          );
+                                  double tau;
+                                  final double contentAlpha;
+                                  final double contentBlur;
+                                  final double iconAlpha;
+                                  final double iconScale;
+                                  if (chasing) {
+                                    // dismissed before the sheet has settled: keep the position and speed, settle onto the button with a
+                                    // spring that takes the time that is left (no jump onto the closing curves)
+                                    final f0 = _reverseFrom!;
+                                    final tau0 = f0 * _kSheetOpenMs;
+                                    _chaseFrom ??= openRect(tau0);
+                                    final prev = openRect(
+                                      math.max(0.0, tau0 - 3),
+                                    );
+                                    final a0 = _chaseFrom!;
+                                    final total = math.max(
+                                      60.0,
+                                      f0 * _kSheetCloseMs,
+                                    );
+                                    final sMs = (f0 - v) * _kSheetCloseMs;
+                                    tau = sMs;
+                                    final w = 5 / (0.7 * total);
+                                    double edge(
+                                      double x0,
+                                      double v0,
+                                      double xf,
+                                    ) {
+                                      const z = 0.7;
+                                      final wd = w * math.sqrt(1 - z * z);
+                                      final dd = x0 - xf;
+                                      return xf +
+                                          math.exp(-z * w * sMs) *
+                                              (dd * math.cos(wd * sMs) +
+                                                  (v0 + z * w * dd) /
+                                                      wd *
+                                                      math.sin(wd * sMs));
                                     }
-                                  } else if (v < split) {
-                                    gw = 0;
-                                    k = Curves.easeInOut.transform(v / split);
-                                  } else {
-                                    gw = _kSheetSpring.transform(
-                                      (v - split) / (1 - split),
+
+                                    final end = _smooth(
+                                      (sMs / total - 0.85) / 0.15,
                                     );
-                                    k = 1;
-                                  }
-                                  final double g;
-                                  if (gw <= 0) {
-                                    cur = Rect.lerp(from, drop, k)!;
-                                    g = 0;
-                                    final r0 =
-                                        from.shortestSide / 2 +
-                                        (d / 2 - from.shortestSide / 2) * k;
-                                    tr = r0;
-                                    br = r0;
-                                  } else {
-                                    final gh = gw <= 1
-                                        ? math.pow(gw, 2.0).toDouble()
-                                        : gw;
-                                    g = gw;
+                                    double fin(double x, double target) =>
+                                        x + (target - x) * end;
                                     cur = Rect.fromLTRB(
-                                      ui.lerpDouble(
-                                        drop.left,
-                                        finalRect.left,
-                                        gw,
-                                      )!,
-                                      ui.lerpDouble(
-                                        drop.top,
-                                        finalRect.top,
-                                        gw,
-                                      )!,
-                                      ui.lerpDouble(
-                                        drop.right,
-                                        finalRect.right,
-                                        gw,
-                                      )!,
-                                      ui.lerpDouble(
-                                        drop.bottom,
-                                        finalRect.bottom,
-                                        gh,
-                                      )!,
+                                      fin(
+                                        edge(
+                                          a0.left,
+                                          (a0.left - prev.left) / 3,
+                                          from.left,
+                                        ),
+                                        from.left,
+                                      ),
+                                      fin(
+                                        edge(
+                                          a0.top,
+                                          (a0.top - prev.top) / 3,
+                                          from.top,
+                                        ),
+                                        from.top,
+                                      ),
+                                      fin(
+                                        edge(
+                                          a0.right,
+                                          (a0.right - prev.right) / 3,
+                                          from.right,
+                                        ),
+                                        from.right,
+                                      ),
+                                      fin(
+                                        edge(
+                                          a0.bottom,
+                                          (a0.bottom - prev.bottom) / 3,
+                                          from.bottom,
+                                        ),
+                                        from.bottom,
+                                      ),
                                     );
-                                    final gc = g.clamp(0.0, 1.0);
-                                    final half = cur.shortestSide / 2;
+                                    final half =
+                                        math.min(cur.width, cur.height) / 2;
+                                    final rt0 = math.min(half, topRadius);
                                     tr = math.min(
                                       half,
-                                      half * (1 - gc * gc) +
-                                          topRadius * gc * gc,
+                                      rt0 + (1000 - rt0) * _smooth(sMs / 80),
                                     );
                                     br = math.min(
                                       half,
-                                      half * (1 - gc * gc) +
-                                          bottomRadius * gc * gc,
+                                      bottomRadius +
+                                          (1000 - bottomRadius) *
+                                              _smooth(sMs / 80),
                                     );
+                                    final a1 = _smooth((tau0 - 85) / 115);
+                                    contentAlpha = a1 * (1 - _smooth(sMs / 50));
+                                    contentBlur = 2 * _smooth(sMs / 50);
+                                    final ic0 = 1 - _smooth(tau0 / 100);
+                                    iconAlpha =
+                                        ic0 +
+                                        (1 - ic0) *
+                                            _smooth((sMs / total - 0.2) / 0.5);
+                                    iconScale = 1;
+                                  } else if (closing) {
+                                    tau = (1 - v) * _kSheetCloseMs;
+                                    final raw = closeRaw(tau);
+                                    final endR = closeRaw(_kSheetCloseMs);
+                                    final k = _smooth(
+                                      (tau - 0.7 * _kSheetCloseMs) /
+                                          (0.3 * _kSheetCloseMs),
+                                    );
+                                    cur = Rect.fromLTRB(
+                                      raw.left + (from.left - endR.left) * k,
+                                      raw.top + (from.top - endR.top) * k,
+                                      raw.right + (from.right - endR.right) * k,
+                                      raw.bottom +
+                                          (from.bottom - endR.bottom) * k,
+                                    );
+                                    final half =
+                                        math.min(cur.width, cur.height) / 2;
+                                    final rt = tau < 85
+                                        ? topRadius + 22.6 * _smooth(tau / 85)
+                                        : topRadius + 22.6 - 0.19 * (tau - 85);
+                                    final rb = tau < 85
+                                        ? bottomRadius + 12 * _smooth(tau / 85)
+                                        : bottomRadius + 12 - 0.30 * (tau - 85);
+                                    tr = math.min(half, rt);
+                                    br = math.min(half, rb);
+                                    contentAlpha = 1 - _smooth((tau - 90) / 60);
+                                    contentBlur = 2 * _smooth((tau - 90) / 60);
+                                    iconAlpha = _smooth((tau - 130) / 30);
+                                    iconScale =
+                                        1.3 - 0.3 * _smooth((tau - 130) / 100);
+                                  } else {
+                                    tau = v * _kSheetOpenMs;
+                                    cur = openRect(tau);
+                                    final half =
+                                        math.min(cur.width, cur.height) / 2;
+                                    final rt =
+                                        topRadius +
+                                        41 * (1 - _smooth((tau - 120) / 130));
+                                    final rb =
+                                        bottomRadius +
+                                        30 * (1 - _smooth((tau - 115) / 165));
+                                    tr = tau < 95 ? half : math.min(half, rt);
+                                    br = tau < 95 ? half : math.min(half, rb);
+                                    contentAlpha = _smooth((tau - 85) / 115);
+                                    contentBlur =
+                                        3 * (1 - _smooth((tau - 100) / 100));
+                                    iconAlpha = 1 - _smooth(tau / 100);
+                                    iconScale = 1 + 0.0085 * math.min(tau, 40);
                                   }
-                                  final mm = g.clamp(0.0, 1.0);
-                                  // the control's picture rides in the droplet (native: its glyphs stay visible, blurring out as the sheet
-                                  // grows) and the other way round
-                                  final snapAlpha = gw <= 0
-                                      ? 1.0
-                                      : 1 - _smooth(gw / 0.3);
-                                  final fade = closing
-                                      ? _smooth(mm * 2.5)
-                                      : _smooth((v - 0.2) / 0.3);
-                                  // the content starts as a blurred miniature and sharpens as the card grows
-                                  final blur = 9.0 * math.pow(1 - mm, 1.5);
-                                  // the control has taken the droplet's place: nothing to paint (the route is about to go)
-                                  if (closing && v < 0.07) {
+                                  // the plate is the button's size again: the real control takes its place under it (the two overlap for a few
+                                  // frames; a gap with neither would flash)
+                                  if (reversing && v < 0.1) {
                                     WidgetsBinding.instance
                                         .addPostFrameCallback(
                                           (_) => origin.showNow(),
                                         );
-                                    return const SizedBox.shrink();
                                   }
+                                  // how far the plate has grown: 0 the button, 1 the sheet
+                                  final mm =
+                                      ((cur.width - from.width) /
+                                              math.max(
+                                                1.0,
+                                                finalRect.width - from.width,
+                                              ))
+                                          .clamp(0.0, 1.0);
+                                  // the content is a miniature of its final layout, as wide as the plate
+                                  final cs = (cur.width / finalRect.width)
+                                      .clamp(0.0, 1.5);
                                   return Stack(
                                     clipBehavior: Clip.none,
                                     children: [
@@ -726,7 +871,7 @@ class _GlassSheetState extends State<GlassSheet>
                                           ),
                                           grabber: widget.showGrabber
                                               ? Opacity(
-                                                  opacity: fade,
+                                                  opacity: contentAlpha,
                                                   child: _Grabber(
                                                     color: t.colors.foreground
                                                         .withValues(
@@ -739,12 +884,11 @@ class _GlassSheetState extends State<GlassSheet>
                                               : null,
                                           morph: _Morph(
                                             size: finalRect.size,
-                                            scale: Offset(
-                                              cur.width / finalRect.width,
-                                              cur.height / finalRect.height,
-                                            ),
-                                            opacity: fade,
-                                            blur: blur < 0.05 ? 0 : blur,
+                                            scale: Offset(cs, cs),
+                                            opacity: contentAlpha,
+                                            blur: contentBlur < 0.4
+                                                ? 0
+                                                : contentBlur,
                                           ),
                                           child: content!,
                                         ),
@@ -753,11 +897,14 @@ class _GlassSheetState extends State<GlassSheet>
                                         rect: cur,
                                         child: GlassOriginSnapshot(
                                           origin: origin,
-                                          alpha: snapAlpha,
-                                          blur: 4 * (1 - snapAlpha),
-                                          radius: BorderRadius.vertical(
-                                            top: Radius.circular(tr),
-                                            bottom: Radius.circular(br),
+                                          alpha: iconAlpha,
+                                          blur: 0,
+                                          zoom: iconScale,
+                                          radius: BorderRadius.only(
+                                            topLeft: Radius.circular(tr),
+                                            topRight: Radius.circular(tr),
+                                            bottomLeft: Radius.circular(br),
+                                            bottomRight: Radius.circular(br),
                                           ),
                                         ),
                                       ),
@@ -823,7 +970,31 @@ Widget _blurred(double sigma, Widget child) => sigma <= 0
         child: child,
       );
 
-const _kSheetSpring = Cubic(0.2, 0.95, 0.3, 1.1);
+/// Real milliseconds of the sheet's morph timelines (the route's animation runs over them) and the opening progress below which a
+/// dismissed sheet is still moving.
+const _kSheetOpenMs = 520.0;
+const _kSheetCloseMs = 280.0;
+const _kSheetChaseBelow = 0.5;
+
+/// One edge of the morphing plate: a damped spring from [xr] to [xf] that starts after [td] ms with speed [v0] (pt / ms).
+double _sheetEdge(
+  double td,
+  double v0,
+  double omega,
+  double zeta,
+  double tau,
+  double xr,
+  double xf,
+) {
+  final s = tau - td;
+  if (s <= 0) return xr;
+  final wd = omega * math.sqrt(1 - zeta * zeta);
+  final d = xr - xf;
+  return xf +
+      math.exp(-zeta * omega * s) *
+          (d * math.cos(wd * s) +
+              (v0 + zeta * omega * d) / wd * math.sin(wd * s));
+}
 
 class _Morph {
   const _Morph({
@@ -1009,11 +1180,11 @@ class GlassSheetRoute<T> extends PopupRoute<T> {
   // grown out of a control: a droplet that grows into the sheet takes a little longer going out than coming back (160 ms)
   @override
   Duration get transitionDuration =>
-      Duration(milliseconds: origin == null ? 420 : 460);
+      Duration(milliseconds: origin == null ? 420 : _kSheetOpenMs.round());
 
   @override
   Duration get reverseTransitionDuration =>
-      Duration(milliseconds: origin == null ? 300 : 440);
+      Duration(milliseconds: origin == null ? 300 : _kSheetCloseMs.round());
 
   // the sheet draws its own dim, in proportion to its height
   @override
@@ -1180,8 +1351,12 @@ class _GlassSheetPresenterState extends State<GlassSheetPresenter>
     with SingleTickerProviderStateMixin {
   late final AnimationController _present = AnimationController(
     vsync: this,
-    duration: Duration(milliseconds: widget.origin == null ? 420 : 460),
-    reverseDuration: Duration(milliseconds: widget.origin == null ? 300 : 440),
+    duration: Duration(
+      milliseconds: widget.origin == null ? 420 : _kSheetOpenMs.round(),
+    ),
+    reverseDuration: Duration(
+      milliseconds: widget.origin == null ? 300 : _kSheetCloseMs.round(),
+    ),
   );
   late bool _visible = widget.isPresented;
   // a new key per presentation: the sheet starts at its initial detent every time it opens
@@ -1417,7 +1592,11 @@ class GlassOriginSnapshot extends StatelessWidget {
     required this.blur,
     required this.radius,
     this.topLeft,
+    this.zoom = 1,
   });
+
+  /// Scales the picture around its own middle.
+  final double zoom;
 
   /// Where the picture's top-left corner sits relative to this widget's (the control's place); null: centred.
   final Offset? topLeft;
@@ -1431,7 +1610,13 @@ class GlassOriginSnapshot extends StatelessWidget {
     final img = origin?.snapshot;
     if (img == null || alpha <= 0.01) return const SizedBox.shrink();
     Widget w = CustomPaint(
-      painter: _SnapshotPainter(img, origin!._snapshotScale, alpha, topLeft),
+      painter: _SnapshotPainter(
+        img,
+        origin!._snapshotScale,
+        alpha,
+        topLeft,
+        zoom,
+      ),
       size: Size.infinite,
     );
     if (blur > 0.3) {
@@ -1447,7 +1632,9 @@ class GlassOriginSnapshot extends StatelessWidget {
 }
 
 class _SnapshotPainter extends CustomPainter {
-  _SnapshotPainter(this.image, this.scale, this.alpha, this.topLeft);
+  _SnapshotPainter(this.image, this.scale, this.alpha, this.topLeft, this.zoom);
+
+  final double zoom;
 
   final Offset? topLeft;
 
@@ -1459,13 +1646,18 @@ class _SnapshotPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final w = image.width / scale;
     final h = image.height / scale;
-    final dst = topLeft != null
+    final dst0 = topLeft != null
         ? Rect.fromLTWH(topLeft!.dx, topLeft!.dy, w, h)
         : Rect.fromCenter(
             center: size.center(Offset.zero),
             width: w,
             height: h,
           );
+    final dst = Rect.fromCenter(
+      center: dst0.center,
+      width: dst0.width * zoom,
+      height: dst0.height * zoom,
+    );
     canvas.drawImageRect(
       image,
       Rect.fromLTWH(0, 0, image.width.toDouble(), image.height.toDouble()),
@@ -1481,7 +1673,8 @@ class _SnapshotPainter extends CustomPainter {
       old.image != image ||
       old.alpha != alpha ||
       old.scale != scale ||
-      old.topLeft != topLeft;
+      old.topLeft != topLeft ||
+      old.zoom != zoom;
 }
 
 /// The window through which a control is uncovered: a round shape growing from one end of the control to all of it.

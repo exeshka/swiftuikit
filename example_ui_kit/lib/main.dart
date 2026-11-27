@@ -12,7 +12,12 @@ import 'router/app_router.dart';
 //                 chatgpt | claude | sticky | sticky-replace | components | liquid-playground | nav-bars | ... (see lib/router/app_router.dart)
 //                 --dart-define=THEME=dark|light
 //                 --dart-define=PERF=true (performance overlay)
-const _screen = String.fromEnvironment('SCREEN');
+// On a simulator the same two options can be passed at launch time, without rebuilding:
+//   see launchOption in app_state.dart (docs/site/tools/capture.sh)
+const _screenDefine = String.fromEnvironment('SCREEN');
+final _screen = _screenDefine.isNotEmpty
+    ? _screenDefine
+    : (launchOption('SCREEN') ?? '');
 const _perf = bool.fromEnvironment('PERF');
 // --dart-define=SLOW=10 slows every Flutter animation down (to compare frame by frame with a recording)
 const _slow = int.fromEnvironment('SLOW');

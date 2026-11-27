@@ -6,6 +6,7 @@ import 'package:flutter/widgets.dart';
 
 import '../theme/swift_ui_theme.dart';
 import 'glass_sheet.dart' show GlassSheetOriginController, GlassOriginSnapshot;
+import 'content_lens.dart';
 import 'liquid_glass.dart';
 import 'press_tracker.dart';
 import 'glass_surface.dart';
@@ -139,6 +140,14 @@ class _GlassMenuRoute extends PopupRoute<void> {
 
   final GlassSheetOriginController? origin;
   final Offset? focus;
+
+  /// Where the animation was when it started to run back: a menu closed before it has opened plays its opening backwards.
+  double? reverseFrom;
+
+  /// The plate (in the menu's right-hand layout) and the speed of its edges (pt / ms) when a menu that has not settled is dismissed.
+  Rect? chaseFrom;
+  List<double>? chaseVel;
+  double chaseRadius = 0;
   final Rect anchor;
   final List<GlassMenuEntry> entries;
   final double width;
@@ -227,7 +236,16 @@ class _GlassMenuRoute extends PopupRoute<void> {
 /// One edge of the morphing plate: a smooth step from where the edge rests to [x0] over [t0] ms, then a damped spring to its
 /// final value (all numbers measured on the native menu of a toolbar group, see tools/native_morph_ref/MORPH_SPEC.md).
 class _EdgeSpring {
-  const _EdgeSpring(this.t0, this.v0, this.omega, this.zeta);
+  const _EdgeSpring(
+    this.t0,
+    this.v0,
+    this.omega,
+    this.zeta, [
+    this.tail = 0,
+    this.tailMs = 1,
+  ]);
+  final double tail; // pt: a slow exponential tail added after the spring
+  final double tailMs;
   final double t0; // ms
   final double v0; // pt / ms
   final double omega; // rad / ms
@@ -249,7 +267,8 @@ class _EdgeSpring {
     return xf +
         math.exp(-zeta * omega * s) *
             (d * math.cos(wd * s) +
-                (v0 + zeta * omega * d) / wd * math.sin(wd * s));
+                (v0 + zeta * omega * d) / wd * math.sin(wd * s)) +
+        tail * math.exp(-s / tailMs);
   }
 }
 
@@ -257,15 +276,19 @@ class _EdgeSpring {
 const _kOpenL = _EdgeSpring(43.1, -1.840, 0.0174, 0.76);
 const _kOpenR = _EdgeSpring(36.8, 0.222, 0.0139, 0.83);
 const _kOpenT = _EdgeSpring(61.2, 0.828, 0.0174, 0.69);
-const _kOpenB = _EdgeSpring(31.5, 2.329, 0.0201, 0.64);
+const _kOpenB = _EdgeSpring(31.4, 2.181, 0.0218, 0.66, 7.19, 215);
 // closing: menu -> capsule
-const _kCloseL = _EdgeSpring(18.8, 0.077, 0.0194, 0.68);
-const _kCloseR = _EdgeSpring(52.1, -0.734, 0.0156, 0.62);
-const _kCloseT = _EdgeSpring(2.7, 1.127, 0.0214, 0.41);
-const _kCloseB = _EdgeSpring(12.0, 1.449, 0.0159, 0.70);
+const _kCloseL = _EdgeSpring(103.9, 0.870, 0.0301, 0.55, 12.43, 37);
+const _kCloseR = _EdgeSpring(132.7, -0.879, 0.0301, 0.90, 1.93, 267);
+const _kCloseT = _EdgeSpring(33.1, 1.070, 0.0238, 0.59, -5.93, 426);
+const _kCloseB = _EdgeSpring(36.3, 0.446, 0.0167, 0.70, -7.04, 63);
 
 /// Real milliseconds of the opening and closing timelines (the route's animation runs over them).
 const _kMenuOpenMs = 700.0;
+
+/// Opening progress below which a dismissed menu is still moving (the opening takes ~300 ms of the 700): it settles from its current
+/// state instead of jumping onto the closing curves.
+const _kChaseBelow = 0.4;
 const _kMenuCloseMs = 450.0;
 
 extension on _GlassMenuRoute {
@@ -302,19 +325,33 @@ extension on _GlassMenuRoute {
       _kOpenL.at(tau, rest: cap.left, x0: cap.left + 27.1, xf: menu.left),
       _kOpenT.at(tau, rest: cap.top, x0: cap.top + 14.1, xf: menu.top),
       _kOpenR.at(tau, rest: cap.right, x0: cap.right - 21.1, xf: menu.right),
-      _kOpenB.at(tau, rest: cap.bottom, x0: cap.bottom + 4.2, xf: menu.bottom),
+      _kOpenB.at(tau, rest: cap.bottom, x0: cap.bottom - 0.5, xf: menu.bottom),
     );
-    Rect closeRect(double tau) => Rect.fromLTRB(
-      _kCloseL.at(tau, rest: menu.left, x0: menu.left + 6.8, xf: cap.left),
-      _kCloseT.at(tau, rest: menu.top, x0: menu.top + 1.0, xf: cap.top),
-      _kCloseR.at(tau, rest: menu.right, x0: menu.right - 3.9, xf: cap.right),
+    Rect closeRaw(double tau) => Rect.fromLTRB(
+      _kCloseL.at(tau, rest: menu.left, x0: menu.left + 71.6, xf: cap.left),
+      _kCloseT.at(tau, rest: menu.top, x0: menu.top + 26.9, xf: cap.top),
+      _kCloseR.at(tau, rest: menu.right, x0: menu.right - 25.6, xf: cap.right),
       _kCloseB.at(
         tau,
         rest: menu.bottom,
-        x0: menu.bottom + 2.6,
+        x0: menu.bottom + 22.8,
         xf: cap.bottom,
       ),
     );
+    // the springs' tails have not quite arrived at the end of the timeline: the last bit is closed by a smooth step so that the plate
+    // is exactly the capsule when the real control takes its place (no jump)
+    final closeEnd = closeRaw(_kMenuCloseMs);
+    Rect closeRect(double tau) {
+      final raw = closeRaw(tau);
+      final k = _smoothStep((tau - 320) / 130);
+      return Rect.fromLTRB(
+        raw.left + (cap.left - closeEnd.left) * k,
+        raw.top + (cap.top - closeEnd.top) * k,
+        raw.right + (cap.right - closeEnd.right) * k,
+        raw.bottom + (cap.bottom - closeEnd.bottom) * k,
+      );
+    }
+
     const restRadius = 31.0;
     final r190 = (() {
       final r = openRect(190);
@@ -326,7 +363,17 @@ extension on _GlassMenuRoute {
         AnimatedBuilder(
           animation: animation,
           builder: (context, _) {
-            final closing = animation.status == AnimationStatus.reverse;
+            final reversing = animation.status == AnimationStatus.reverse;
+            if (reversing) {
+              reverseFrom ??= animation.value;
+            } else {
+              reverseFrom = null;
+            }
+            // Dismissed before the menu has settled (the opening is over at ~300 ms): the plate does not jump onto the closing curves nor
+            // play the opening backwards (which would end with the quick collapse of the capsule played in reverse): it keeps its
+            // position and speed and settles onto the capsule with a spring that takes the time that is left.
+            final chasing = reversing && (reverseFrom ?? 1) < _kChaseBelow;
+            final closing = reversing && !chasing;
             final p = animation.value.clamp(0.0, 1.0);
             final double tau;
             final Rect r;
@@ -337,7 +384,69 @@ extension on _GlassMenuRoute {
             final double iconAlpha;
             double trScale = 1;
             double brScale = 1;
-            if (!closing) {
+            double tlScale = 1;
+            double blScale = 1;
+            if (chasing) {
+              final from = reverseFrom!;
+              final tau0 = from * _kMenuOpenMs;
+              if (chaseFrom == null) {
+                final a = openRect(tau0);
+                final b = openRect(math.max(0.0, tau0 - 3));
+                chaseFrom = a;
+                chaseVel = [
+                  (a.left - b.left) / 3,
+                  (a.top - b.top) / 3,
+                  (a.right - b.right) / 3,
+                  (a.bottom - b.bottom) / 3,
+                ];
+                final half0 = math.min(a.width, a.height) / 2;
+                chaseRadius = tau0 < 190
+                    ? half0
+                    : math.min(
+                        half0,
+                        restRadius +
+                            (r190 - restRadius) * math.exp(-(tau0 - 190) / 56),
+                      );
+              }
+              final total = math.max(60.0, from * _kMenuCloseMs);
+              final s = (from - p) * _kMenuCloseMs;
+              tau = s;
+              final w = 5 / (0.7 * total);
+              double edge(double x0, double v0, double xf) {
+                const z = 0.7;
+                final wd = w * math.sqrt(1 - z * z);
+                final d = x0 - xf;
+                return xf +
+                    math.exp(-z * w * s) *
+                        (d * math.cos(wd * s) +
+                            (v0 + z * w * d) / wd * math.sin(wd * s));
+              }
+
+              final f = chaseFrom!;
+              final v = chaseVel!;
+              final end = _smoothStep((s / total - 0.85) / 0.15);
+              double fin(double e, double target) => e + (target - e) * end;
+              r = Rect.fromLTRB(
+                fin(edge(f.left, v[0], cap.left), cap.left),
+                fin(edge(f.top, v[1], cap.top), cap.top),
+                fin(edge(f.right, v[2], cap.right), cap.right),
+                fin(edge(f.bottom, v[3], cap.bottom), cap.bottom),
+              );
+              radius = math.min(
+                math.min(r.width, r.height) / 2,
+                chaseRadius + (1000 - chaseRadius) * _smoothStep(s / 60),
+              );
+              final tau0Alpha = _smoothStep((tau0 - 100) / 100);
+              rowsAlpha = tau0Alpha * (1 - _smoothStep(s / 45));
+              rowsBlur = 2 * _smoothStep(s / 80);
+              final scale0 = tau0 < 185
+                  ? 1.17
+                  : 1 + 0.17 * math.exp(-(tau0 - 185) / 55);
+              rowsScale = 1 + (scale0 - 1) * (1 - _smoothStep(s / 80));
+              final icon0 = 1 - _smoothStep(tau0 / 57);
+              iconAlpha =
+                  icon0 + (1 - icon0) * _smoothStep((s / total - 0.35) / 0.5);
+            } else if (!closing) {
               tau = p * _kMenuOpenMs;
               r = openRect(tau);
               final half = math.min(r.width, r.height) / 2;
@@ -348,75 +457,119 @@ extension on _GlassMenuRoute {
               radius = math.min(radius, half);
               rowsAlpha = _smoothStep((tau - 100) / 100);
               rowsBlur = tau < 120 ? 3 : 3 * math.exp(-(tau - 140) / 38);
-              rowsScale = tau < 190
-                  ? 1.27
-                  : 1 + 0.27 * math.exp(-(tau - 190) / 70);
+              rowsScale = tau < 185
+                  ? 1.17
+                  : 1 + 0.17 * math.exp(-(tau - 185) / 55);
               iconAlpha = 1 - _smoothStep(tau / 57);
-              // the native blob is not symmetric (measured on the frames, tools/native_morph_ref): its top-right corner is tighter
-              // than the top-left one, which sags into a long slope, so the droplet leans towards the pressed button
-              final lean =
-                  _smoothStep((tau - 45) / 55) *
-                  (1 - _smoothStep((tau - 200) / 200));
-              trScale = 1 - 0.5 * lean;
-              brScale = 1 - 0.15 * lean;
+              // the corners are alike except for a short window at 22-42 ms (the neck of the melting plates, MORPH_SPEC.md 7.3)
+              tlScale = _lerpKnots(_kOpenKnotsTau, _kOpenKnotsTL, tau);
+              trScale = _lerpKnots(_kOpenKnotsTau, _kOpenKnotsTR, tau);
+              brScale = _lerpKnots(_kOpenKnotsTau, _kOpenKnotsBR, tau);
+              blScale = _lerpKnots(_kOpenKnotsTau, _kOpenKnotsBL, tau);
             } else {
               tau = (1 - p) * _kMenuCloseMs;
               r = closeRect(tau);
               radius = math.min(
                 math.min(r.width, r.height) / 2,
-                restRadius + 0.75 * tau,
+                restRadius + 22 * _smoothStep(tau / 45),
               );
               rowsAlpha = 1 - _smoothStep(tau / 80);
               rowsBlur = 2 * _smoothStep(tau / 80);
               rowsScale = 1;
               iconAlpha = _smoothStep((tau - 130) / 140);
-              final lean =
-                  _smoothStep(tau / 60) * (1 - _smoothStep((tau - 150) / 110));
-              trScale = 1 - 0.5 * lean;
-              brScale = 1 - 0.15 * lean;
+              // closing is asymmetric between 100 and 230 ms: the top-right corner tightens to a third (a nose towards the
+              // capsule), the bottom-right one swells (measured, MORPH_SPEC.md 7.3)
+              trScale = _lerpKnots(_kCloseKnotsTau, _kCloseKnotsTR, tau);
+              brScale = _lerpKnots(_kCloseKnotsTau, _kCloseKnotsBR, tau);
+              tlScale = _lerpKnots(_kCloseKnotsTau, _kCloseKnotsTL, tau);
+              blScale = _lerpKnots(_kCloseKnotsTau, _kCloseKnotsBL, tau);
             }
             final cur = flip(r);
-            return Stack(
-              clipBehavior: Clip.none,
-              children: [
-                Positioned.fromRect(
-                  rect: cur,
-                  child: _MenuPanel(
-                    entries: entries,
-                    radius: radius,
-                    contentOpacity: rowsAlpha,
-                    contentWidth: width,
-                    contentHeight: h,
-                    alignRight: alignRight,
-                    cornerScaleTR: alignRight ? trScale : 1,
-                    cornerScaleBR: alignRight ? brScale : 1,
-                    contentScaleX: rowsScale,
-                    contentScaleY: rowsScale,
-                    contentBlur: rowsBlur < 0.3 || rowsAlpha < 0.02
-                        ? 0
-                        : rowsBlur,
-                  ),
-                ),
-                Positioned.fromRect(
-                  rect: cur,
-                  child: GlassOriginSnapshot(
-                    origin: origin,
-                    alpha: iconAlpha,
-                    blur: 0,
-                    topLeft: anchor.topLeft - cur.topLeft,
-                    radius: BorderRadius.only(
-                      topLeft: Radius.circular(radius),
-                      topRight: Radius.circular(
-                        radius * (alignRight ? trScale : 1),
+            // Closing: the plate of the control is a second plate of the group, a small pill by the capsule that the menu's plate
+            // pulls a neck towards (measured, MORPH_SPEC.md 7.2.4: one rounded rectangle cannot describe the contour here), and
+            // it grows into the capsule at the end.
+            final pill = Rect.fromLTRB(
+              cap.left + 27,
+              cap.top - 5.7,
+              cap.right - 13.3,
+              cap.top + 31.3,
+            );
+            final neck = closing
+                ? _smoothStep((tau - 70) / 40) *
+                      (1 - _smoothStep((tau - 280) / 140))
+                : 0.0;
+            final plateA = flip(
+              Rect.lerp(pill, cap, _smoothStep((tau - 200) / 80))!,
+            );
+            return LiquidGlassGroup(
+              spacing: 30,
+              child: Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  if (neck > 0.02)
+                    Positioned.fromRect(
+                      rect: plateA,
+                      child: LiquidGlass(
+                        cornerRadius: plateA.shortestSide / 2,
+                        presence: (1 - 0.6 * neck).clamp(0.4, 1.0),
+                        child: const SizedBox.expand(),
                       ),
-                      bottomLeft: Radius.circular(radius),
-                      bottomRight: Radius.circular(
-                        radius * (alignRight ? brScale : 1),
+                    ),
+                  Positioned.fromRect(
+                    rect: cur,
+                    child: _MenuPanel(
+                      entries: entries,
+                      radius: radius,
+                      contentOpacity: rowsAlpha,
+                      // 0.32 of the shader's full strength: a fold-free map (the band is stretched up to ~1.6x as measured, a
+                      // stronger lens would turn the text over)
+                      contentLens: closing
+                          ? 0
+                          : 0.32 *
+                                _smoothStep((tau - 120) / 60) *
+                                (1 - _smoothStep((tau - 300) / 60)),
+                      contentWidth: width,
+                      contentHeight: h,
+                      alignRight: alignRight,
+                      cornerScaleTL: alignRight ? tlScale : trScale,
+                      cornerScaleTR: alignRight ? trScale : tlScale,
+                      cornerScaleBR: alignRight ? brScale : blScale,
+                      cornerScaleBL: alignRight ? blScale : brScale,
+                      contentScaleX: rowsScale,
+                      contentScaleY: rowsScale,
+                      contentBlur: rowsBlur < 0.3 || rowsAlpha < 0.02
+                          ? 0
+                          : rowsBlur,
+                    ),
+                  ),
+                  Positioned.fromRect(
+                    rect: cur,
+                    child: GlassOriginSnapshot(
+                      origin: origin,
+                      alpha: iconAlpha,
+                      blur: 0,
+                      topLeft: anchor.topLeft - cur.topLeft,
+                      // the picture was taken with the control pressed (about x1.115 larger than at rest): on the way back it is
+                      // shown at rest size, so it matches the real control when that takes its place
+                      zoom: reversing ? 0.897 : 1,
+                      radius: BorderRadius.only(
+                        topLeft: Radius.circular(
+                          radius * (alignRight ? tlScale : trScale),
+                        ),
+                        topRight: Radius.circular(
+                          radius * (alignRight ? trScale : tlScale),
+                        ),
+                        bottomLeft: Radius.circular(
+                          radius * (alignRight ? blScale : brScale),
+                        ),
+                        bottomRight: Radius.circular(
+                          radius * (alignRight ? brScale : blScale),
+                        ),
                       ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             );
           },
         ),
@@ -439,10 +592,16 @@ class _MenuPanel extends StatelessWidget {
     this.opacity = 1,
     this.cornerScaleTR = 1,
     this.cornerScaleBR = 1,
+    this.cornerScaleTL = 1,
+    this.cornerScaleBL = 1,
+    this.contentLens = 0,
   });
+  final double contentLens;
   final List<GlassMenuEntry> entries;
   final double cornerScaleTR;
   final double cornerScaleBR;
+  final double cornerScaleTL;
+  final double cornerScaleBL;
   final double radius;
   final double contentOpacity;
 
@@ -530,9 +689,19 @@ class _MenuPanel extends StatelessWidget {
           stretch: 3,
           cornerScaleTR: cornerScaleTR,
           cornerScaleBR: cornerScaleBR,
+          cornerScaleTL: cornerScaleTL,
+          cornerScaleBL: cornerScaleBL,
           child: !morphing
               ? rows(context, t)
-              : ClipRect(
+              : ContentLens(
+                  // the rows are cut by the plate's contour (its four radii) and smeared along the rim like native glass does
+                  radii: BorderRadius.only(
+                    topLeft: Radius.circular(radius * cornerScaleTL),
+                    topRight: Radius.circular(radius * cornerScaleTR),
+                    bottomLeft: Radius.circular(radius * cornerScaleBL),
+                    bottomRight: Radius.circular(radius * cornerScaleBR),
+                  ),
+                  strength: contentLens,
                   child: OverflowBox(
                     alignment: Alignment.center,
                     minWidth: contentWidth,
@@ -666,4 +835,186 @@ class _CheckPainter extends CustomPainter {
 double _smoothStep(double x) {
   final t = x.clamp(0.0, 1.0);
   return t * t * (3 - 2 * t);
+}
+
+const _kOpenKnotsTau = [
+  0.0,
+  20.0,
+  24.0,
+  28.0,
+  32.0,
+  36.0,
+  39.0,
+  43.0,
+  55.0,
+  79.0,
+  127.0,
+  200.0,
+  400.0,
+];
+const _kOpenKnotsTL = [
+  1.0,
+  1.04,
+  1.04,
+  0.75,
+  0.71,
+  0.75,
+  0.74,
+  1.07,
+  1.09,
+  1.05,
+  1.01,
+  1.01,
+  0.92,
+];
+const _kOpenKnotsTR = [
+  1.0,
+  1.04,
+  1.41,
+  1.12,
+  1.11,
+  1.11,
+  0.95,
+  1.19,
+  0.97,
+  0.94,
+  0.99,
+  1.02,
+  0.93,
+];
+const _kOpenKnotsBR = [
+  1.0,
+  1.02,
+  1.23,
+  1.0,
+  1.01,
+  0.99,
+  0.87,
+  1.10,
+  0.98,
+  0.97,
+  1.0,
+  1.03,
+  0.91,
+];
+const _kOpenKnotsBL = [
+  1.0,
+  1.02,
+  1.60,
+  1.38,
+  1.48,
+  1.47,
+  1.19,
+  1.19,
+  0.95,
+  0.95,
+  1.0,
+  1.01,
+  0.95,
+];
+const _kCloseKnotsTL = [
+  1.01,
+  0.95,
+  1.03,
+  1.08,
+  1.04,
+  1.03,
+  1.05,
+  1.28,
+  1.98,
+  1.49,
+  1.26,
+  0.68,
+  0.69,
+  0.81,
+  1.11,
+  1.01,
+  1.0,
+];
+const _kCloseKnotsBL = [
+  1.01,
+  0.97,
+  1.0,
+  1.03,
+  0.95,
+  0.96,
+  0.89,
+  0.79,
+  1.08,
+  0.80,
+  0.75,
+  0.73,
+  1.27,
+  1.31,
+  1.11,
+  1.02,
+  1.0,
+];
+const _kCloseKnotsTau = [
+  0.0,
+  39.0,
+  51.0,
+  72.0,
+  88.0,
+  104.0,
+  120.0,
+  136.0,
+  152.0,
+  168.0,
+  184.0,
+  200.0,
+  216.0,
+  232.0,
+  248.0,
+  264.0,
+  340.0,
+];
+const _kCloseKnotsTR = [
+  1.0,
+  0.95,
+  0.95,
+  0.93,
+  0.85,
+  0.70,
+  0.62,
+  0.28,
+  0.29,
+  0.28,
+  0.45,
+  0.49,
+  0.44,
+  0.81,
+  1.11,
+  1.01,
+  1.0,
+];
+const _kCloseKnotsBR = [
+  1.0,
+  0.96,
+  0.98,
+  1.0,
+  0.94,
+  0.89,
+  0.84,
+  0.78,
+  1.20,
+  1.19,
+  1.73,
+  1.85,
+  1.70,
+  1.31,
+  1.11,
+  1.01,
+  1.0,
+];
+
+double _lerpKnots(List<double> xs, List<double> ys, double x) {
+  if (x <= xs.first) return ys.first;
+  if (x >= xs.last) return ys.last;
+  for (var i = 0; i + 1 < xs.length; i++) {
+    if (x <= xs[i + 1]) {
+      return ys[i] + (ys[i + 1] - ys[i]) * (x - xs[i]) / (xs[i + 1] - xs[i]);
+    }
+  }
+  return ys.last;
 }

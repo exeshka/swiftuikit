@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="ru" data-theme="auto">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ChromeScaffold · swiftuikit</title>
+<script>try{var t=localStorage.getItem('docs-theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="top">
+  <button class="menu" id="menu" aria-label="Меню">☰</button>
+  <a class="brand" href="../index.html"><span class="logo">◐</span> swiftuikit</a>
+  <div class="search"><input id="q" type="search" placeholder="Поиск виджетов  ( / )" autocomplete="off"><div id="results" hidden></div></div>
+  <button class="themebtn" id="theme" aria-label="Тема сайта" title="Тема сайта">◐</button>
+</header>
+<div class="layout">
+<nav class="side" id="side"><a class="navlink" href="../index.html">Главная</a>
+<div class="navhead">Гайды</div>
+<a class="navlink" href="../guides/01-quickstart.html">Быстрый старт</a>
+<a class="navlink" href="../guides/02-theme.html">Тема и цвета</a>
+<a class="navlink" href="../guides/03-glass-performance.html">Стекло и производительность</a>
+<a class="navlink" href="../guides/04-navigation-sheets.html">Навигация и листы</a>
+<a class="navlink" href="../guides/05-paging-headers.html">Пейджинг и заголовки</a>
+<div class="navhead"><a href="../widgets/index.html">Каталог виджетов</a></div>
+<div class="navgroup">Стекло и кнопки</div>
+<a class="navlink sub" href="../widgets/liquid-glass.html">LiquidGlass</a>
+<a class="navlink sub" href="../widgets/liquid-glass-group.html">LiquidGlassGroup и Presence</a>
+<a class="navlink sub" href="../widgets/glass-surface.html">GlassSurface</a>
+<a class="navlink sub" href="../widgets/glass-button.html">GlassButton</a>
+<a class="navlink sub" href="../widgets/glass-circle-button.html">GlassCircleButton и кнопки баров</a>
+<a class="navlink sub" href="../widgets/glass-lens.html">GlassLens и ContentLens</a>
+<a class="navlink sub" href="../widgets/pressable-icon.html">Pressable и RavelIcon</a>
+<div class="navgroup">Бары и навигация</div>
+<a class="navlink sub on" href="../widgets/chrome-scaffold.html">ChromeScaffold</a>
+<a class="navlink sub" href="../widgets/title-bar.html">TitleBar, LargeTitleHeader</a>
+<a class="navlink sub" href="../widgets/collapsible-bar.html">CollapsibleBar</a>
+<a class="navlink sub" href="../widgets/glass-tab-bar.html">GlassTabBar</a>
+<a class="navlink sub" href="../widgets/bottom-dock.html">BottomDock</a>
+<a class="navlink sub" href="../widgets/glass-toolbar-capsule.html">GlassToolbarCapsule</a>
+<a class="navlink sub" href="../widgets/glass-search-bar.html">GlassSearchBar</a>
+<a class="navlink sub" href="../widgets/glass-search-launcher.html">GlassSearchLauncher</a>
+<div class="navgroup">Оверлеи: листы, диалоги, меню</div>
+<a class="navlink sub" href="../widgets/glass-sheet.html">GlassSheet и showGlassSheet</a>
+<a class="navlink sub" href="../widgets/glass-alert.html">showGlassAlert и диалоги</a>
+<a class="navlink sub" href="../widgets/glass-menu.html">showGlassMenu и GlassMenuButton</a>
+<a class="navlink sub" href="../widgets/glass-selection-toolbar.html">GlassSelectionToolbar</a>
+<div class="navgroup">Формы и контролы</div>
+<a class="navlink sub" href="../widgets/glass-switch.html">GlassSwitch</a>
+<a class="navlink sub" href="../widgets/glass-slider.html">GlassSlider и GlassStepper</a>
+<a class="navlink sub" href="../widgets/glass-segmented.html">GlassSegmentedControl</a>
+<a class="navlink sub" href="../widgets/glass-scroll-segments.html">GlassScrollSegments</a>
+<a class="navlink sub" href="../widgets/glass-text-field.html">GlassTextField</a>
+<div class="navgroup">Списки и заголовки</div>
+<a class="navlink sub" href="../widgets/grouped-list.html">ListSection и GroupedRow</a>
+<a class="navlink sub" href="../widgets/swipe-action-row.html">SwipeActionRow и RavelRefreshControl</a>
+<a class="navlink sub" href="../widgets/list-row.html">ListRow и ListSectionTitle</a>
+<a class="navlink sub" href="../widgets/pinned-header.html">PinnedHeader и PinnedSection</a>
+<a class="navlink sub" href="../widgets/stretch-header.html">StretchHeader</a>
+<div class="navgroup">Каркас приложения и роутинг</div>
+<a class="navlink sub" href="../widgets/swift-ui-app.html">SwiftUiApp</a>
+<a class="navlink sub" href="../widgets/swift-ui-scaffold.html">SwiftUiScaffold, SwiftUiShell</a>
+<a class="navlink sub" href="../widgets/page-switcher.html">SwiftUiPageSwitcher</a>
+<a class="navlink sub" href="../widgets/swift-ui-drawer.html">SwiftUiDrawer</a>
+<a class="navlink sub" href="../widgets/routes.html">Маршруты и переходы</a>
+<div class="navgroup">Темы и утилиты</div>
+<a class="navlink sub" href="../widgets/theme-api.html">SwiftUiTheme и тема</a>
+<a class="navlink sub" href="../widgets/progressive-blur.html">ProgressiveBlur и ChromeStyle</a>
+<a class="navlink sub" href="../widgets/utils.html">Утилиты</a>
+<div class="navhead"><a href="../coverage.html">Покрытие</a></div></nav>
+<main><article><div class="crumb"><a href="../widgets/index.html">Каталог</a> / Бары и навигация</div>
+<h1>ChromeScaffold</h1>
+<p class="lead">Скаффолд, у которого верх и низ — зоны блюра, подогнанные под высоту баров и липких заголовков.</p>
+<h2 id="vid">Как выглядит</h2><div class="gallery"><figure><img class="shot-dark" src="../assets/img/nav-bars-dark.jpg" alt="Контент уходит под бар" loading="lazy"><img class="shot-light" src="../assets/img/nav-bars-light.jpg" alt="Контент уходит под бар" loading="lazy"><figcaption>Контент уходит под бар</figcaption></figure><figure><img class="shot-dark" src="../assets/img/sticky-dark.jpg" alt="Зона блюра растёт под липкие заголовки" loading="lazy"><img class="shot-light" src="../assets/img/sticky-light.jpg" alt="Зона блюра растёт под липкие заголовки" loading="lazy"><figcaption>Зона блюра растёт под липкие заголовки</figcaption></figure></div>
+<h2 id="что-это">Что это</h2>
+<p>Основа всех экранов: слои снизу вверх — <code>body</code> (скроллится под зонами) → прогрессивный блюр сверху/снизу → <code>topBar</code>/<code>bottomBar</code>. Высоты баров регистрируются автоматически (<code>ChromeBar</code> или самообслуживаемые <code>LargeTitleHeader</code>, <code>CollapsibleBar</code>).</p>
+<h2 id="когда-использовать">Когда использовать</h2>
+<p>Когда нужен нативный «scroll edge effect» iOS 26. Если хватает готового — берите <code>SwiftUiScaffold</code>, он сделан поверх этого.</p>
+<h2 id="пример">Пример</h2>
+<div class="code"><button class="copy" type="button" title="Копировать">Copy</button><pre><code><span class="tt">ChromeScaffold</span>(
+  topBar: <span class="tk">const</span> <span class="tt">LargeTitleHeader</span>(title: <span class="ts">&#x27;Library&#x27;</span>),
+  body: <span class="tt">ListView</span>.builder(
+    itemCount: <span class="tn">50</span>,
+    itemBuilder: (_, i) =&gt; <span class="tt">ListRow</span>(title: <span class="ts">&#x27;Item $i&#x27;</span>),
+  ),
+  bottomBar: <span class="tt">ChromeBar</span>(
+    edge: <span class="tt">ChromeEdge</span>.bottom,
+    child: <span class="tt">GlassTabBar</span>(selectedIndex: <span class="tn">0</span>, onSelected: (_) {}, tabs: [<span class="tt">GlassTab</span>(icon: <span class="tt">RavelIcon</span>(<span class="tt">RavelIconKind</span>.chat), label: <span class="ts">&#x27;Chats&#x27;</span>)]),
+  ),
+)</code></pre></div>
+<p>Если тело — <code>CustomScrollView</code>, первым слайвером поставьте <code>SliverChromeInset.top()</code>. Для горизонтального пейджера списков: <code>scrollDepth: 1</code>.</p>
+<blockquote>Эффект под барами задаётся <code>topChrome</code>/<code>bottomChrome</code> (<code>ChromeStyle.soft/fade/solid/none…</code>) или для поддерева через <code>ChromeStyleScope</code>.</blockquote>
+<h2 id="parametry">Параметры <small>(из dartdoc)</small></h2><details open><summary><code>ChromeScaffold</code></summary><div class="tablewrap"><table><thead><tr><th>Параметр</th><th>Тип</th><th>По умолчанию</th><th>Описание</th></tr></thead><tbody><tr><td><code>body</code></td><td><code>Widget</code></td><td><code>required</code></td><td></td></tr><tr><td><code>topBar</code></td><td><code>Widget?</code></td><td></td><td>Placed under the status bar. Wrap in <code>ChromeBar</code> (or a widget that registers itself, like <code>LargeTitleHeader</code>) so the scaffold learns its height.</td></tr><tr><td><code>bottomBar</code></td><td><code>Widget?</code></td><td></td><td></td></tr><tr><td><code>controller</code></td><td><code>ChromeController?</code></td><td></td><td></td></tr><tr><td><code>backgroundColor</code></td><td><code>Color?</code></td><td></td><td></td></tr><tr><td><code>overlay</code></td><td><code>Widget?</code></td><td></td><td>Extra widget above everything (e.g. a drawer shade).</td></tr><tr><td><code>topChrome</code></td><td><code>ChromeStyle?</code></td><td></td><td>How content leaves under the top / bottom bars (see <code>ChromeStyle</code>). Null: the one of the surrounding <code>ChromeStyleScope</code>, else <code>ChromeStyle.soft</code>.</td></tr><tr><td><code>bottomChrome</code></td><td><code>ChromeStyle?</code></td><td></td><td></td></tr><tr><td><code>bottomBlur</code></td><td><code>bool</code></td><td><code>true</code></td><td>false: no blur zone at the bottom edge (the content scrolls under the bottom bar / home indicator unblurred).</td></tr><tr><td><code>bottomBarSafeAreaShare</code></td><td><code>double?</code></td><td></td><td>0..1: the share of the bottom safe area (the home indicator, 34 pt on a modern iPhone) kept below <code>bottomBar</code>. 1 lifts the bar by the whole inset, 0 presses it to the very edge.</td></tr><tr><td><code>minTopInset</code></td><td><code>double</code></td><td><code>12</code></td><td>The least space (pt) above the top bar. A screen under the status bar already has more (the system inset wins); a sheet or a dialog without a safe area has none, and the bar would sit against its edge: this keeps a little air there.</td></tr><tr><td><code>freezeUnderRoute</code></td><td><code>bool</code></td><td><code>false</code></td><td>true: while another route moves over this page it is drawn as a snapshot (see <code>FreezeUnderRoute</code>): cheaper for the GPU during the transition, but the page does not update under it. Default false: the page stays live.</td></tr><tr><td><code>snapLargeTitle</code></td><td><code>bool</code></td><td><code>true</code></td><td>Native large-title behaviour: when a scroll ends while the large title (or a <code>CollapsibleBar</code> section) is half collapsed, the content settles to fully open or fully collapsed, whichever is nearer.</td></tr><tr><td><code>blockZoneTouches</code></td><td><code>bool</code></td><td><code>false</code></td><td>true: the blur zones swallow touches, so content that is under a zone (blurred, half hidden behind a bar) cannot be pressed through it. The bars and stuck headers above the zones stay interactive.</td></tr><tr><td><code>scrollDepth</code></td><td><code>int</code></td><td><code>0</code></td><td>How many scrollables sit between the body and the vertical list that drives the bars: 0 for a plain list, 1 when the body is a horizontal pager of lists (<code>PageView</code>).</td></tr></tbody></table></div></details><details><summary><code>ChromeBar</code></summary><div class="tablewrap"><table><thead><tr><th>Параметр</th><th>Тип</th><th>По умолчанию</th><th>Описание</th></tr></thead><tbody><tr><td><code>child</code></td><td><code>Widget</code></td><td><code>required</code></td><td></td></tr><tr><td><code>edge</code></td><td><code>ChromeEdge</code></td><td><code>ChromeEdge.top</code></td><td></td></tr><tr><td><code>animate</code></td><td><code>bool</code></td><td><code>true</code></td><td>Animate height changes (including the first registration).</td></tr><tr><td><code>label</code></td><td><code>String?</code></td><td></td><td></td></tr><tr><td><code>glassSpacing</code></td><td><code>double</code></td><td><code>14</code></td><td>Glass morph distance of the plates in the bar (see <code>LiquidGlassGroup.spacing</code>): neighbours closer than this melt into one shape while one of them is pressed, like a native glass container. 0 keeps every plate separate.</td></tr></tbody></table></div></details>
+<p class="imp">Импорт: <code>import 'package:swiftuikit/swiftuikit.dart';</code></p></article></main>
+</div>
+<script>window.DOCS_ROOT="../";</script>
+<script src="../assets/search-index.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

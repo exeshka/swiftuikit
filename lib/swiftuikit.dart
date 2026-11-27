@@ -5,6 +5,7 @@ import 'package:flutter/scheduler.dart';
 import 'package:flutter_keyboard_controller/flutter_keyboard_controller.dart';
 
 import 'src/blur/progressive_blur.dart';
+import 'src/components/content_lens.dart';
 import 'src/components/liquid_glass.dart';
 
 export 'src/widgets/swift_step_sheet.dart';
@@ -62,7 +63,9 @@ export 'src/components/glass_toolbar.dart';
 export 'src/components/glass_text_field.dart';
 export 'src/components/glass_tab_bar.dart';
 export 'src/components/glass_switch.dart';
+export 'src/components/content_lens.dart';
 export 'src/components/glass_menu.dart';
+export 'src/components/tab_bar_minimize.dart';
 export 'src/components/glass_segmented.dart';
 export 'src/components/glass_scroll_segments.dart';
 export 'src/components/glass_slider.dart';
@@ -78,7 +81,11 @@ export 'src/util/swift_ui_page_route.dart';
 /// Loads every shader of the kit and schedules an iOS keyboard warm-up after
 /// the first frame. Call once before `runApp`.
 Future<void> preloadRavelUiKit() async {
-  await Future.wait([ProgressiveBlur.preload(), LiquidGlass.preload()]);
+  await Future.wait([
+    ProgressiveBlur.preload(),
+    LiquidGlass.preload(),
+    ContentLens.preload(),
+  ]);
   if (defaultTargetPlatform == TargetPlatform.iOS) {
     SchedulerBinding.instance.addPostFrameCallback((_) {
       unawaited(KeyboardController.preload().catchError((Object _) {}));
